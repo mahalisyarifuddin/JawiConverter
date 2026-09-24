@@ -2,241 +2,855 @@
   {
     "rumi": "dada",
     "pedoman": "دادا",
-    "golden": "دادا"
+    "rule": "8.2"
   },
   {
     "rumi": "bara",
     "pedoman": "بارا",
-    "golden": "بارا"
+    "rule": "8.2"
   },
   {
     "rumi": "pala",
     "pedoman": "ڤالا",
-    "golden": "ڤالا"
+    "rule": "8.2"
   },
   {
     "rumi": "sawa",
     "pedoman": "ساوا",
-    "golden": "ساوا"
+    "rule": "8.2"
   },
   {
     "rumi": "nganga",
     "pedoman": "ڠاڠا",
-    "golden": "ڠاڠا"
+    "rule": "8.2"
   },
   {
     "rumi": "saya",
     "pedoman": "ساي",
-    "golden": "ساي"
+    "rule": "8.2"
   },
   {
     "rumi": "rasa",
     "pedoman": "راس",
-    "golden": "راس"
+    "rule": "8.2"
   },
   {
     "rumi": "baja",
     "pedoman": "باج",
-    "golden": "باج"
+    "rule": "8.2"
   },
   {
     "rumi": "tanya",
     "pedoman": "تاڽ",
-    "golden": "تاڽ"
+    "rule": "8.2"
   },
   {
     "rumi": "mata",
     "pedoman": "مات",
-    "golden": "مات"
+    "rule": "8.2"
   },
   {
     "rumi": "baka",
     "pedoman": "باک",
-    "golden": "باک"
+    "rule": "8.3"
   },
   {
     "rumi": "saka",
     "pedoman": "ساک",
-    "golden": "ساک"
+    "rule": "8.3"
   },
   {
     "rumi": "mika",
     "pedoman": "ميک",
-    "golden": "ميک"
+    "rule": "8.3"
   },
   {
     "rumi": "luka",
     "pedoman": "لوک",
-    "golden": "لوک"
+    "rule": "8.3"
   },
   {
     "rumi": "muka",
     "pedoman": "موک",
-    "golden": "موک"
+    "rule": "8.3"
   },
   {
     "rumi": "teka",
     "pedoman": "تکا",
-    "golden": "تکا"
+    "rule": "8.4"
   },
   {
     "rumi": "peta",
     "pedoman": "ڤتا",
-    "golden": "ڤتا"
+    "rule": "8.4"
   },
   {
     "rumi": "beli",
     "pedoman": "بلي",
-    "golden": "بلي"
+    "rule": "8.4"
   },
   {
     "rumi": "peri",
     "pedoman": "ڤري",
-    "golden": "ڤري"
+    "rule": "8.4"
   },
   {
     "rumi": "tanda",
     "pedoman": "تندا",
-    "golden": "تندا"
+    "rule": "8.6"
   },
   {
     "rumi": "warna",
     "pedoman": "ورنا",
-    "golden": "ورنا"
+    "rule": "8.6"
   },
   {
     "rumi": "kasta",
     "pedoman": "کستا",
-    "golden": "کستا"
+    "rule": "8.6"
   },
   {
     "rumi": "rangka",
     "pedoman": "رڠک",
-    "golden": "راڠک"
+    "rule": "8.6"
   },
   {
     "rumi": "harga",
     "pedoman": "هرڬ",
-    "golden": "هرݢ"
+    "rule": "8.6"
   },
   {
     "rumi": "tangga",
     "pedoman": "تڠڬ",
-    "golden": "تڠݢ"
+    "rule": "8.6"
   },
   {
     "rumi": "bangga",
     "pedoman": "بڠڬ",
-    "golden": "بڠݢ"
+    "rule": "8.6"
   },
   {
     "rumi": "bingka",
     "pedoman": "بيڠک",
-    "golden": "بيڠک"
+    "rule": "8.7"
   },
   {
     "rumi": "serba",
     "pedoman": "سربا",
-    "golden": "سربا"
+    "rule": "8.8"
   },
   {
     "rumi": "seksa",
     "pedoman": "سيکسا",
-    "golden": "سيقسا"
+    "rule": "8.9"
   },
   {
     "rumi": "renda",
     "pedoman": "ريندا",
-    "golden": "ريندا"
+    "rule": "8.9"
   },
   {
     "rumi": "belah",
     "pedoman": "بله",
-    "golden": "بله"
+    "rule": "8.10"
   },
   {
     "rumi": "harapan",
-    "pedoman": "هراڤن",
-    "golden": "هارڤن"
+    "pedoman": "هارڤن",
+    "rule": "13.10"
   },
   {
     "rumi": "bahagia",
     "pedoman": "بهڬيا",
-    "golden": "بهاݢيا"
+    "rule": "9.3"
   },
   {
     "rumi": "sekolah",
     "pedoman": "سکوله",
-    "golden": "سکوله"
+    "rule": "4.2"
   },
   {
     "rumi": "bintang",
     "pedoman": "بينتڠ",
-    "golden": "بينتڠ"
+    "rule": "8.14"
   },
   {
     "rumi": "kampung",
-    "pedoman": "کمڤوڠ",
-    "golden": "کامڤوڠ"
+    "pedoman": "کامڤوڠ",
+    "rule": "8.17"
   },
   {
     "rumi": "bola",
     "pedoman": "بولا",
-    "golden": "بولا"
+    "rule": "8.5"
   },
   {
     "rumi": "pais",
     "pedoman": "ڤاءيس",
-    "golden": "ڤاءيس"
+    "rule": "3.9"
   },
   {
     "rumi": "aib",
-    "pedoman": "اءيب",
-    "golden": "عاءيب"
+    "pedoman": "عاءيب",
+    "phase": "exceptions",
+    "rule": "3.9"
   },
   {
     "rumi": "boikot",
-    "pedoman": "بوايکوت",
-    "golden": "بويکوت"
+    "pedoman": "بويکوت",
+    "rule": "5.3"
   },
   {
     "rumi": "naik",
-    "pedoman": "ناءيک",
-    "golden": "ناءيق"
+    "pedoman": "ناءيق",
+    "rule": "6.3"
   },
   {
     "rumi": "pulau",
     "pedoman": "ڤولاو",
-    "golden": "ڤولاو"
+    "rule": "5.2"
   },
   {
     "rumi": "serai",
     "pedoman": "سراي",
-    "golden": "سراءي"
+    "rule": "5.1"
   },
   {
     "rumi": "kerbau",
     "pedoman": "کرباو",
-    "golden": "کرباو"
+    "rule": "5.2"
   },
   {
     "rumi": "ikan",
     "pedoman": "ايکن",
-    "golden": "ايکن"
+    "rule": "4.3"
   },
   {
     "rumi": "emas",
     "pedoman": "امس",
-    "golden": "امس"
+    "rule": "4.5"
   },
   {
     "rumi": "udang",
     "pedoman": "اودڠ",
-    "golden": "اودڠ"
+    "rule": "4.7"
   },
   {
     "rumi": "oleh",
     "pedoman": "اوليه",
-    "golden": "اوليه"
+    "rule": "4.6"
+  },
+  {
+    "rule": "3.9",
+    "rumi": "buih",
+    "pedoman": "بوءيه"
+  },
+  {
+    "rule": "4.2",
+    "rumi": "anak",
+    "pedoman": "انق"
+  },
+  {
+    "rule": "4.4",
+    "rumi": "élok",
+    "pedoman": "ايلوق"
+  },
+  {
+    "rule": "4.5",
+    "rumi": "emak",
+    "pedoman": "امق"
+  },
+  {
+    "rule": "4.6",
+    "rumi": "orang",
+    "pedoman": "اورڠ"
+  },
+  {
+    "rule": "4.7",
+    "rumi": "ular",
+    "pedoman": "اولر"
+  },
+  {
+    "rule": "5.1",
+    "rumi": "kailan",
+    "pedoman": "کايلن"
+  },
+  {
+    "rule": "5.2",
+    "rumi": "rayau",
+    "pedoman": "راياو"
+  },
+  {
+    "rule": "5.3",
+    "rumi": "tampoi",
+    "pedoman": "تمڤوي"
+  },
+  {
+    "rule": "6.2",
+    "rumi": "van",
+    "pedoman": "ۏن"
+  },
+  {
+    "rule": "6.3",
+    "rumi": "budak",
+    "pedoman": "بودق"
+  },
+  {
+    "rule": "7.2",
+    "rumi": "gah",
+    "pedoman": "ݢه"
+  },
+  {
+    "rule": "7.3",
+    "rumi": "sen",
+    "pedoman": "سين"
+  },
+  {
+    "rule": "7.3",
+    "rumi": "bom",
+    "pedoman": "بوم"
+  },
+  {
+    "rule": "8.11",
+    "rumi": "betik",
+    "pedoman": "بتيق"
+  },
+  {
+    "rule": "8.12",
+    "rumi": "harap",
+    "pedoman": "هارڤ"
+  },
+  {
+    "rule": "8.13",
+    "rumi": "balik",
+    "pedoman": "باليق"
+  },
+  {
+    "rule": "8.15",
+    "rumi": "tempat",
+    "pedoman": "تمڤت"
+  },
+  {
+    "rule": "8.16",
+    "rumi": "benteng",
+    "pedoman": "بينتيڠ"
+  },
+  {
+    "rule": "9.3",
+    "rumi": "fanatik",
+    "pedoman": "فاناتيک"
+  },
+  {
+    "rule": "12.2",
+    "rumi": "klinik",
+    "pedoman": "کلينيک"
+  },
+  {
+    "rule": "12.2",
+    "rumi": "skrip",
+    "pedoman": "سکريڤ"
+  },
+  {
+    "rule": "12.3",
+    "rumi": "agenda",
+    "pedoman": "اݢيندا"
+  },
+  {
+    "rule": "12.4",
+    "rumi": "politik",
+    "pedoman": "ڤوليتيک"
+  },
+  {
+    "rule": "13.3",
+    "rumi": "membaca",
+    "pedoman": "ممباچ"
+  },
+  {
+    "rule": "13.3",
+    "rumi": "menulis",
+    "pedoman": "منوليس"
+  },
+  {
+    "rule": "13.3",
+    "rumi": "mengarang",
+    "pedoman": "مڠارڠ"
+  },
+  {
+    "rule": "13.3",
+    "rumi": "menyapu",
+    "pedoman": "مڽاڤو"
+  },
+  {
+    "rule": "13.5",
+    "rumi": "diambil",
+    "pedoman": "دأمبيل"
+  },
+  {
+    "rule": "13.6",
+    "rumi": "seorang",
+    "pedoman": "سأورڠ"
+  },
+  {
+    "rule": "13.7",
+    "rumi": "keempat",
+    "pedoman": "کأمڤت"
+  },
+  {
+    "rule": "13.10",
+    "rumi": "bacaan",
+    "pedoman": "باچاءن"
+  },
+  {
+    "rule": "13.10",
+    "rumi": "batuan",
+    "pedoman": "باتوان"
+  },
+  {
+    "rule": "13.11",
+    "rumi": "sukai",
+    "pedoman": "سوکاءي"
+  },
+  {
+    "rule": "14.1",
+    "rumi": "di sana",
+    "pedoman": "دسان"
+  },
+  {
+    "rule": "14.1",
+    "rumi": "ke atas",
+    "pedoman": "کأتس"
+  },
+  {
+    "rule": "15.1",
+    "rumi": "rumahku",
+    "pedoman": "رومهکو"
+  },
+  {
+    "rule": "15.1",
+    "rumi": "rumahnya",
+    "pedoman": "رومهڽ"
+  },
+  {
+    "rule": "15.2",
+    "rumi": "kauberi",
+    "pedoman": "کاوبري"
+  },
+  {
+    "rule": "16.1",
+    "rumi": "sudilah",
+    "pedoman": "سوديله"
+  },
+  {
+    "rule": "17.1",
+    "rumi": "buku-buku",
+    "pedoman": "بوکو٢"
+  },
+  {
+    "rule": "17.2",
+    "rumi": "berlari-lari",
+    "pedoman": "برلاري-لاري"
+  },
+  {
+    "rule": "18.1",
+    "rumi": "kereta api",
+    "pedoman": "کريتا اڤي"
+  },
+  {
+    "rule": "19.3",
+    "rumi": "P.M.",
+    "pedoman": "ڤ.م."
+  },
+  {
+    "rule": "3.12",
+    "phase": "exceptions",
+    "rumi": "setiausaha",
+    "pedoman": "ستياءوسها"
+  },
+  {
+    "rule": "10",
+    "rumi": "apa",
+    "pedoman": "اڤ"
+  },
+  {
+    "rule": "11.1",
+    "phase": "exceptions",
+    "rumi": "quran",
+    "pedoman": "قرءان"
+  },
+  {
+    "rule": "11.4",
+    "phase": "exceptions",
+    "rumi": "fardu",
+    "pedoman": "فرض"
+  },
+  {
+    "rule": "11.4",
+    "phase": "exceptions",
+    "rumi": "haji",
+    "pedoman": "حاج"
+  },
+  {
+    "rule": "12.5",
+    "rumi": "video",
+    "pedoman": "ۏيديو"
+  },
+  {
+    "rule": "13.2",
+    "rumi": "berasa",
+    "pedoman": "براس"
+  },
+  {
+    "rule": "13.4",
+    "rumi": "memproses",
+    "pedoman": "ممڤروسيس"
+  },
+  {
+    "rule": "13.8",
+    "rumi": "telunjuk",
+    "pedoman": "تلونجوق"
+  },
+  {
+    "rule": "13.9",
+    "rumi": "budiman",
+    "pedoman": "بوديمن"
+  },
+  {
+    "rule": "13.12",
+    "rumi": "keadilan",
+    "pedoman": "کعاديلن",
+    "phase": "exceptions"
+  },
+  {
+    "rule": "16.2",
+    "rumi": "walaupun",
+    "pedoman": "والاوڤون"
+  },
+  {
+    "rule": "18.5",
+    "rumi": "kerjasama",
+    "pedoman": "کرجاسام"
+  },
+  {
+    "rule": "19.5",
+    "rumi": "tabika",
+    "pedoman": "تابيکا"
+  },
+  {
+    "rule": "3.7",
+    "rumi": "Ng",
+    "pedoman": "ءڠ"
+  },
+  {
+    "rule": "3.7",
+    "rumi": "Ong",
+    "pedoman": "ءوڠ"
+  },
+  {
+    "rule": "3.8",
+    "rumi": "Ch'ng",
+    "pedoman": "چئڠ"
+  },
+  {
+    "rule": "3.10",
+    "rumi": "aising",
+    "pedoman": "اءيسيڠ"
+  },
+  {
+    "rule": "3.13",
+    "rumi": "prausul",
+    "pedoman": "ڤراءوصول",
+    "phase": "exceptions"
+  },
+  {
+    "rule": "3.13",
+    "rumi": "subeditor",
+    "pedoman": "سوبئيديتور"
+  },
+  {
+    "rule": "5.3",
+    "rumi": "oidium",
+    "pedoman": "اوويديوم"
+  },
+  {
+    "rule": "9.3",
+    "rumi": "radio",
+    "pedoman": "راديو"
+  },
+  {
+    "rule": "19.4",
+    "rumi": "MCA",
+    "pedoman": "عيم.سي.اي."
+  },
+  {
+    "rule": "3.13",
+    "rumi": "ultraungu",
+    "pedoman": "اولتراءوڠو"
+  },
+  {
+    "rule": "6.4",
+    "phase": "exceptions",
+    "rumi": "surah",
+    "pedoman": "سورة"
+  },
+  {
+    "rule": "9.2",
+    "rumi": "niaga",
+    "pedoman": "نياݢ"
+  },
+  {
+    "rule": "9.2",
+    "rumi": "mamalia",
+    "pedoman": "ماماليا"
+  },
+  {
+    "rule": "11.2",
+    "rumi": "sabun",
+    "pedoman": "سابون"
+  },
+  {
+    "rule": "11.3",
+    "phase": "exceptions",
+    "rumi": "arif",
+    "pedoman": "عاريف"
+  },
+  {
+    "rule": "11.5",
+    "rumi": "fikir",
+    "pedoman": "فيکير"
+  },
+  {
+    "rule": "11.6",
+    "rumi": "musa",
+    "pedoman": "موسى"
+  },
+  {
+    "rule": "11.6",
+    "rumi": "fatwa",
+    "pedoman": "فتوى"
+  },
+  {
+    "rule": "11.6",
+    "rumi": "pendakwaan",
+    "pedoman": "ڤندعواءن"
+  },
+  {
+    "rule": "18.2",
+    "rumi": "ibu bapa",
+    "pedoman": "ايبو باڤ"
+  },
+  {
+    "rule": "18.3",
+    "rumi": "buah hati",
+    "pedoman": "بواه هاتي"
+  },
+  {
+    "rule": "19.1",
+    "rumi": "A",
+    "pedoman": "اي"
+  },
+  {
+    "rule": "18.3",
+    "rumi": "lepas tangan",
+    "pedoman": "لڤس تاڠن"
+  },
+  {
+    "rule": "18.4",
+    "rumi": "melipatgandakan",
+    "pedoman": "مليڤتݢنداکن"
+  },
+  {
+    "rule": "18.4",
+    "rumi": "penyatupaduan",
+    "pedoman": "ڤڽاتوڤادوان"
+  },
+  {
+    "rule": "18.4",
+    "rumi": "dititikberatkan",
+    "pedoman": "دتيتيقبرتکن"
+  },
+  {
+    "rule": "18.5",
+    "rumi": "sukarela",
+    "pedoman": "سوکارلا"
+  },
+  {
+    "rule": "18.5",
+    "rumi": "suruhanjaya",
+    "pedoman": "سوروهجاي"
+  },
+  {
+    "rule": "18.5",
+    "rumi": "tandatangan",
+    "pedoman": "تنداتاڠن"
+  },
+  {
+    "rule": "18.5",
+    "rumi": "tanggungjawab",
+    "pedoman": "تڠݢوڠجواب"
+  },
+  {
+    "rule": "18.5",
+    "rumi": "matahari",
+    "pedoman": "ماتاهاري"
+  },
+  {
+    "rule": "18.5",
+    "rumi": "jawatankuasa",
+    "pedoman": "جاوتنکواس"
+  },
+  {
+    "rule": "18.5",
+    "rumi": "kakitangan",
+    "pedoman": "کاکيتاڠن"
+  },
+  {
+    "rule": "18.5",
+    "rumi": "warganegara",
+    "pedoman": "ورݢانݢارا"
+  },
+  {
+    "rule": "18.5",
+    "rumi": "olahraga",
+    "pedoman": "اولهراݢ"
+  },
+  {
+    "rule": "19.3",
+    "rumi": "TUDM",
+    "pedoman": "ت.او.د.م."
+  },
+  {
+    "rule": "19.3",
+    "rumi": "GPMS",
+    "pedoman": "ݢ.ڤ.م.س."
+  },
+  {
+    "rule": "19.3",
+    "rumi": "PBB",
+    "pedoman": "ڤ.ب.ب."
+  },
+  {
+    "rule": "19.3",
+    "rumi": "K.S.U.",
+    "pedoman": "ک.س.او."
+  },
+  {
+    "rule": "19.3",
+    "rumi": "J.M.N.",
+    "pedoman": "ج.م.ن."
+  },
+  {
+    "rule": "19.4",
+    "rumi": "PLO",
+    "pedoman": "ڤي.ايل.او."
+  },
+  {
+    "rule": "19.5",
+    "rumi": "IKIM",
+    "pedoman": "ايکيم"
+  },
+  {
+    "rule": "19.5",
+    "rumi": "PAS",
+    "pedoman": "ڤاس"
+  },
+  {
+    "rule": "19.5",
+    "rumi": "UNESCO",
+    "pedoman": "يونيسکو"
+  },
+  {
+    "rule": "19.5",
+    "rumi": "UMNO",
+    "pedoman": "امنو"
+  },
+  {
+    "rule": "19.5",
+    "rumi": "SERU",
+    "pedoman": "سرو"
+  },
+  {
+    "rule": "19.5",
+    "rumi": "Petronas",
+    "pedoman": "ڤيترونس"
+  },
+  {
+    "rule": "3.1",
+    "rumi": "dara",
+    "pedoman": "دارا"
+  },
+  {
+    "rule": "3.2",
+    "rumi": "diam",
+    "pedoman": "ديام"
+  },
+  {
+    "rule": "3.3",
+    "rumi": "duda",
+    "pedoman": "دودا"
+  },
+  {
+    "rule": "3.4",
+    "rumi": "bersih",
+    "pedoman": "برسيه"
+  },
+  {
+    "rule": "3.5",
+    "rumi": "pimpin",
+    "pedoman": "ڤيمڤين"
+  },
+  {
+    "rule": "3.6",
+    "rumi": "kaku",
+    "pedoman": "کاکو"
+  },
+  {
+    "rule": "3.11",
+    "rumi": "wuduk",
+    "pedoman": "وضوء"
+  },
+  {
+    "rule": "3.11",
+    "rumi": "imlak",
+    "pedoman": "املاء"
+  },
+  {
+    "rule": "3.11",
+    "rumi": "ikhfak",
+    "pedoman": "اخفاء"
+  },
+  {
+    "rule": "3.11",
+    "rumi": "anbia",
+    "pedoman": "انبياء"
+  },
+  {
+    "rule": "3.11",
+    "rumi": "makmum",
+    "pedoman": "مأموم"
+  },
+  {
+    "rule": "4.1",
+    "rumi": "udara",
+    "pedoman": "اودارا"
+  },
+  {
+    "rule": "6.1",
+    "rumi": "ba",
+    "pedoman": "با"
+  },
+  {
+    "rule": "7.1",
+    "rumi": "li",
+    "pedoman": "لي"
+  },
+  {
+    "rule": "9.1",
+    "rumi": "suara",
+    "pedoman": "سوارا"
+  },
+  {
+    "rule": "12.1",
+    "rumi": "hotel",
+    "pedoman": "هوتيل"
   }
 ]
