@@ -10,18 +10,17 @@
  */
 const fs = require('fs');
 const path = require('path');
-const vm = require('vm');
 const { spawnSync } = require('child_process');
+const appEngine = require('./app_engine.js');
 
 const ROOT = path.join(__dirname, '..');
-const ENGINE_PATH = path.join(ROOT, 'jawi_converter.js');
 const CACHE_PATH = path.join(ROOT, 'tools', 'prpm_cache.json');
 const FREQUENCY_PATH = path.join(ROOT, 'tools', '10000.txt');
 const GOLDEN_PATH = path.join(ROOT, 'tests', 'pedoman_cases.json');
 const STEP = 50;
 const TARGET = 0.99;
 const BASE_EXC_COUNT = 0;
-const FORMAT_CONTROLS = /[\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF]/g;
+const FORMAT_CONTROLS = /[\u0080-\u009F\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF]/g;
 
 function normalize(value) {
   return String(value)
@@ -71,10 +70,8 @@ function renderIncrement(source, entries, baseCount) {
 }
 
 function loadEngine(source, increment) {
-  const baseSource = renderIncrement(source, increment, BASE_EXC_COUNT);
-  const context = { module: { exports: {} }, console };
-  vm.runInNewContext(baseSource, context, { timeout: 30000 });
-  return context.module.exports;
+  const candidateSource = renderIncrement(source, increment, BASE_EXC_COUNT);
+  return appEngine.loadEngine({ source: candidateSource });
 }
 
 function getReferenceRows(cache, engine) {
@@ -108,15 +105,44 @@ function score(rows) {
   };
 }
 
-function findRequiredGoldenExceptions(cache, engine) {
-  const cases = JSON.parse(fs.readFileSync(GOLDEN_PATH, 'utf8'));
-  return cases
-    .filter(({ rumi, golden }) => {
-      const reference = cache[rumi];
-      return typeof reference === 'string' && normalize(reference) === normalize(golden) &&
-        normalize(engine.latinToJawi(rumi)) !== normalize(golden);
-    })
-    .map(({ rumi }) => rumi);
+function canonicalPedoman(value) {
+  // U+06AC is the older ga glyph used by some transcriptions of the supplied
+  // Pedoman; the app emits PRPM's current U+0762 form.
+  return normalize(value).replace(/ڬ/g, 'ݢ');
+}
+
+function readPedomanCases() {
+  return JSON.parse(fs.readFileSync(GOLDEN_PATH, 'utf8'));
+}
+
+function assertRuleOnlyPedoman(engine) {
+  const cases = readPedomanCases().filter(testCase => testCase.phase !== 'exceptions');
+  const errors = cases.filter(({ rumi, pedoman }) =>
+    canonicalPedoman(engine.latinToJawi(rumi)) !== canonicalPedoman(pedoman)
+  );
+  if (errors.length) {
+    const details = errors.slice(0, 5).map(({ rule, rumi, pedoman }) =>
+      `${rule || '?'} ${rumi}: expected ${pedoman}, got ${engine.latinToJawi(rumi)}`
+    ).join('\n  ');
+    throw new Error(`Refusing to optimize exceptions: ${errors.length} rule-only Pedoman case(s) fail.\n  ${details}`);
+  }
+  return cases.length;
+}
+
+function getPedomanPolicy(cache, engine) {
+  const cases = readPedomanCases();
+  const protectedForms = new Map();
+  const requiredWords = [];
+  for (const { rumi, pedoman } of cases) {
+    const expected = canonicalPedoman(pedoman);
+    protectedForms.set(rumi.toLowerCase(), expected);
+    const reference = cache[rumi];
+    if (typeof reference === 'string' && canonicalPedoman(reference) === expected &&
+        canonicalPedoman(engine.latinToJawi(rumi)) !== expected) {
+      requiredWords.push(rumi);
+    }
+  }
+  return { protectedForms, requiredWords: [...new Set(requiredWords)] };
 }
 
 function readFrequencies() {
@@ -128,7 +154,7 @@ function readFrequencies() {
   return result;
 }
 
-function chooseBatch(rows, engine, frequencies, size, requiredWords = []) {
+function chooseBatch(rows, engine, frequencies, size, requiredWords = [], protectedForms = new Map()) {
   const reverseMap = new Map(Object.entries(engine.REVERSE_DICT));
   const byJawi = new Map();
   for (const row of rows) {
@@ -136,7 +162,11 @@ function chooseBatch(rows, engine, frequencies, size, requiredWords = []) {
     byJawi.get(row.jawi).push(row);
   }
 
-  const available = rows.filter(row => !engine.EXCEPTION_DICT[row.latin]);
+  const available = rows.filter(row => {
+    if (engine.EXCEPTION_DICT[row.latin]) return false;
+    const protectedForm = protectedForms.get(row.latin.toLowerCase());
+    return !protectedForm || canonicalPedoman(row.jawi) === protectedForm;
+  });
   const batch = [];
   function select(candidate) {
     const index = available.indexOf(candidate);
@@ -154,7 +184,7 @@ function chooseBatch(rows, engine, frequencies, size, requiredWords = []) {
   for (const word of requiredWords) {
     if (engine.EXCEPTION_DICT[word]) continue;
     const candidate = available.find(row => row.latin === word);
-    if (!candidate) throw new Error(`Required golden word is missing from PRPM candidates: ${word}`);
+    if (!candidate) throw new Error(`Required Pedoman word is missing from PRPM candidates: ${word}`);
     select(candidate);
   }
 
@@ -195,7 +225,7 @@ function printScore(label, result, count) {
 
 function main() {
   const { write } = parseArgs();
-  const originalSource = fs.readFileSync(ENGINE_PATH, 'utf8');
+  const originalSource = appEngine.readEngineSource();
   const cache = JSON.parse(fs.readFileSync(CACHE_PATH, 'utf8'));
   const frequencies = readFrequencies();
   let increment = {};
@@ -205,18 +235,20 @@ function main() {
     throw new Error(`Expected to restart from an empty EXC dictionary; found ${baseCount} entries.`);
   }
 
+  const ruleCaseCount = assertRuleOnlyPedoman(engine);
   let rows = getReferenceRows(cache, engine);
   let result = score(rows);
-  const requiredWords = findRequiredGoldenExceptions(cache, engine);
-  printScore('Baseline', result, 0);
+  const { protectedForms, requiredWords } = getPedomanPolicy(cache, engine);
+  console.log(`Rule-only Pedoman preflight: ${ruleCaseCount}/${ruleCaseCount} passed (EXC ignored).`);
+  printScore('Rule-only baseline', result, 0);
+  console.log(`Protecting ${protectedForms.size} Pedoman cases before PRPM exception optimization.`);
   if (requiredWords.length) {
-    console.log(`Preserving ${requiredWords.length} PRPM-backed regression golden(s) in the selected EXC set.`);
+    console.log(`Requiring ${requiredWords.length} PRPM-backed Pedoman spelling(s) in the selected EXC set.`);
   }
   if (result.average >= TARGET) {
     console.log('The base dictionary already meets the target; no increment is needed.');
     if (write) {
-      fs.writeFileSync(ENGINE_PATH, renderIncrement(originalSource, {}, baseCount));
-      syncHtml();
+      appEngine.writeEngineSource(renderIncrement(originalSource, {}, baseCount));
     }
     return;
   }
@@ -224,7 +256,7 @@ function main() {
   let batchNumber = 0;
   while (result.average < TARGET) {
     batchNumber++;
-    const batch = chooseBatch(rows, engine, frequencies, STEP, requiredWords);
+    const batch = chooseBatch(rows, engine, frequencies, STEP, requiredWords, protectedForms);
     if (Object.keys(batch).length !== STEP) {
       throw new Error(`Could not select a full ${STEP}-entry batch from the PRPM cache.`);
     }
@@ -237,8 +269,7 @@ function main() {
 
   console.log(`Selected ${Object.keys(increment).length} entries from scratch (${batchNumber} x ${STEP}).`);
   if (write) {
-    fs.writeFileSync(ENGINE_PATH, renderIncrement(originalSource, increment, baseCount));
-    syncHtml();
+    appEngine.writeEngineSource(renderIncrement(originalSource, increment, baseCount));
     const checks = spawnSync(process.execPath, ['tests/evaluate_prpm.js'], {
       cwd: ROOT,
       encoding: 'utf8'
@@ -246,20 +277,10 @@ function main() {
     process.stdout.write(checks.stdout || '');
     process.stderr.write(checks.stderr || '');
     if (checks.status !== 0) throw new Error('Post-write PRPM evaluation failed.');
-    console.log('Rebuilt EXC increment and synchronized JawiConverter.html.');
+    console.log('Rebuilt the EXC increment directly inside JawiConverter.html.');
   } else {
-    console.log('Dry run only. Use --write to replace the increment and sync the standalone HTML.');
+    console.log('Dry run only. Use --write to replace the inline increment in JawiConverter.html.');
   }
-}
-
-function syncHtml() {
-  const result = spawnSync('python3', ['tools/embed_engine.py'], {
-    cwd: ROOT,
-    encoding: 'utf8'
-  });
-  process.stdout.write(result.stdout || '');
-  process.stderr.write(result.stderr || '');
-  if (result.status !== 0) throw new Error('Failed to synchronize the inline browser engine.');
 }
 
 try {

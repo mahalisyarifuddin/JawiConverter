@@ -25,7 +25,7 @@ Antarmuka tersedia dalam **Bahasa Inggris** dan **Bahasa Melayu**. Konversi berl
 - **Konversi dua arah**: transliterasi Rumi ↔ Jawi.
 - **Satu file HTML**: Mesin konversi disematkan di `JawiConverter.html`; aplikasi dapat berjalan offline tanpa memuat skrip eksternal.
 - **Transliterasi berbasis aturan**: segmentasi suku kata, penanganan vokal, digraf konsonan, morfologi, serta aturan kaf/qaf akhir.
-- **Pengecualian terverifikasi**: 950 entri PRPM yang dipilih ulang dari EXC kosong dalam 19 langkah, masing-masing 50 entri.
+- **Pengecualian terverifikasi**: 800 entri PRPM yang dipilih setelah seluruh uji aturan Pedoman lulus, dalam 16 langkah masing-masing 50 entri.
 - **Konversi langsung** dengan contoh, salin/tempel, unggah `.txt`, dan pertukaran arah.
 - **Antarmuka Bahasa Inggris dan Bahasa Melayu**, dengan pilihan tema otomatis, terang, dan gelap.
 - **Tata letak responsif** untuk desktop dan perangkat seluler.
@@ -37,45 +37,37 @@ Jalankan pengujian dan benchmark cache PRPM dengan:
 node tests/run_tests.js
 ```
 
-Snapshot evaluasi tingkat kata saat ini berisi **4.056 bentuk PRPM yang tidak null**. Pengoptimalan dimulai dari **EXC kosong** dan menghitung rata-rata kecocokan persis Rumi → Jawi dan Jawi → Rumi pada setiap penambahan 50 entri:
+Snapshot evaluasi tingkat kata saat ini berisi **4.056 bentuk PRPM yang tidak null**. Pengujian terlebih dahulu menghapus seluruh entri EXC dan menjalankan 160 kasus aturan yang mencakup bagian 3–19 Pedoman. Pengoptimal baru dijalankan setelah semuanya lulus dan melindungi seluruh 169 kasus Pedoman pada setiap penambahan 50 entri PRPM:
 
 | Entri EXC | Akurasi rata-rata |
 | ---: | ---: |
-| 0 | 81,30% |
-| 50 | 82,74% |
-| 100 | 84,01% |
-| 150 | 85,33% |
-| 200 | 86,61% |
-| 250 | 87,87% |
-| 300 | 89,13% |
-| 350 | 90,36% |
-| 400 | 91,59% |
-| 450 | 92,85% |
-| 500 | 93,58% |
-| 550 | 94,26% |
-| 600 | 94,92% |
-| 650 | 95,55% |
-| 700 | 96,17% |
-| 750 | 96,79% |
-| 800 | 97,41% |
-| 850 | 98,02% |
-| 900 | 98,64% |
-| **950** | **99,27%** |
+| 0 | 83,91% |
+| 50 | 85,32% |
+| 100 | 86,65% |
+| 150 | 87,94% |
+| 200 | 89,19% |
+| 250 | 90,42% |
+| 300 | 91,68% |
+| 350 | 92,91% |
+| 400 | 94,14% |
+| 450 | 94,83% |
+| 500 | 95,51% |
+| 550 | 96,13% |
+| 600 | 96,76% |
+| 650 | 97,37% |
+| 700 | 97,99% |
+| 750 | 98,59% |
+| **800** | **99,21%** |
 
-Pada 950 entri, skor per arah adalah **98,84%** Rumi → Jawi dan **99,70%** Jawi → Rumi. Ini adalah kelipatan 50 pertama yang mencapai target rata-rata 99%. Rata-rata merupakan mean aritmetika kedua skor. Tingkat Jawi → Rumi berada pada batas atas snapshot: 12 pasangan kata korpus memiliki ejaan Jawi yang identik (misalnya *pasal*/*fasal* → فصل), sehingga maksimal satu kata dari tiap pasangan dapat dibalik dengan benar. Pengoptimal secara greedy memaksimalkan pertambahan kecocokan persis gabungan, menggunakan frekuensi kata PRPM untuk memecahkan nilai seri, dan mempertahankan kasus regresi golden yang memiliki rujukan PRPM. Karena entri dipilih menggunakan snapshot PRPM yang sama, angka ini adalah benchmark dalam-korpus, bukan jaminan akurasi pada data uji terpisah. Unicode dinormalisasi ke NFC dan kontrol pemformatan tak terlihat diabaikan; ejaan lainnya dibandingkan secara persis.
+Pada 800 entri, skor per arah adalah **98,79%** Rumi → Jawi dan **99,63%** Jawi → Rumi. Ini adalah kelipatan 50 pertama yang mencapai target rata-rata 99%. Pengoptimal memaksimalkan pertambahan kecocokan gabungan, menggunakan frekuensi PRPM untuk memecahkan nilai seri, dan menolak kandidat yang bertentangan dengan bentuk Pedoman yang dilindungi. Karena entri dipilih dari snapshot PRPM yang sama, angka ini adalah benchmark dalam-korpus, bukan jaminan akurasi pada data terpisah. Unicode dinormalisasi ke NFC dan kontrol pemformatan tak terlihat diabaikan; ejaan lainnya dibandingkan secara persis.
 
-Untuk membangun ulang EXC dari nol dengan langkah 50 entri, jalankan simulasi terlebih dahulu, lalu terapkan hasil yang dioptimalkan:
+`JawiConverter.html` adalah satu-satunya sumber mesin. Alat Node dan pengujian memakai `tools/app_engine.js` untuk menyalin mesin inline ke direktori sementara sistem operasi, memuatnya, lalu menghapus salinan tersebut. Tidak ada berkas JavaScript mesin duplikat yang dikirim.
+
+Untuk membangun ulang EXC dari nol dalam langkah 50 entri, jalankan simulasi lalu terapkan hasil langsung ke aplikasi:
 
 ```sh
 node tools/optimize_exceptions.js          # simulasi; menampilkan setiap langkah 50 entri
-node tools/optimize_exceptions.js --write  # menulis ulang batch dan menyinkronkan HTML mandiri
-```
-
-Untuk menyinkronkan mesin yang disematkan setelah mengedit `jawi_converter.js` secara manual:
-
-```sh
-python tools/embed_engine.py
-python tools/embed_engine.py --check
+node tools/optimize_exceptions.js --write  # menulis batch inline dalam JawiConverter.html
 ```
 
 ## Privasi & Data

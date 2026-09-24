@@ -25,7 +25,7 @@ The interface is available in **English** and **Bahasa Melayu**. The converter r
 - **Two-way conversion**: Rumi ↔ Jawi transliteration.
 - **Single HTML file**: The converter engine is embedded in `JawiConverter.html`; it works offline without loading external scripts.
 - **Rule-based transliteration**: Syllabification, vowel handling, consonant digraphs, morphology, and final kaf/qaf rules.
-- **Verified exceptions**: 950 PRPM-verified exception entries, rebuilt from an empty EXC dictionary in 19 increments of 50.
+- **Verified exceptions**: 800 PRPM-verified entries, rebuilt only after the rule-only Pedoman suite passes, in 16 increments of 50.
 - **Live conversion** with examples, copy/paste, `.txt` upload, and direction swapping.
 - **English and Bahasa Melayu interface**, with auto, light, and dark theme options.
 - **Responsive layout** for desktop and mobile screens.
@@ -37,45 +37,37 @@ Run the tests and the PRPM-cache benchmark with:
 node tests/run_tests.js
 ```
 
-The current word-level snapshot contains **4,056 non-null PRPM forms**. Starting with **zero EXC entries**, the optimizer evaluates the average of the Rumi → Jawi and Jawi → Rumi exact-match rates after each +50 increment:
+The current word-level snapshot contains **4,056 non-null PRPM forms**. Tests first remove every EXC entry and run 160 rule-only cases covering Pedoman sections 3–19. The optimizer runs only after those pass, and protects all 169 Pedoman cases while evaluating each +50 PRPM batch:
 
 | EXC entries | Average accuracy |
 | ---: | ---: |
-| 0 | 81.30% |
-| 50 | 82.74% |
-| 100 | 84.01% |
-| 150 | 85.33% |
-| 200 | 86.61% |
-| 250 | 87.87% |
-| 300 | 89.13% |
-| 350 | 90.36% |
-| 400 | 91.59% |
-| 450 | 92.85% |
-| 500 | 93.58% |
-| 550 | 94.26% |
-| 600 | 94.92% |
-| 650 | 95.55% |
-| 700 | 96.17% |
-| 750 | 96.79% |
-| 800 | 97.41% |
-| 850 | 98.02% |
-| 900 | 98.64% |
-| **950** | **99.27%** |
+| 0 | 83.91% |
+| 50 | 85.32% |
+| 100 | 86.65% |
+| 150 | 87.94% |
+| 200 | 89.19% |
+| 250 | 90.42% |
+| 300 | 91.68% |
+| 350 | 92.91% |
+| 400 | 94.14% |
+| 450 | 94.83% |
+| 500 | 95.51% |
+| 550 | 96.13% |
+| 600 | 96.76% |
+| 650 | 97.37% |
+| 700 | 97.99% |
+| 750 | 98.59% |
+| **800** | **99.21%** |
 
-At 950 entries, the individual scores are **98.84%** Rumi → Jawi and **99.70%** Jawi → Rumi. This is the first 50-entry boundary to reach the 99% average target. The average is the arithmetic mean of the two direction scores. The Jawi → Rumi rate sits at the snapshot ceiling: 12 pairs of corpus words share an identical Jawi spelling (for example *pasal*/*fasal* → فصل), so at most one word of each pair can reverse correctly. The optimizer greedily maximizes combined exact-match gains, uses PRPM word frequency to break ties, and retains PRPM-backed golden regression cases. Since entries are selected from this same PRPM snapshot, this is an in-corpus benchmark, not a held-out accuracy guarantee. Unicode is normalized to NFC and invisible formatting controls are ignored; spellings are otherwise compared exactly.
+At 800 entries, the individual scores are **98.79%** Rumi → Jawi and **99.63%** Jawi → Rumi. This is the first 50-entry boundary to reach the 99% average target. The optimizer greedily maximizes combined exact-match gains, uses PRPM frequency to break ties, and rejects candidates that conflict with a protected Pedoman form. Since entries are selected from this same PRPM snapshot, this is an in-corpus benchmark, not a held-out accuracy guarantee. Unicode is normalized to NFC and invisible formatting controls are ignored; spellings are otherwise compared exactly.
 
-To rebuild EXC from zero in increments of 50, first run a dry evaluation, then apply the optimized entries:
+`JawiConverter.html` is the sole engine source. Node tools and tests use `tools/app_engine.js` to extract its marked inline engine into a disposable operating-system temporary directory, load it, and remove the copy. No duplicate engine JavaScript is shipped.
+
+To rebuild EXC from zero in increments of 50, first run a dry evaluation, then apply the optimized entries directly to the app:
 
 ```sh
 node tools/optimize_exceptions.js          # dry run; prints each 50-entry step
-node tools/optimize_exceptions.js --write  # rewrite the batch and sync the standalone HTML
-```
-
-To manually sync the embedded engine after editing `jawi_converter.js`:
-
-```sh
-python tools/embed_engine.py
-python tools/embed_engine.py --check
+node tools/optimize_exceptions.js --write  # rewrites the inline batch in JawiConverter.html
 ```
 
 ## Privacy & Data
