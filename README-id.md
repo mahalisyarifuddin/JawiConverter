@@ -25,7 +25,7 @@ Antarmuka tersedia dalam **Bahasa Inggris** dan **Bahasa Melayu**. Konversi berl
 - **Konversi dua arah**: transliterasi Rumi ↔ Jawi.
 - **Satu file HTML**: Mesin konversi disematkan di `JawiConverter.html`; aplikasi dapat berjalan offline tanpa memuat skrip eksternal.
 - **Transliterasi berbasis aturan**: segmentasi suku kata, penanganan vokal, digraf konsonan, morfologi, serta aturan kaf/qaf akhir.
-- **Pengecualian terverifikasi**: 650 entri PRPM yang dipilih ulang dari EXC kosong dalam 13 langkah, masing-masing 50 entri.
+- **Pengecualian terverifikasi**: 950 entri PRPM yang dipilih ulang dari EXC kosong dalam 19 langkah, masing-masing 50 entri.
 - **Konversi langsung** dengan contoh, salin/tempel, unggah `.txt`, dan pertukaran arah.
 - **Antarmuka Bahasa Inggris dan Bahasa Melayu**, dengan pilihan tema otomatis, terang, dan gelap.
 - **Tata letak responsif** untuk desktop dan perangkat seluler.
@@ -54,9 +54,15 @@ Snapshot evaluasi tingkat kata saat ini berisi **4.056 bentuk PRPM yang tidak nu
 | 500 | 93,58% |
 | 550 | 94,26% |
 | 600 | 94,92% |
-| **650** | **95,55%** |
+| 650 | 95,55% |
+| 700 | 96,17% |
+| 750 | 96,79% |
+| 800 | 97,41% |
+| 850 | 98,02% |
+| 900 | 98,64% |
+| **950** | **99,27%** |
 
-Pada 650 entri, skor per arah adalah **91,62%** Rumi → Jawi dan **99,48%** Jawi → Rumi. Ini adalah kelipatan 50 pertama yang mencapai target rata-rata 95%. Rata-rata merupakan mean aritmetika kedua skor. Pengoptimal secara greedy memaksimalkan pertambahan kecocokan persis gabungan, menggunakan frekuensi kata PRPM untuk memecahkan nilai seri, dan mempertahankan kasus regresi golden yang memiliki rujukan PRPM. Karena entri dipilih menggunakan snapshot PRPM yang sama, angka ini adalah benchmark dalam-korpus, bukan jaminan akurasi pada data uji terpisah. Unicode dinormalisasi ke NFC dan kontrol pemformatan tak terlihat diabaikan; ejaan lainnya dibandingkan secara persis.
+Pada 950 entri, skor per arah adalah **98,84%** Rumi → Jawi dan **99,70%** Jawi → Rumi. Ini adalah kelipatan 50 pertama yang mencapai target rata-rata 99%. Rata-rata merupakan mean aritmetika kedua skor. Tingkat Jawi → Rumi berada pada batas atas snapshot: 12 pasangan kata korpus memiliki ejaan Jawi yang identik (misalnya *pasal*/*fasal* → فصل), sehingga maksimal satu kata dari tiap pasangan dapat dibalik dengan benar. Pengoptimal secara greedy memaksimalkan pertambahan kecocokan persis gabungan, menggunakan frekuensi kata PRPM untuk memecahkan nilai seri, dan mempertahankan kasus regresi golden yang memiliki rujukan PRPM. Karena entri dipilih menggunakan snapshot PRPM yang sama, angka ini adalah benchmark dalam-korpus, bukan jaminan akurasi pada data uji terpisah. Unicode dinormalisasi ke NFC dan kontrol pemformatan tak terlihat diabaikan; ejaan lainnya dibandingkan secara persis.
 
 Untuk membangun ulang EXC dari nol dengan langkah 50 entri, jalankan simulasi terlebih dahulu, lalu terapkan hasil yang dioptimalkan:
 

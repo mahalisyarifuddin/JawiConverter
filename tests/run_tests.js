@@ -4,7 +4,7 @@
  *
  * pedoman_cases.json keeps pinned engine outputs as regression guards and
  * reports Pedoman agreement separately as the file has known variant forms.
- * The PRPM benchmark (including the 95% bidirectional target) runs after it.
+ * The PRPM benchmark (including the 99% bidirectional target) runs after it.
  * Usage: node tests/run_tests.js
  */
 const path = require('path');
@@ -54,8 +54,8 @@ if (begin < 0 || scriptOpen < 0 || scriptClose < 0 || end < 0) {
     const browserContext = { window: {}, console };
     vm.runInNewContext(embedded, browserContext, { timeout: 30000 });
     const browserEngine = browserContext.window.JawiConverter;
-    if (!browserEngine || Object.keys(browserEngine.EXCEPTION_DICT || {}).length !== 650) {
-      console.error('The standalone browser engine did not expose the rebuilt 650-entry EXC dictionary.');
+    if (!browserEngine || Object.keys(browserEngine.EXCEPTION_DICT || {}).length !== 950) {
+      console.error('The standalone browser engine did not expose the rebuilt 950-entry EXC dictionary.');
       failures++;
     } else if (browserEngine.latinToJawi('tiba-tiba') !== 'تيبا٢' ||
                browserEngine.latinToJawi('se\u0301') !== browserEngine.latinToJawi('sé') ||
