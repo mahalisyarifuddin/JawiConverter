@@ -25,7 +25,7 @@ The interface is available in **English** and **Bahasa Melayu**. The converter r
 - **Two-way conversion**: Rumi ↔ Jawi transliteration.
 - **Single HTML file**: The converter engine is embedded in `JawiConverter.html`; it works offline without loading external scripts.
 - **Rule-based transliteration**: Syllabification, vowel handling, consonant digraphs, morphology, and final kaf/qaf rules.
-- **Verified exceptions**: 650 PRPM-verified exception entries, rebuilt from an empty EXC dictionary in 13 increments of 50.
+- **Verified exceptions**: 950 PRPM-verified exception entries, rebuilt from an empty EXC dictionary in 19 increments of 50.
 - **Live conversion** with examples, copy/paste, `.txt` upload, and direction swapping.
 - **English and Bahasa Melayu interface**, with auto, light, and dark theme options.
 - **Responsive layout** for desktop and mobile screens.
@@ -54,9 +54,15 @@ The current word-level snapshot contains **4,056 non-null PRPM forms**. Starting
 | 500 | 93.58% |
 | 550 | 94.26% |
 | 600 | 94.92% |
-| **650** | **95.55%** |
+| 650 | 95.55% |
+| 700 | 96.17% |
+| 750 | 96.79% |
+| 800 | 97.41% |
+| 850 | 98.02% |
+| 900 | 98.64% |
+| **950** | **99.27%** |
 
-At 650 entries, the individual scores are **91.62%** Rumi → Jawi and **99.48%** Jawi → Rumi. This is the first 50-entry boundary to reach the 95% average target. The average is the arithmetic mean of the two direction scores. The optimizer greedily maximizes combined exact-match gains, uses PRPM word frequency to break ties, and retains PRPM-backed golden regression cases. Since entries are selected from this same PRPM snapshot, this is an in-corpus benchmark, not a held-out accuracy guarantee. Unicode is normalized to NFC and invisible formatting controls are ignored; spellings are otherwise compared exactly.
+At 950 entries, the individual scores are **98.84%** Rumi → Jawi and **99.70%** Jawi → Rumi. This is the first 50-entry boundary to reach the 99% average target. The average is the arithmetic mean of the two direction scores. The Jawi → Rumi rate sits at the snapshot ceiling: 12 pairs of corpus words share an identical Jawi spelling (for example *pasal*/*fasal* → فصل), so at most one word of each pair can reverse correctly. The optimizer greedily maximizes combined exact-match gains, uses PRPM word frequency to break ties, and retains PRPM-backed golden regression cases. Since entries are selected from this same PRPM snapshot, this is an in-corpus benchmark, not a held-out accuracy guarantee. Unicode is normalized to NFC and invisible formatting controls are ignored; spellings are otherwise compared exactly.
 
 To rebuild EXC from zero in increments of 50, first run a dry evaluation, then apply the optimized entries:
 

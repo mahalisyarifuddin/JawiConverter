@@ -62,16 +62,16 @@ function evaluate() {
     console.error(`Expected 4,056 non-null PRPM forms; found ${total}.`);
     failures++;
   }
-  if (incrementEntries.length !== 650 || baseCount !== 0 || exceptionCount !== 650 || incrementEntries.length % 50 !== 0) {
-    console.error('Expected EXC to be rebuilt from zero in +50 steps, stopping at 650 entries.');
+  if (incrementEntries.length !== 950 || baseCount !== 0 || exceptionCount !== 950 || incrementEntries.length % 50 !== 0) {
+    console.error('Expected EXC to be rebuilt from zero in +50 steps, stopping at 950 entries.');
     failures++;
   }
   if (invalidIncrementEntries.length) {
     console.error(`EXC increment contains ${invalidIncrementEntries.length} entries not verified by the PRPM cache.`);
     failures++;
   }
-  if (average < 0.95) {
-    console.error('Average bidirectional accuracy is below the 95% target.');
+  if (average < 0.99) {
+    console.error('Average bidirectional accuracy is below the 99% target.');
     failures++;
   }
 

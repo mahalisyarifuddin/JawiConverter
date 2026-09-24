@@ -19,7 +19,7 @@ const CACHE_PATH = path.join(ROOT, 'tools', 'prpm_cache.json');
 const FREQUENCY_PATH = path.join(ROOT, 'tools', '10000.txt');
 const GOLDEN_PATH = path.join(ROOT, 'tests', 'pedoman_cases.json');
 const STEP = 50;
-const TARGET = 0.95;
+const TARGET = 0.99;
 const BASE_EXC_COUNT = 0;
 const FORMAT_CONTROLS = /[\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF]/g;
 
