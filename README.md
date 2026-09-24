@@ -76,7 +76,7 @@ python tools/embed_engine.py --check
 All conversion happens in your browser. Text is not uploaded or sent to a server. The PRPM word forms in `tools/prpm_cache.json` are used for development and evaluation; the app itself does not fetch PRPM or any other service.
 
 ## License
-This repository does not currently include a `LICENSE` file; reuse terms have not been specified.
+This project is licensed under the [MIT License](LICENSE).
 
 ## Contributions
 Issues, corrections, and pull requests are welcome. For spelling-rule changes, please include a regression case and run the PRPM evaluation so the effect on both directions is clear.

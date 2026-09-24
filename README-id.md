@@ -76,7 +76,7 @@ python tools/embed_engine.py --check
 Semua konversi berlangsung di browser. Teks tidak diunggah atau dikirim ke server. Bentuk PRPM di `tools/prpm_cache.json` digunakan untuk pengembangan dan evaluasi; aplikasi tidak mengambil data dari PRPM atau layanan lain saat digunakan.
 
 ## Lisensi
-Repositori ini belum menyertakan file `LICENSE`; ketentuan penggunaan ulang belum ditetapkan.
+Proyek ini berlisensi [MIT License](LICENSE).
 
 ## Kontribusi
 Issue, koreksi, dan pull request dipersilakan. Untuk perubahan aturan ejaan, sertakan kasus regresi dan jalankan evaluasi PRPM agar dampaknya pada kedua arah dapat diketahui.
