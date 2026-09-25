@@ -16,6 +16,7 @@ Contoh:
   python tools/build_dict_prpm.py --check-connection
   python tools/build_dict_prpm.py --wordlist tools/10000.txt \
       --out /tmp/jawi_dict.json --only-missing --limit 100 --delay 2.0
+  python tools/build_dict_prpm.py --ingest-markdown WORD FILE
 
 Kesantunan pelayan:
   - sela minimum keras 1.5 saat antara permulaan permintaan;
@@ -50,6 +51,14 @@ DEFAULT_RETRIES = 3
 CONTROL_WORD = "dada"
 CONTROL_JAWI = "دادا"
 ARABIC_RE = re.compile(r"[\u0600-\u06ff\u0750-\u077f]")
+MARKDOWN_JAWI_RE = re.compile(
+    r"\\\[.*?\\\]\s*\\?\|\s*"
+    r"([\u0600-\u06ff\u0750-\u077f](?:[\u0600-\u06ff\u0750-\u077f \-]*[\u0600-\u06ff\u0750-\u077f])?)"
+)
+NOT_FOUND_RE = re.compile(r"Carian kata tiada di dalam kamus", re.I)
+# Malay dictionary tokens only: letters, optional hyphenation, at least 2 chars.
+# tools/10000.txt also contains frequencies, punctuation, and single letters.
+WORD_RE = re.compile(r"^[a-z]+(?:-[a-z]+)*$")
 
 
 class FetchError(RuntimeError):
@@ -89,6 +98,19 @@ def new_session():
         }
     )
     return session
+
+
+def normalize_wordlist_entry(raw_word):
+    """Ambil token kata daripada baris senarai, termasuk format 'kata kekerapan'."""
+    raw_word = raw_word.strip().lower()
+    if not raw_word:
+        return ""
+    return raw_word.split()[0]
+
+
+def is_fetchable_word(word):
+    """Elakkan permintaan PRPM untuk tanda baca, nombor, atau huruf tunggal."""
+    return bool(word) and len(word) >= 2 and WORD_RE.fullmatch(word)
 
 
 def load_cache():
@@ -133,6 +155,50 @@ def parse_prpm_jawi(page):
         if jawi and ARABIC_RE.search(jawi):
             return jawi
     return None
+
+
+def parse_prpm_jawi_markdown(page):
+    """Ambil ejaan Jawi daripada rumusan markdown halaman PRPM."""
+    section = page
+    for marker in (
+        "### Juga ditemukan",
+        "**Tiada maklumat tesaurus",
+        "| Tesaurus |",
+    ):
+        index = page.find(marker)
+        if index != -1:
+            section = page[:index]
+            break
+    match = MARKDOWN_JAWI_RE.search(section)
+    if match:
+        jawi = match.group(1).strip()
+        if jawi and ARABIC_RE.search(jawi):
+            return jawi
+    if NOT_FOUND_RE.search(section):
+        return None
+    return None
+
+
+def parse_prpm_page(page):
+    """Cuba HTML dahulu, kemudian rumusan markdown."""
+    jawi = parse_prpm_jawi(page)
+    if jawi:
+        return jawi
+    return parse_prpm_jawi_markdown(page)
+
+
+def ingest_markdown_file(word, path, cache=None):
+    """Masukkan satu halaman PRPM ke cache tanpa permintaan rangkaian baharu."""
+    word = normalize_wordlist_entry(word)
+    if not is_fetchable_word(word):
+        raise ValueError(f"Token bukan kata kamus: {word!r}")
+    page = Path(path).read_text(encoding="utf-8")
+    jawi = parse_prpm_page(page)
+    cache = load_cache() if cache is None else cache
+    cache[word] = jawi
+    save_cache(cache)
+    print(f"[ingest] {word} -> {jawi}")
+    return jawi
 
 
 def fetch_jawi_prpm_old(
@@ -244,10 +310,12 @@ def build(
     seen = set()
     try:
         for raw_word in wordlist:
-            word = raw_word.strip().lower()
+            word = normalize_wordlist_entry(raw_word)
             if not word or word in seen:
                 continue
             seen.add(word)
+            if not is_fetchable_word(word):
+                continue
 
             if word in cache:
                 if only_missing:
@@ -352,6 +420,16 @@ def main():
     )
     parser.add_argument("--check-connection", action="store_true")
     parser.add_argument("--demo", action="store_true")
+    parser.add_argument(
+        "--ingest-markdown",
+        nargs=2,
+        metavar=("WORD", "FILE"),
+        help="masukkan satu halaman markdown PRPM ke cache tanpa permintaan baharu",
+    )
+    parser.add_argument(
+        "--ingest-dir",
+        help="masukkan setiap fail .md dalam direktori (nama fail = kata)",
+    )
     args = parser.parse_args()
 
     if args.retries < 1:
@@ -379,8 +457,23 @@ def main():
                 d=args.d,
                 only_missing=args.only_missing,
             )
+        elif args.ingest_markdown:
+            ingest_markdown_file(args.ingest_markdown[0], args.ingest_markdown[1])
+        elif args.ingest_dir:
+            directory = Path(args.ingest_dir)
+            if not directory.is_dir():
+                raise RuntimeError(f"Direktori ingest tidak wujud: {directory}")
+            cache = load_cache()
+            ingested = 0
+            for path in sorted(directory.glob("*.md")):
+                ingest_markdown_file(path.stem, path, cache=cache)
+                ingested += 1
+            print(f"Ingest {ingested} halaman; cache {len(cache)}")
         else:
-            parser.error("gunakan --check-connection, --demo, atau --wordlist")
+            parser.error(
+                "gunakan --check-connection, --demo, --wordlist, "
+                "--ingest-markdown, atau --ingest-dir"
+            )
     except (FetchError, RuntimeError, ValueError) as error:
         print(f"ERROR: {error}", file=sys.stderr)
         return 1

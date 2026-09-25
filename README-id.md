@@ -37,11 +37,11 @@ Jalankan pengujian dan benchmark cache PRPM dengan:
 node tests/run_tests.js
 ```
 
-Snapshot evaluasi tingkat kata saat ini berisi **4.056 bentuk PRPM yang tidak null**. Pengujian terlebih dahulu menghapus seluruh entri EXC dan menjalankan 160 kasus aturan yang mencakup bagian 3–19 Pedoman. Pengoptimal baru dijalankan setelah semuanya lulus dan melindungi seluruh 169 kasus Pedoman pada setiap penambahan 50 entri PRPM:
+Snapshot evaluasi tingkat kata saat ini berisi **4.067 bentuk PRPM yang tidak null**. Pengujian terlebih dahulu menghapus seluruh entri EXC dan menjalankan 160 kasus aturan yang mencakup bagian 3–19 Pedoman. Pengoptimal baru dijalankan setelah semuanya lulus dan melindungi seluruh 169 kasus Pedoman pada setiap penambahan 50 entri PRPM:
 
 | Entri EXC | Akurasi rata-rata |
 | ---: | ---: |
-| 0 | 83,91% |
+| 0 | 83,83% |
 | 50 | 85,32% |
 | 100 | 86,65% |
 | 150 | 87,94% |
@@ -57,9 +57,9 @@ Snapshot evaluasi tingkat kata saat ini berisi **4.056 bentuk PRPM yang tidak nu
 | 650 | 97,37% |
 | 700 | 97,99% |
 | 750 | 98,59% |
-| **800** | **99,21%** |
+| **800** | **99,09%** |
 
-Pada 800 entri, skor per arah adalah **98,79%** Rumi → Jawi dan **99,63%** Jawi → Rumi. Ini adalah kelipatan 50 pertama yang mencapai target rata-rata 99%. Pengoptimal memaksimalkan pertambahan kecocokan gabungan, menggunakan frekuensi PRPM untuk memecahkan nilai seri, dan menolak kandidat yang bertentangan dengan bentuk Pedoman yang dilindungi. Karena entri dipilih dari snapshot PRPM yang sama, angka ini adalah benchmark dalam-korpus, bukan jaminan akurasi pada data terpisah. Unicode dinormalisasi ke NFC dan kontrol pemformatan tak terlihat diabaikan; ejaan lainnya dibandingkan secara persis.
+Pada 800 entri, skor per arah adalah **98,70%** Rumi → Jawi dan **99,48%** Jawi → Rumi. Ini adalah kelipatan 50 pertama yang mencapai target rata-rata 99%. Pengoptimal memaksimalkan pertambahan kecocokan gabungan, menggunakan frekuensi PRPM untuk memecahkan nilai seri, dan menolak kandidat yang bertentangan dengan bentuk Pedoman yang dilindungi. Karena entri dipilih dari snapshot PRPM yang sama, angka ini adalah benchmark dalam-korpus, bukan jaminan akurasi pada data terpisah. Unicode dinormalisasi ke NFC dan kontrol pemformatan tak terlihat diabaikan; ejaan lainnya dibandingkan secara persis.
 
 `JawiConverter.html` adalah satu-satunya sumber mesin. Alat Node dan pengujian memakai `tools/app_engine.js` untuk menyalin mesin inline ke direktori sementara sistem operasi, memuatnya, lalu menghapus salinan tersebut. Tidak ada berkas JavaScript mesin duplikat yang dikirim.
 
