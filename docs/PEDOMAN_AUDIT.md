@@ -65,6 +65,10 @@ plain Rumi characters. Existing fixed PEDOMAN spelling maps and the large
   -i has its own rule and must not rely on an overbroad syllable fallback.
 - 4.5: explicit pepet pronunciation overrides shape guesses. Examples such as
   metode and lipase now end in ye; mekanisme distinguishes its two e syllables.
+- 4.4–4.5: é and ě are explicit pronunciation input for taling and pepet. Both
+  outrank the shape and lexical hints, and both are transparent to lexical
+  lookups, so marking a vowel can never bypass a verified spelling, root, or
+  affix boundary.
 - 9.3 / 12.1: identify the tested European-loan alif classes without inserting
   complete Jawi answers into EXC.
 - 11.4: restore an unwritten final i/u before endings (haji → hajilah,

@@ -127,6 +127,51 @@ assert.strictEqual(
   'saya main dengan baik.'
 );
 
+// Explicit pronunciation markers: é forces taling, ě forces pepet (schwa).
+// A marker outranks the engine's lexical and shape guesses, but stays
+// invisible to the lexicon — a marked word still resolves to the same
+// dictionary entry, PEDOMAN class, root, and affix boundary as its plain form.
+const PEPET = '\u011b'; // ě
+const plainE = value => value.replace(/[éě]/g, 'e');
+for (const engine of [ruleOnly, optimized]) {
+  // Forced pepet overrides a taling hint or shape guess...
+  assert.strictEqual(engine.wordToJawi('setem'), 'سيتيم');
+  assert.strictEqual(engine.wordToJawi(`s${PEPET}tem`), 'ستيم');
+  assert.strictEqual(engine.wordToJawi('kereta'), 'کريتا');
+  assert.strictEqual(engine.wordToJawi(`ker${PEPET}ta`), 'کرتا');
+  assert.strictEqual(engine.wordToJawi('sate'), 'ساتي');
+  assert.strictEqual(engine.wordToJawi(`sat${PEPET}`), 'ساتى'); // final open pepet → ى
+  // ...and é still forces taling, including against a pepet hint.
+  assert.strictEqual(engine.wordToJawi(`${PEPET}mas`), engine.wordToJawi('emas'));
+  assert.strictEqual(engine.wordToJawi('sé'), 'سي');
+  assert.strictEqual(engine.wordToJawi(`s${PEPET}`), engine.wordToJawi('se'));
+  // Markers never leak into Jawi output and never change the lexicon.
+  for (const word of [`s${PEPET}bab`, `ker${PEPET}ta`, `sat${PEPET}`]) {
+    assert(!engine.wordToJawi(word).includes(PEPET) && !engine.wordToJawi(word).includes('é'));
+  }
+  assert.strictEqual(engine.wordToJawi(`s${PEPET}bab`), engine.wordToJawi('sebab'));
+  assert.strictEqual(engine.wordToJawi(`m${PEPET}ngambil`), engine.wordToJawi('mengambil'));
+  // Decomposed input (e + combining caron) composes to the same marker.
+  assert.strictEqual(engine.wordToJawi('se\u030cbab'), engine.wordToJawi(`s${PEPET}bab`));
+}
+// A marker must never destroy a verified (EXC) spelling: passing over every
+// dictionary key with e -> ě has to be a no-op.
+for (const key of Object.keys(optimized.EXCEPTION_DICT)) {
+  if (!key.includes('e')) continue;
+  assert.strictEqual(
+    optimized.wordToJawi(key.split('e').join(PEPET)),
+    optimized.wordToJawi(key),
+    `marker changed the verified spelling of ${key}`
+  );
+}
+// Sentence-level behaviour: markers survive tokenization, joined di/ke, and
+// reduplication, and the plain forms are unchanged.
+assert.strictEqual(optimized.latinToJawi(`di ${PEPET}mas`), 'دأمس');
+assert.strictEqual(optimized.latinToJawi(`b${PEPET}sar-b${PEPET}sar`), 'بسر٢');
+assert.strictEqual(optimized.latinToJawi('setem'), 'سيتيم');
+assert.strictEqual(optimized.latinToJawi('saté'), optimized.latinToJawi('sate'));
+assert(!/[\u00e9\u011b]/.test(optimized.latinToJawi(`s${PEPET}tem, s${PEPET}tem`)));
+
 // Negative tests: no optimizer may bypass the rule-first preflight or accept
 // a derived-word regression just because every selected EXC key looks valid.
 assert.strictEqual(assertRuleOnlyPedoman(ruleOnly), ruleTotal);
@@ -138,7 +183,7 @@ assertProtectedPedoman(optimized);
 assert.throws(() => assertProtectedPedoman({ ...optimized,
   latinToJawi: word => word === 'menghajikan' ? 'broken' : optimized.latinToJawi(word)
 }), /protected Pedoman/);
-console.log('Subrule coverage, productive suffix rules, hamzah aliases, and optimizer safety checks passed');
+console.log('Subrule coverage, productive suffix rules, hamzah aliases, pronunciation markers, and optimizer safety checks passed');
 
 // Prove that Node tooling consumes a disposable copy of the app's inline code.
 const temporary = copyEngineToTemp();
@@ -172,6 +217,7 @@ if (fs.existsSync(path.join(root, 'jawi_converter.js'))) {
     failures++;
   } else if (browserEngine.latinToJawi('buku-buku') !== 'بوکو٢' ||
              browserEngine.latinToJawi('se\u0301') !== browserEngine.latinToJawi('sé') ||
+             browserEngine.latinToJawi('s\u011btem') !== 'ستيم' ||
              browserEngine.jawiToLatin('سيکو') !== 'siku' ||
              browserEngine.jawiToLatin('با\u0674يق') !== 'baik' ||
              browserEngine.jawiToLatin('غاءيره') !== 'ghairah') {

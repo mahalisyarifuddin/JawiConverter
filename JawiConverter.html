@@ -2428,8 +2428,13 @@ const VALID_CLUSTERS = new Set([
 ]); // only true Malay onset clusters (stop/ fricative + l/r), not st/sp/sk/sm/sn which split as C|C
 
 
-function isVowel(ch) { return /[aiueoéèê]/.test(ch); }
-function normalizeE(word) { return word.normalize('NFC').replace(/[èê]/g, 'é').replace(/ě/g, 'e'); }
+// é (also typed è/ê) forces taling, ě forces pepet (schwa). Both markers stay
+// in the string here so syllabify() can see which vowel the writer marked;
+// plainE() removes them for lexical lookups, so a marked word still matches
+// the same dictionary entries and PEDOMAN classes as its unmarked form.
+function isVowel(ch) { return /[aiueoéèêě]/.test(ch); }
+function normalizeE(word) { return word.normalize('NFC').replace(/[èê]/g, 'é'); }
+function plainE(word) { return normalizeE(word).replace(/[éě]/g, 'e'); }
 
 // Helper: is char consonant (single)
 function isCons(ch) { return /^[bcdfghjklmnpqrstvwxyz]$/.test(ch); }
@@ -2534,14 +2539,25 @@ function syllabify(word) {
 }
 
 // ---------- 4. Pepet vs Taling ----------
+// The writer may mark a vowel directly: é forces taling, ě forces pepet
+// (schwa). An explicit marker outranks every lexical and shape hint below.
+// For unmarked e, pronunciation metadata and conservative shape rules decide.
+function isPepet(globalWord, syl) {
+  return (syl.vowel === 'e' || syl.vowel === 'ě') && !isTaling(globalWord, syl);
+}
 function isTaling(globalWord, syl) {
   if (syl.vowel === 'é') return true;
+  if (syl.vowel === 'ě') return false;
   if (syl.vowel !== 'e') return false;
-  if (PEDOMAN_PEPET_SYLLABLES.has(`${globalWord}:${syl.text}`) ||
-      (syl.isLast && PEDOMAN_PEPET_SYLLABLES.has(`${globalWord}:${syl.text}:final`))) return false;
-  if (PEDOMAN_TALING_WORDS.has(globalWord) ||
-      PEDOMAN_TALING_WORDS.has(`${globalWord}:${syl.text}`) || TALING_DICT.has(globalWord)) return true;
-  if (TALING_DICT.has(syl.text)) return true;
+  // Lookup keys are unmarked, so forcing a marker on one syllable neither
+  // hides nor invents a dictionary/PEDOMAN pronunciation for the word.
+  const plainWord = plainE(globalWord);
+  const plainText = plainE(syl.text);
+  if (PEDOMAN_PEPET_SYLLABLES.has(`${plainWord}:${plainText}`) ||
+      (syl.isLast && PEDOMAN_PEPET_SYLLABLES.has(`${plainWord}:${plainText}:final`))) return false;
+  if (PEDOMAN_TALING_WORDS.has(plainWord) ||
+      PEDOMAN_TALING_WORDS.has(`${plainWord}:${plainText}`) || TALING_DICT.has(plainWord)) return true;
+  if (TALING_DICT.has(plainText)) return true;
   // Rumi does not distinguish taling from pepet.  These conservative shape
   // rules cover productive European loans while lexical pronunciation above
   // resolves the native minimal pairs required by Pedoman 4.4/8.9/8.12.
@@ -2556,14 +2572,15 @@ function isTaling(globalWord, syl) {
 // ---------- 5. Aturan Alif untuk 'a' (merangkum §8.2—9.3 pedoman) ----------
 function needAlifForA(syllables, idx, globalWord) {
   const syl = syllables[idx];
+  const plainWord = plainE(globalWord);
   if (syl.vowel !== 'a') return null;
   const isOpen = syl.isOpen;
   const n = syllables.length;
   // Pedoman 7.2: closed monosyllables omit alif, except words beginning
   // with wau and the specifically stated word dan.
   if (!isOpen) {
-    if (n === 1) return syl.onset.startsWith('w') || globalWord === 'dan';
-    if (idx === n - 2 && PEDOMAN_CLOSED_A_ALIF_WORDS.has(globalWord)) return true;
+    if (n === 1) return syl.onset.startsWith('w') || plainWord === 'dan';
+    if (idx === n - 2 && PEDOMAN_CLOSED_A_ALIF_WORDS.has(plainWord)) return true;
     return false;
   }
   if (n === 1) return true;
@@ -2577,8 +2594,8 @@ function needAlifForA(syllables, idx, globalWord) {
     const openClosed = s0.isOpen && !s1.isOpen;
     const bothClosed = !s0.isOpen && !s1.isOpen;
     if (bothOpen) {
-      if (s0.vowel === 'e' && !isTaling(globalWord, s0)) return true;
-      if (PEDOMAN_FINAL_KA_ALIF_WORDS.has(globalWord)) return true;
+      if (isPepet(globalWord, s0)) return true;
+      if (PEDOMAN_FINAL_KA_ALIF_WORDS.has(plainWord)) return true;
       if (lastIsKafGa) return idx === 0;
       // Rules 8.2 and 8.5: the Dal-Ra-Lam-Wau-Nga test is specific to
       // a+a. With any other written penultimate vowel, final /a/ takes alif.
@@ -2587,13 +2604,13 @@ function needAlifForA(syllables, idx, globalWord) {
       return idx === 0;
     }
     if (closedOpen) {
-      if (s0.vowel === 'e' && !isTaling(globalWord, s0)) return true;
+      if (isPepet(globalWord, s0)) return true;
       if (lastIsKafGa) return false;
       return idx === 1;
     }
     if (openClosed) {
       if (idx === 1) return false;
-      if (s0.vowel === 'e' && !isTaling(globalWord, s0)) return false;
+      if (isPepet(globalWord, s0)) return false;
       return true;
     }
     if (bothClosed) return false;
@@ -2601,18 +2618,18 @@ function needAlifForA(syllables, idx, globalWord) {
   if (n >= 3) {
     // Pedoman 9.3 omits first-syllable open /a/ in native words.  Its listed
     // acronym/compound/European-loan classes retain alif.
-    if (idx === 0) return PEDOMAN_FIRST_A_ALIF_WORDS.has(globalWord);
-    if (idx < n-2) return PEDOMAN_FIRST_A_ALIF_WORDS.has(globalWord);
+    if (idx === 0) return PEDOMAN_FIRST_A_ALIF_WORDS.has(plainWord);
+    if (idx < n-2) return PEDOMAN_FIRST_A_ALIF_WORDS.has(plainWord);
     const penult = syllables[n-2];
     const last = syllables[n-1];
     const bothOpenLast = penult.isOpen && last.isOpen;
     const closedOpenLast = !penult.isOpen && last.isOpen;
     const openClosedLast = penult.isOpen && !last.isOpen;
     const bothClosedLast = !penult.isOpen && !last.isOpen;
-    const praPepetLast = penult.vowel === 'e' && !isTaling(globalWord, penult);
+    const praPepetLast = isPepet(globalWord, penult);
     if (bothOpenLast) {
       if (praPepetLast) return true;
-      if (PEDOMAN_FINAL_KA_ALIF_WORDS.has(globalWord)) return true;
+      if (PEDOMAN_FINAL_KA_ALIF_WORDS.has(plainWord)) return true;
       if (lastIsKafGa) return idx === n-2;
       if (penult.vowel !== 'a') return true;
       if (lastIsDalRa) return true;
@@ -2691,8 +2708,9 @@ function syllableToJawi(syl, idx, allSyls, globalWord) {
   } else if (vowel === "é") {
     if (!hasOnset && idx === 0) vowelJ = "اي";
     else vowelJ = "ي";
-  } else if (vowel === "e") {
-    let taling = isTaling(globalWord, syl);
+  } else if (vowel === "e" || vowel === "ě") {
+    // ě is the explicit pepet (schwa) marker: it never becomes taling.
+    let taling = vowel === "ě" ? false : isTaling(globalWord, syl);
     if (taling) {
       if (!hasOnset && idx === 0) vowelJ = "اي";
       else vowelJ = "ي";
@@ -2737,7 +2755,7 @@ function syllableToJawi(syl, idx, allSyls, globalWord) {
     // cluster coda seperti "ng" already handled via consonantToJawiCons
     // Need to handle single k vs q
     if (coda === "k" && isLastSyll) {
-      const lowQaf = globalWord.toLowerCase();
+      const lowQaf = plainE(globalWord.toLowerCase());
       // Do not infer kaf from a loose -ek/-ik + j/v regex: it misclassified
       // native words such as mengejek. Keep the lexically verified set explicit.
       out += KAF_FINAL_WORDS.has(lowQaf) ? "ک" : "ق";
@@ -2782,13 +2800,16 @@ const FIXED_SUFFIX_JAWI = {
 
 function baseWordToJawi(word) {
   const lower = normalizeE(word.toLowerCase());
-  if (PEDOMAN_ARABIC_HAMZAH[lower]) return PEDOMAN_ARABIC_HAMZAH[lower];
-  if (PEDOMAN_WORD_ACRONYMS[lower]) return PEDOMAN_WORD_ACRONYMS[lower];
-  if (PEDOMAN_SOLID_COMPOUNDS[lower]) return PEDOMAN_SOLID_COMPOUNDS[lower];
-  if (PEDOMAN_COMPOUND_ROOTS[lower]) return PEDOMAN_COMPOUND_ROOTS[lower];
-  if (PEDOMAN_ALIF_MAQSURAH[lower]) return PEDOMAN_ALIF_MAQSURAH[lower];
-  if (EXCEPTION_DICT[lower]) return EXCEPTION_DICT[lower];
-  if (EXCEPTION_DICT[word]) return EXCEPTION_DICT[word];
+  // Dictionary hits and fixed PEDOMAN classes are keyed on unmarked Rumi:
+  // writing ě/é selects pronunciation, it does not create a new word.
+  const plain = plainE(lower);
+  if (PEDOMAN_ARABIC_HAMZAH[plain]) return PEDOMAN_ARABIC_HAMZAH[plain];
+  if (PEDOMAN_WORD_ACRONYMS[plain]) return PEDOMAN_WORD_ACRONYMS[plain];
+  if (PEDOMAN_SOLID_COMPOUNDS[plain]) return PEDOMAN_SOLID_COMPOUNDS[plain];
+  if (PEDOMAN_COMPOUND_ROOTS[plain]) return PEDOMAN_COMPOUND_ROOTS[plain];
+  if (PEDOMAN_ALIF_MAQSURAH[plain]) return PEDOMAN_ALIF_MAQSURAH[plain];
+  if (EXCEPTION_DICT[plain]) return EXCEPTION_DICT[plain];
+  if (EXCEPTION_DICT[plainE(word)]) return EXCEPTION_DICT[plainE(word)];
   const syllables = syllabify(lower);
   let jawi = "";
   for (let i = 0; i < syllables.length; i++) {
@@ -2814,10 +2835,13 @@ function rootExists(surface, prefix = "") { return rootKind(surface, prefix) !==
 
 function adjustBaseForPrefix(baseJawi, baseLatin, prefix) {
   let output = baseJawi;
+  // Only the unmarked stem decides carrier-letter behaviour; ě and é are
+  // spelling markers, not part of the vowel these prefix rules test for.
+  const plainBase = plainE(baseLatin);
   // After meN-/peN-, initial i/e/o/u drops only its carrier alif while ya/wau
   // remains (menulis -> منوليس). Exposed or root-initial /a/ keeps alif
   // (menarik, mengajar); lexicalized suppressions are optimized later.
-  if (NASAL_PREFIXES.has(prefix) && /^[ieéou]/u.test(baseLatin) && /^ا/u.test(output)) {
+  if (NASAL_PREFIXES.has(prefix) && /^[ieéou]/u.test(plainBase) && /^ا/u.test(output)) {
     output = output.slice(1);
   }
   if (["di", "ke", "se"].includes(prefix) && /^ا/u.test(output)) {
@@ -2825,10 +2849,10 @@ function adjustBaseForPrefix(baseJawi, baseLatin, prefix) {
   }
   // Pedoman 3.13: after a borrowed prefix, initial alif for i/e/o/u is
   // replaced by hamzah; initial /a/ keeps alif.
-  if (BORROWED_PREFIXES.has(prefix) && /^[ieéou]/u.test(baseLatin) && /^ا/u.test(output)) {
+  if (BORROWED_PREFIXES.has(prefix) && /^[ieéou]/u.test(plainBase) && /^ا/u.test(output)) {
     const prefixJawi = PREFIX_RULES[prefix];
     const joinsForward = !/[ادذرزوؤء]$/u.test(prefixJawi);
-    const vowelCarrier = /^[ieé]/u.test(baseLatin) ? "ي" : "و";
+    const vowelCarrier = /^[ieé]/u.test(plainBase) ? "ي" : "و";
     let remainder = output.slice(1);
     if (!remainder.startsWith(vowelCarrier)) remainder = vowelCarrier + remainder;
     output = (joinsForward ? "ئ" : "ء") + remainder;
@@ -2875,20 +2899,27 @@ function appendSuffix(baseLatin, baseJawi, suffix) {
 }
 
 function wordToJawiMorpheme(word) {
-  const lower = normalizeE(word.toLowerCase());
+  // Affix boundaries and lexical roots are matched on the unmarked string;
+  // the marked stem is kept only for the spelling step so a forced pepet/taling
+  // survives prefix and suffix handling.
+  const marked = normalizeE(word.toLowerCase());
+  const lower = plainE(marked);
+  const alignedMarkers = marked.length === lower.length;
   let best = null;
   let bestScore = -1;
   const prefixes = Object.keys(PREFIX_RULES).sort((a, b) => b.length - a.length);
 
-  function consider(prefix, base, suffix = "") {
+  function consider(prefix, base, suffix = "", start = 0) {
     // Avoid treating ordinary lexical endings (makan, rakan, bahan, serai)
     // as productive suffixes. Three-letter stems remain valid with an overt
     // prefix, where the morphological boundary is independently signalled.
     if (suffix && !prefix && base.length < 4 && !["ku", "mu", "nya", "lah", "kah", "tah", "pun"].includes(suffix)) return;
     if (!rootExists(base, prefix)) return;
-    let baseJawi = baseWordToJawi(base);
+    const markedBase = alignedMarkers ? marked.slice(start, start + base.length) : base;
+    const stem = plainE(markedBase) === base ? markedBase : base;
+    let baseJawi = baseWordToJawi(stem);
     baseJawi = adjustBaseForPrefix(baseJawi, base, prefix);
-    if (suffix) baseJawi = appendSuffix(base, baseJawi, suffix);
+    if (suffix) baseJawi = appendSuffix(stem, baseJawi, suffix);
     const candidate = (prefix ? PREFIX_RULES[prefix] : "") + baseJawi;
     // A longer overt prefix is stronger evidence than a coincidental longer
     // stem beginning inside that prefix (mengarang is meng+arang, not men+garang).
@@ -2906,31 +2937,32 @@ function wordToJawiMorpheme(word) {
   for (const prefix of prefixes) {
     if (!lower.startsWith(prefix)) continue;
     const remainder = lower.slice(prefix.length);
-    if (rootExists(remainder, prefix)) consider(prefix, remainder);
+    if (rootExists(remainder, prefix)) consider(prefix, remainder, "", prefix.length);
     for (const suffix of SUFFIXES_MORPH) {
       if (!remainder.endsWith(suffix)) continue;
       const base = remainder.slice(0, -suffix.length);
-      consider(prefix, base, suffix);
+      consider(prefix, base, suffix, prefix.length);
     }
   }
   for (const suffix of SUFFIXES_MORPH) {
     if (!lower.endsWith(suffix)) continue;
     const base = lower.slice(0, -suffix.length);
-    consider("", base, suffix);
+    consider("", base, suffix, 0);
   }
   return best;
 }
 function wordToJawi(word) {
   if (!word) return "";
-  let low=word.toLowerCase();
-  if(EXCEPTION_DICT[low]) return EXCEPTION_DICT[low];
-  if(EXCEPTION_DICT[word]) return EXCEPTION_DICT[word];
+  const low = word.toLowerCase();
+  const plain = plainE(low);
+  if(EXCEPTION_DICT[plain]) return EXCEPTION_DICT[plain];
+  if(EXCEPTION_DICT[plainE(word)]) return EXCEPTION_DICT[plainE(word)];
   // Lexical classes explicitly enumerated by the Pedoman must reach their
   // spelling rule before a coincidental ending is interpreted as an affix.
-  if (PEDOMAN_CLOSED_A_ALIF_WORDS.has(low) || PEDOMAN_FIRST_A_ALIF_WORDS.has(low) ||
-      PEDOMAN_FINAL_KA_ALIF_WORDS.has(low) || PEDOMAN_ALIF_MAQSURAH[low] ||
-      PEDOMAN_ARABIC_HAMZAH[low] || PEDOMAN_SOLID_COMPOUNDS[low] ||
-      PEDOMAN_WORD_ACRONYMS[low]) {
+  if (PEDOMAN_CLOSED_A_ALIF_WORDS.has(plain) || PEDOMAN_FIRST_A_ALIF_WORDS.has(plain) ||
+      PEDOMAN_FINAL_KA_ALIF_WORDS.has(plain) || PEDOMAN_ALIF_MAQSURAH[plain] ||
+      PEDOMAN_ARABIC_HAMZAH[plain] || PEDOMAN_SOLID_COMPOUNDS[plain] ||
+      PEDOMAN_WORD_ACRONYMS[plain]) {
     return baseWordToJawi(word);
   }
   let morp=wordToJawiMorpheme(word);
@@ -10397,7 +10429,7 @@ if (typeof window !== 'undefined') {
 					'Pilih arah penukaran: Rumi → Jawi atau Jawi → Rumi (atau tekan butang Tukar).',
 					'Taip atau tampal teks di panel Sumber — penukaran berlaku langsung (atau matikan dan tekan Tukar).',
 					'Salin hasil dari panel Terjemahan, atau muat naik fail .txt.',
-					'Huruf khas: taip é untuk memaksa taling (sate vs sé → ساتي). E tanpa aksen = pepet. Huruf tambahan: ڬ ga, ڠ nga, ڽ nya, ڤ pa, چ ca, ۏ va.'
+					'Huruf khas: taip é untuk memaksa taling dan ě untuk memaksa pepet/schwa (contoh: setem → سيتيم, sětem → ستيم). E tanpa tanda mengikut aturan mesin. Huruf tambahan: ڬ ga, ڠ nga, ڽ nya, ڤ pa, چ ca, ۏ va.'
 				],
 				shortcutList: [
 					['Ctrl ⌘ + Enter', 'Tukar sekarang'],
@@ -10454,7 +10486,7 @@ if (typeof window !== 'undefined') {
 					'Choose a direction: Rumi → Jawi or Jawi → Rumi (or press the Swap button).',
 					'Type or paste text in the Source panel — conversion is live (or turn it off and press Convert).',
 					'Copy the result from the Translation panel, or upload a .txt file.',
-					'Special letters: type é to force taling (sate vs sé → ساتي). Plain e = pepet. Extra letters: ڬ ga, ڠ nga, ڽ nya, ڤ pa, چ ca, ۏ va.'
+					'Special letters: type é to force taling and ě to force pepet/schwa (setem → سيتيم, sětem → ستيم). Plain e follows the engine rules. Extra letters: ڬ ga, ڠ nga, ڽ nya, ڤ pa, چ ca, ۏ va.'
 				],
 				shortcutList: [
 					['Ctrl ⌘ + Enter', 'Convert now'],
@@ -10665,7 +10697,9 @@ if (typeof window !== 'undefined') {
 				if (syllInfo) syllInfo.textContent = '';
 				if (this.mode === 'lj' && jc && input.trim() && syllInfo) {
 					try {
-						const first = input.trim().split(/\s+/)[0].replace(/[^\wÀ-ÿ'-]/g, '');
+						// Keep every Unicode letter so the é/ě pronunciation markers
+						// (and other accented input) reach the syllable preview intact.
+						const first = input.trim().split(/\s+/)[0].replace(/[^\p{L}\p{M}\p{N}'-]/gu, '');
 						if (first) {
 							const syl = jc.syllabify(first);
 							syllInfo.textContent = first + ' → ' +
