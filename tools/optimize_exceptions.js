@@ -116,6 +116,9 @@ function readPedomanCases() {
 }
 
 function assertRuleOnlyPedoman(engine) {
+  if (Object.keys(engine.EXCEPTION_DICT).length !== 0) {
+    throw new Error('Rule-only preflight requires an empty EXC dictionary.');
+  }
   const cases = readPedomanCases().filter(testCase => testCase.phase !== 'exceptions');
   const errors = cases.filter(({ rumi, pedoman }) =>
     canonicalPedoman(engine.latinToJawi(rumi)) !== canonicalPedoman(pedoman)
@@ -129,11 +132,30 @@ function assertRuleOnlyPedoman(engine) {
   return cases.length;
 }
 
+function assertProtectedPedoman(engine) {
+  // Checking candidate keys alone misses indirect changes: root exceptions can
+  // change derived words, compounds, and phrases that have different keys.
+  const errors = readPedomanCases().filter(({ rumi, pedoman }) =>
+    canonicalPedoman(engine.latinToJawi(rumi)) !== canonicalPedoman(pedoman)
+  );
+  if (errors.length) {
+    throw new Error(`Refusing EXC result: ${errors.length} protected Pedoman output(s) changed.\n` +
+      errors.map(({ rule, rumi, pedoman }) =>
+        `  ${rule} ${rumi}: expected ${pedoman}, got ${engine.latinToJawi(rumi)}`).join('\n'));
+  }
+}
+
 function getPedomanPolicy(cache, engine) {
   const cases = readPedomanCases();
   const protectedForms = new Map();
   const requiredWords = [];
-  for (const { rumi, pedoman } of cases) {
+  for (const { rumi, pedoman, requires = [] } of cases) {
+    for (const root of requires) {
+      if (typeof cache[root] !== 'string' || !cache[root].trim()) {
+        throw new Error(`Missing PRPM reference for required Pedoman root: ${root}`);
+      }
+      requiredWords.push(root);
+    }
     const expected = canonicalPedoman(pedoman);
     protectedForms.set(rumi.toLowerCase(), expected);
     const reference = cache[rumi];
@@ -246,6 +268,7 @@ function main() {
     console.log(`Requiring ${requiredWords.length} PRPM-backed Pedoman spelling(s) in the selected EXC set.`);
   }
   if (result.average >= TARGET) {
+    assertProtectedPedoman(engine);
     console.log('The base dictionary already meets the target; no increment is needed.');
     if (write) {
       appEngine.writeEngineSource(renderIncrement(originalSource, {}, baseCount));
@@ -262,6 +285,7 @@ function main() {
     }
     increment = { ...increment, ...batch };
     engine = loadEngine(originalSource, increment);
+    assertProtectedPedoman(engine);
     rows = getReferenceRows(cache, engine);
     result = score(rows);
     printScore(`After +${STEP} (round ${batchNumber})`, result, Object.keys(increment).length);
@@ -270,20 +294,25 @@ function main() {
   console.log(`Selected ${Object.keys(increment).length} entries from scratch (${batchNumber} x ${STEP}).`);
   if (write) {
     appEngine.writeEngineSource(renderIncrement(originalSource, increment, baseCount));
-    const checks = spawnSync(process.execPath, ['tests/evaluate_prpm.js'], {
+    const checks = spawnSync(process.execPath, ['tests/run_tests.js'], {
       cwd: ROOT,
       encoding: 'utf8'
     });
     process.stdout.write(checks.stdout || '');
     process.stderr.write(checks.stderr || '');
-    if (checks.status !== 0) throw new Error('Post-write PRPM evaluation failed.');
+    if (checks.status !== 0) {
+      appEngine.writeEngineSource(originalSource);
+      throw new Error('Post-write tests failed; restored the previous engine.');
+    }
     console.log('Rebuilt the EXC increment directly inside JawiConverter.html.');
   } else {
     console.log('Dry run only. Use --write to replace the inline increment in JawiConverter.html.');
   }
 }
 
-try {
+module.exports = { assertRuleOnlyPedoman, assertProtectedPedoman };
+
+if (require.main === module) try {
   main();
 } catch (error) {
   console.error(error.stack || error.message || error);

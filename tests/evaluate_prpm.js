@@ -80,8 +80,8 @@ function evaluate() {
     console.error(`EXC contains ${invalidIncrementEntries.length} entries not verified by the PRPM cache.`);
     failures++;
   }
-  if (baseline.forwardAccuracy < 0.77) {
-    console.error('Rule-only Rumi-to-Jawi accuracy regressed below 77%.');
+  if (baseline.latinToJawi < 3236 || baseline.jawiToLatin < 3648) {
+    console.error('Rule-only accuracy regressed below the audited baseline (3236 forward / 3648 reverse).');
     failures++;
   }
   if (optimized.average < 0.99) {

@@ -37,29 +37,33 @@ Jalankan pengujian dan benchmark cache PRPM dengan:
 node tests/run_tests.js
 ```
 
-Snapshot evaluasi tingkat kata saat ini berisi **4.067 bentuk PRPM yang tidak null**. Pengujian terlebih dahulu menghapus seluruh entri EXC dan menjalankan 160 kasus aturan yang mencakup bagian 3–19 Pedoman. Pengoptimal baru dijalankan setelah semuanya lulus dan melindungi seluruh 169 kasus Pedoman pada setiap penambahan 50 entri PRPM:
+Snapshot evaluasi tingkat kata saat ini berisi **4.067 bentuk PRPM yang tidak null**. Pengujian terlebih dahulu menghapus seluruh entri EXC dan menjalankan 223 kasus aturan yang mencakup bagian 3–19 Pedoman. Pengoptimal baru dijalankan setelah semuanya lulus dan melindungi seluruh 236 kasus Pedoman pada setiap penambahan 50 entri PRPM:
 
 | Entri EXC | Akurasi rata-rata |
 | ---: | ---: |
-| 0 | 83,83% |
-| 50 | 85,32% |
-| 100 | 86,65% |
-| 150 | 87,94% |
-| 200 | 89,19% |
-| 250 | 90,42% |
-| 300 | 91,68% |
-| 350 | 92,91% |
-| 400 | 94,14% |
-| 450 | 94,83% |
-| 500 | 95,51% |
-| 550 | 96,13% |
-| 600 | 96,76% |
-| 650 | 97,37% |
-| 700 | 97,99% |
-| 750 | 98,59% |
-| **800** | **99,09%** |
+| 0 | 84,63% |
+| 50 | 86,01% |
+| 100 | 87,34% |
+| 150 | 88,66% |
+| 200 | 89,89% |
+| 250 | 91,15% |
+| 300 | 92,38% |
+| 350 | 93,59% |
+| 400 | 94,55% |
+| 450 | 95,24% |
+| 500 | 95,88% |
+| 550 | 96,51% |
+| 600 | 97,11% |
+| 650 | 97,74% |
+| 700 | 98,34% |
+| 750 | 98,97% |
+| **800** | **99,55%** |
 
-Pada 800 entri, skor per arah adalah **98,70%** Rumi → Jawi dan **99,48%** Jawi → Rumi. Ini adalah kelipatan 50 pertama yang mencapai target rata-rata 99%. Pengoptimal memaksimalkan pertambahan kecocokan gabungan, menggunakan frekuensi PRPM untuk memecahkan nilai seri, dan menolak kandidat yang bertentangan dengan bentuk Pedoman yang dilindungi. Karena entri dipilih dari snapshot PRPM yang sama, angka ini adalah benchmark dalam-korpus, bukan jaminan akurasi pada data terpisah. Unicode dinormalisasi ke NFC dan kontrol pemformatan tak terlihat diabaikan; ejaan lainnya dibandingkan secara persis.
+Pada 800 entri, skor per arah adalah **99,46%** Rumi → Jawi dan **99,63%** Jawi → Rumi. Ini adalah kelipatan 50 pertama yang mencapai target rata-rata 99%. Pengoptimal memaksimalkan pertambahan kecocokan gabungan, menggunakan frekuensi PRPM untuk memecahkan nilai seri, dan menolak kandidat yang bertentangan dengan bentuk Pedoman yang dilindungi. Karena entri dipilih dari snapshot PRPM yang sama, angka ini adalah benchmark dalam-korpus, bukan jaminan akurasi pada data terpisah. Unicode dinormalisasi ke NFC dan kontrol pemformatan tak terlihat diabaikan; ejaan lainnya dibandingkan secara persis.
+
+“Aturan saja” berarti batch EXC PRPM dinonaktifkan, bukan konversi tanpa kamus: metadata pelafalan/akar, kelas leksikal tetap Pedoman, dan tabel pencarian balik tetap digunakan. Contoh regresi tidak membuktikan ketepatan setiap kata atau konteks. Lihat [audit Pedoman](docs/PEDOMAN_AUDIT.md) untuk cakupan dan batasannya.
+
+Pengoptimal memeriksa ulang **semua keluaran yang dilindungi setelah setiap batch**, termasuk kata turunan yang dipengaruhi pengecualian akar. Setelah penulisan, seluruh pengujian dijalankan; mesin sebelumnya dipulihkan jika validasi gagal.
 
 `JawiConverter.html` adalah satu-satunya sumber mesin. Alat Node dan pengujian memakai `tools/app_engine.js` untuk menyalin mesin inline ke direktori sementara sistem operasi, memuatnya, lalu menghapus salinan tersebut. Tidak ada berkas JavaScript mesin duplikat yang dikirim.
 

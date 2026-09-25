@@ -3,6 +3,8 @@
  * Pedoman rule coverage, standalone-browser checks, and PRPM evaluation.
  * Usage: node tests/run_tests.js
  */
+const assert = require('assert');
+const { assertRuleOnlyPedoman, assertProtectedPedoman } = require('../tools/optimize_exceptions.js');
 const path = require('path');
 const fs = require('fs');
 const vm = require('vm');
@@ -58,6 +60,46 @@ for (const section of ['3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13'
     failures++;
   }
 }
+
+// Numbered operational subrules must not silently disappear from the suite.
+// 8.1 and 13.1 introduce the patterns exercised by 8.2 and 13.3 respectively.
+const coveredRules = new Set(cases.map(c => c.rule));
+const subrules = { 3:13, 4:7, 5:3, 6:4, 7:3, 8:17, 9:3,
+  11:6, 12:5, 13:12, 14:1, 15:2, 16:2, 17:2, 18:5, 19:5 };
+for (const [section, count] of Object.entries(subrules)) {
+  for (let i = 1; i <= count; i++) {
+    const rule = `${section}.${i}`;
+    // The unnumbered note between 19.1 and 19.3 recommends full job titles;
+    // it is editorial advice, not an automatic abbreviation-expansion rule.
+    if (['8.1', '13.1', '19.2'].includes(rule)) continue;
+    assert(coveredRules.has(rule), `Missing operational Pedoman subrule ${rule}`);
+  }
+}
+
+// Rule 11.4 is independently testable without EXC: supply an Arabic root
+// spelling, then check the productive rule rather than memorized derivatives.
+assert.deepStrictEqual(Object.keys(ruleOnly.EXCEPTION_DICT), []);
+for (const [latin, jawi, suffix, expected] of [
+  ['fardu', 'فرض', 'kan', 'فرضوکن'],
+  ['haji', 'حاج', 'lah', 'حاجيله'],
+  ['haji', 'حاج', 'nya', 'حاجيڽ'],
+  ['buku', 'بوکو', 'nya', 'بوکوڽ'],
+  ['fatwa', 'فتوى', 'lah', 'فتواله'],
+  ['lipase', 'ليڤاسى', 'nya', 'ليڤاسىڽ']
+]) assert.strictEqual(ruleOnly.appendSuffix(latin, jawi, suffix), expected);
+
+// Negative tests: no optimizer may bypass the rule-first preflight or accept
+// a derived-word regression just because every selected EXC key looks valid.
+assert.strictEqual(assertRuleOnlyPedoman(ruleOnly), ruleTotal);
+assert.throws(() => assertRuleOnlyPedoman(optimized), /empty EXC/);
+assert.throws(() => assertRuleOnlyPedoman({ ...ruleOnly,
+  latinToJawi: word => word === 'buku' ? 'broken' : ruleOnly.latinToJawi(word)
+}), /Refusing to optimize/);
+assertProtectedPedoman(optimized);
+assert.throws(() => assertProtectedPedoman({ ...optimized,
+  latinToJawi: word => word === 'menghajikan' ? 'broken' : optimized.latinToJawi(word)
+}), /protected Pedoman/);
+console.log('Subrule coverage, productive suffix rules, and optimizer safety checks passed');
 
 // Prove that Node tooling consumes a disposable copy of the app's inline code.
 const temporary = copyEngineToTemp();

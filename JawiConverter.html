@@ -1556,7 +1556,12 @@ const KAF_FINAL_WORDS = new Set([
 // syllable/vowel rules still produce the output.  Plain Rumi "e" and the
 // closed-a homographs are not mechanically distinguishable without this
 // lexical information; callers can always write é to mark taling explicitly.
+// Explicit pronunciation overrides take precedence over shape guesses (4.5).
+const PEDOMAN_PEPET_SYLLABLES = new Set([
+  "benda:ben", "metode:de", "lipase:se", "nasionalisme:me", "mekanisme:me:final"
+]);
 const PEDOMAN_TALING_WORDS = new Set([
+  "metode:me", "mekanisme:me",
   "agenda", "becak", "benteng", "benzin", "boleh", "cendol", "cerek", "debit", "denggi", "disket", "edar", "editor", "ejek",
   "ekor", "elok", "engsel", "ferum", "gelen", "helo", "helah", "hektar",
   "hotel", "jaket", "kendo", "keju", "kelewang", "kereta:re", "leceh", "leka", "lewat",
@@ -1601,7 +1606,7 @@ const PEDOMAN_FINAL_KA_ALIF_WORDS = new Set([
 const PEDOMAN_FIRST_A_ALIF_WORDS = new Set([
   // Rule 9.3: acronyms, old compounds, and European loans retain first alif.
   "agenda", "batalion", "dasawarsa", "fanatik", "gasolin", "halaju", "januari",
-  "kacapuri", "kapitalis", "malapetaka", "mamalia", "manifestasi", "patologi", "radio", "tabika",
+  "nasional", "nasionalisme", "mekanisme", "kacapuri", "kapitalis", "malapetaka", "mamalia", "manifestasi", "patologi", "radio", "tabika",
   "tadika", "taridra", "tatasusila", "wasangka"
 ]);
 
@@ -1615,11 +1620,12 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "fardu": "فرض",
   "haji": "حاج",
   "keadilan": "کعاديلن",
+  "usul": "اصول",
   "surah": "سورة",
   "arif": "عاريف",
+  "bertanggungjawab": "برتڠݢوڠجواب",
   "persahabatan": "ڤرصحابتن",
   "ikhlas": "اخلاص",
-  "pergerakan": "ڤرݢرقن",
   "keyakinan": "کيقينن",
   "perasan": "ڤرسن",
   "huruf": "حروف",
@@ -1634,10 +1640,8 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "salju": "ثلجو",
   "nujum": "نجوم",
   "peperiksaan": "ڤڤريقساءن",
-  "menghabiskan": "مڠهابيسکن",
   "makna": "معنا",
   "bukti": "بوقتي",
-  "menyertai": "مڽرتاءي",
   "mengelak": "مڠيلق",
   "kitab": "کتاب",
   "nikmat": "نعمت",
@@ -1651,11 +1655,8 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "membuktikan": "ممبوقتيکن",
   "tandas": "تاندس",
   "menghasilkan": "مڠحاصيلکن",
-  "melaporkan": "ملاڤورکن",
-  "bertanyakan": "برتاڽاکن",
   "mahajana": "مهاکاريا",
   "jemaah": "جماعه",
-  "pembangunan": "ڤمباڠونن",
   "jikalau": "جکالاو",
   "nyanyian": "ڽاڽين",
   "wajib": "واجب",
@@ -1694,7 +1695,6 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "gelaran": "ݢلرن",
   "khuatir": "خواطير",
   "sedemikian": "سدمکين",
-  "perkarangan": "ڤرکارڠن",
   "terharu": "ترهار",
   "persaraan": "ڤرساراءن",
   "menelefon": "منيليفون",
@@ -1702,7 +1702,6 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "mengelakkan": "مڠيلقکن",
   "kamal": "کمال",
   "zuhur": "ظهر",
-  "membayangkan": "ممبايڠکن",
   "haram": "حرام",
   "ok": "اءوق",
   "nikah": "نکاح",
@@ -1710,12 +1709,9 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "ilahi": "الهي",
   "taat": "طاعة",
   "generasi": "ݢينراسي",
-  "pengajian": "ڤڠاجين",
   "teruja": "تراوجا",
   "bermaksud": "برمقصود",
-  "berpandangan": "برڤندڠن",
   "hasan": "حسن",
-  "pengenalan": "ڤڠنلن",
   "selera": "سليرا",
   "mengajukan": "مڠاجوکن",
   "murad": "مراد",
@@ -1726,21 +1722,18 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "berpuasa": "برڤواسا",
   "menghadiri": "مڠحاضيري",
   "makam": "مقام",
-  "penerangan": "ڤنرڠن",
-  "sekalian": "سکالين",
   "saksi": "سقسي",
   "majapahit": "مجاڤاهيت",
-  "pembayaran": "ڤمبايرن",
   "menghapuskan": "مڠهاڤوسکن",
   "paksa": "ڤقسا",
   "pemandangan": "ڤمندڠن",
   "hakikat": "حقيقت",
   "hadis": "حديث",
   "berkat": "برکة",
+  "mengendalikan": "مڠنداليکن",
   "meyakinkan": "ميقينکن",
   "rahmat": "رحمة",
   "syurga": "شرݢ",
-  "berkenalan": "برکنلن",
   "rancak": "رانچق",
   "padahal": "ڤدحال",
   "pemeriksaan": "ڤمريقساءن",
@@ -1753,7 +1746,6 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "mengendahkan": "مڠيندهکن",
   "sasaran": "ساسرن",
   "iman": "ايمان",
-  "usul": "اصول",
   "hamparan": "همڤرن",
   "isyak": "عشاء",
   "kalbu": "قلبو",
@@ -1761,7 +1753,6 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "malaikat": "ملائکة",
   "bersabar": "برصبر",
   "memaparkan": "مماڤرکن",
-  "mencadangkan": "منچادڠکن",
   "saluran": "سالورن",
   "allahyarham": "الله يرحم",
   "hikayat": "حکايت",
@@ -1803,7 +1794,6 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "tewas": "تيواس",
   "bertandang": "برتاندڠ",
   "rangkaian": "رڠکاين",
-  "mempelajari": "ممڤلاجري",
   "terkorban": "ترقربان",
   "penjaga": "ڤنجاݢا",
   "menyoal": "مڽوءال",
@@ -1824,10 +1814,8 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "riwayat": "روايت",
   "fitrah": "فطره",
   "elektronik": "ايليکترونيک",
-  "memasukkan": "مماسوقکن",
   "sangkar": "ساڠکر",
   "politeknik": "ڤوليتيکنيک",
-  "persekitaran": "ڤرسکيترن",
   "caruman": "چارومن",
   "teja": "تيجا",
   "umrah": "عمرة",
@@ -1849,7 +1837,6 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "pancaran": "ڤانچرن",
   "kaitan": "کاءيتن",
   "bakhil": "بخيل",
-  "penjagaan": "ڤنجاݢاءن",
   "cawangan": "چاوڠن",
   "berniat": "برنية",
   "berinai": "برايناي",
@@ -1869,13 +1856,11 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "fajar": "فجر",
   "menayangkan": "منايڠکن",
   "tanggapan": "تڠݢڤن",
-  "pekarangan": "ڤکارڠن",
   "falsafah": "فلسفه",
   "pendaftaran": "ڤندفترن",
   "paya": "ڤايا",
   "berambut": "برامبوت",
   "putaran": "ڤوترن",
-  "peningkatan": "ڤنيڠکتن",
   "kamera": "کاميرا",
   "membongkar": "ممبوڠکار",
   "bertaburan": "برتابورن",
@@ -1901,7 +1886,6 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "kewujudan": "کوجودن",
   "fuad": "فوءاد",
   "gumpalan": "ݢومڤلن",
-  "pengajaran": "ڤڠاجرن",
   "bendera": "بنديرا",
   "tahniah": "تهنيئه",
   "kemerdekaan": "کمرديکاءن",
@@ -1933,12 +1917,10 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "mengejek": "مڠيجيق",
   "memberanikan": "ممڤرانيکن",
   "fana": "فناء",
-  "peringatan": "ڤرايڠتن",
   "khusyuk": "خشوع",
   "membatalkan": "ممبطلکن",
   "hikmat": "حکمت",
   "ulama": "علماء",
-  "persuratan": "ڤرسورتن",
   "keseorangan": "کسأورڠن",
   "erangan": "ارڠن",
   "jahanam": "جهنم",
@@ -1967,10 +1949,8 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "berjajaran": "برجاجرن",
   "kehebatan": "کهيبتن",
   "melafazkan": "ملفظكن",
-  "berpelukan": "برڤلوقن",
   "berlegar": "برليݢر",
   "memberontak": "ممڤرونتق",
-  "pertalian": "ڤرتالين",
   "beraneka": "برانيک",
   "lam": "لام",
   "berkhatan": "برختن",
@@ -1979,7 +1959,6 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "tercampak": "ترچامڤق",
   "seiring": "سأيريڠ",
   "mengamalkan": "مڠعملکن",
-  "membaiki": "ممباءيقي",
   "sukma": "سوقما",
   "senaman": "سنمن",
   "fakir": "فقير",
@@ -2011,21 +1990,22 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "seolah-olah": "سا ءوله-اوله",
   "berhadapan": "برهادڤن",
   "sampul": "سامڤول",
+  "melihat": "مليهت",
   "sangat": "ساڠت",
+  "semakin": "سماکين",
   "islam": "إسلام",
   "tengok": "تيڠوق",
   "masjid": "مسجد",
   "hadapan": "هادڤن",
   "supaya": "سوڤايا",
+  "masing-masing": "ماسيڠ-ماسيڠ",
   "subuh": "صبح",
   "jawab": "جواب",
   "mengangguk": "مڠڠݢوق",
   "senja": "سنجا",
   "menjawab": "منجواب",
   "biasa": "بياسا",
-  "melakukan": "ملاکوکن",
   "faham": "فهم",
-  "mendapatkan": "منداڤتکن",
   "yakin": "يقين",
   "selesai": "سلساي",
   "ramadan": "رمضان",
@@ -2037,8 +2017,6 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "bandar": "باندر",
   "bagaimanapun": "باݢايماناڤون",
   "zaman": "زمان",
-  "merasakan": "مراساکن",
-  "mendapati": "منداڤتي",
   "kisah": "قيصه",
   "rakyat": "رعيت",
   "sabar": "صبر",
@@ -2050,7 +2028,7 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "sentiasa": "سنتياس",
   "maaf": "معاف",
   "ilmu": "علمو",
-  "memiliki": "مميليقي",
+  "mengatakan": "مڠاتاکن",
   "sahabat": "صحابت",
   "rambut": "رامبوت",
   "seraya": "سرايا",
@@ -2085,10 +2063,7 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "jendela": "جنديلا",
   "soal": "سوءال",
   "hadiah": "هديه",
-  "meletakkan": "ملتقکن",
-  "pelajaran": "ڤلاجرن",
   "imam": "امام",
-  "mengalami": "مڠالمي",
   "lena": "لينا",
   "memanggil": "ممڠݢيل",
   "hairan": "حيران",
@@ -2107,7 +2082,6 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "syarat": "شرط",
   "akibat": "عاقبة",
   "hantar": "هانتر",
-  "menyatakan": "مڽاتاکن",
   "nasihat": "نصيحت",
   "penjara": "ڤنجارا",
   "memulakan": "ممولاکن",
@@ -2119,11 +2093,13 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "mama": "ماما",
   "takkan": "تقکن",
   "daerah": "داءيره",
+  "berdoa": "بردعاء",
   "halaman": "هلامن",
   "kubur": "قبور",
   "sambung": "سامبوڠ",
   "memahami": "ممهمي",
   "memandu": "ممندو",
+  "menyelamatkan": "مڽلامتکن",
   "pendek": "ڤينديق",
   "barangkali": "بارڠکالي",
   "puasa": "ڤواسا",
@@ -2142,8 +2118,6 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "khas": "خاص",
   "hak": "حق",
   "jumaat": "جمعة",
-  "menjadikan": "منجاديکن",
-  "mengharapkan": "مڠهارڤکن",
   "besok": "بيسوق",
   "ujian": "اوجين",
   "hebat": "هيبت",
@@ -2153,6 +2127,7 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "latihan": "لاتيهن",
   "sarapan": "سارڤن",
   "selesa": "سليسا",
+  "terlihat": "ترليهت",
   "anakanda": "انقندا",
   "kekuatan": "کقواتن",
   "maklumat": "معلومت",
@@ -2165,6 +2140,7 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "akhbar": "اخبار",
   "cabaran": "چابرن",
   "menyangka": "مڽڠک",
+  "bersalah": "برساله",
   "budaya": "بودايا",
   "rehat": "ريحت",
   "pendidikan": "ڤنديديقن",
@@ -2186,13 +2162,9 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "irama": "ايراما",
   "menang": "منڠ",
   "sah": "صح",
-  "puisi": "ڤويسي",
   "sewaktu": "سوقتو",
   "wujud": "وجود",
-  "tekanan": "تکنن",
   "drama": "دراما",
-  "mengenali": "مڠنلي",
-  "bersyukur": "برشکور",
   "menandakan": "مننداکن",
   "sebagaimana": "سباݢايمان",
   "no": "مڠݢروءيت",
@@ -2202,10 +2174,8 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "kecewa": "کچيوا",
   "ilham": "الهام",
   "rawatan": "راوتن",
-  "persoalan": "ڤرسوءالن",
   "lambang": "لامبڠ",
   "aman": "امان",
-  "berpakaian": "برڤاکاين",
   "madrasah": "مدرسة",
   "presiden": "ڤريسيدن",
   "arab": "عرب",
@@ -2218,18 +2188,18 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "takdir": "تقدير",
   "media": "ميديا",
   "hajat": "حاجة",
-  "permainan": "ڤرماءينن",
   "izin": "ايذين",
   "hangat": "هاڠت",
   "novel": "نوۏل",
   "bengkel": "بيڠکيل",
   "mesin": "ميسين",
   "sesi": "سيسي",
+  "amanah": "امانه",
   "azan": "اذان",
   "mengenakan": "مڠناکن",
+  "tanggungjawab": "تڠݢوڠجواب",
   "adil": "عاديل",
   "teknologi": "تيکنولوݢي",
-  "nasional": "ناسيونل",
   "mengantuk": "مڠنتوق",
   "leman": "ليمن",
   "okey": "اوکي",
@@ -2241,6 +2211,7 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "galeri": "ݢالري",
   "sewa": "سيوا",
   "benci": "بنچي",
+  "menghilangkan": "مڠهيلڠکن",
   "mesej": "ميسيج",
   "apalagi": "اڤالاݢي",
   "basikal": "باسيکل",
@@ -2251,6 +2222,7 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "bab": "باب",
   "rohani": "روحاني",
   "enjin": "اينجين",
+  "mendaki": "منداکي",
   "maya": "ماي",
   "medan": "ميدن",
   "enak": "اينق",
@@ -2262,6 +2234,7 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "baki": "باقي",
   "lapisan": "لاڤيسن",
   "andai": "انداي",
+  "menilai": "منيلاي",
   "ana": "انا",
   "pesta": "ڤيستا",
   "roh": "روح",
@@ -2270,28 +2243,34 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "mematikan": "مماتيکن",
   "pesawat": "ڤساوت",
   "nekad": "نيکد",
+  "berminat": "برمينت",
   "amaran": "امرن",
   "tangisan": "تاڠيسن",
   "sasterawan": "سستراون",
   "semak": "سيمق",
   "kreatif": "کرياتيف",
+  "seramai": "سراماي",
   "hamil": "حاميل",
   "bingkai": "بيڠکاي",
   "perihal": "ڤريحال",
   "menanggalkan": "منڠݢلکن",
   "waris": "واريث",
   "asa": "اس",
+  "peminat": "ڤمينت",
   "kelasi": "کلاسي",
   "meraikan": "مراعيکن",
   "kemarahan": "کماراهن",
   "kelam": "کلم",
+  "terdekat": "تردکت",
   "adegan": "اديݢن",
+  "menggambarkan": "مڠݢمبرکن",
   "syah": "شاه",
   "senarai": "سناراي",
   "liga": "ليݢا",
   "dikau": "ديکاو",
   "memanjat": "ممنجت",
   "set": "سيت",
+  "bernilai": "برنيلاي",
   "bersalin": "برسالين",
   "profesor": "ڤروفيسور",
   "petani": "ڤتاني",
@@ -2322,6 +2301,7 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "dana": "دانا",
   "menu": "مينو",
   "eksekutif": "ايکسيکوتيف",
+  "tersalah": "ترساله",
   "data": "داتا",
   "legenda": "ليݢيندا",
   "syak": "شک",
@@ -2359,6 +2339,7 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "tembak": "تيمبق",
   "kekok": "کيکوق",
   "abadi": "ابادي",
+  "terkesan": "ترکسن",
   "lempeng": "ليمڤيڠ",
   "penyelidikan": "ڤڽليديقن",
   "belantara": "بلنتارا",
@@ -2371,6 +2352,7 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "episod": "ايڤيسود",
   "besen": "بيسين",
   "jem": "جيم",
+  "berkaki": "برکاکي",
   "penyambut": "ڤڽمبوت",
   "marina": "مارينا",
   "reka": "ريک",
@@ -2385,7 +2367,6 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "memang": "ميمڠ",
   "solat": "صلاة",
   "ini": "اين",
-  "mereka": "مريک",
   "kita": "کيت",
   "dari": "دري",
   "kepada": "کڤد",
@@ -2408,7 +2389,31 @@ const EXCEPTION_DICT_PRPM_INCREMENT = {
   "ramai": "راماي",
   "manusia": "ماءنسي",
   "dunia": "دنيا",
-  "bagaimana": "باݢايمان"
+  "bagaimana": "باݢايمان",
+  "memandang": "ممندڠ",
+  "mengambil": "مڠمبيل",
+  "cikgu": "چيقݢو",
+  "sebab": "سبب",
+  "selama": "سلاما",
+  "sultan": "سلطان",
+  "selamat": "سلامت",
+  "kawasan": "کاوسن",
+  "berita": "بريتا",
+  "masalah": "مسئله",
+  "telefon": "تيليفون",
+  "kuat": "قوات",
+  "teksi": "تيکسي",
+  "laksamana": "لقسامان",
+  "pemandu": "ڤمندو",
+  "seseorang": "سسأورڠ",
+  "sebentar": "سبنتر",
+  "nasib": "نصيب",
+  "saat": "ساعت",
+  "nafas": "نفس",
+  "adat": "عادت",
+  "khabar": "خبر",
+  "arwah": "ارواح",
+  "sesiapa": "سسياڤا"
 };
 Object.assign(EXCEPTION_DICT, EXCEPTION_DICT_PRPM_INCREMENT);
 const TALING_DICT = new Set([]);
@@ -2532,6 +2537,8 @@ function syllabify(word) {
 function isTaling(globalWord, syl) {
   if (syl.vowel === 'é') return true;
   if (syl.vowel !== 'e') return false;
+  if (PEDOMAN_PEPET_SYLLABLES.has(`${globalWord}:${syl.text}`) ||
+      (syl.isLast && PEDOMAN_PEPET_SYLLABLES.has(`${globalWord}:${syl.text}:final`))) return false;
   if (PEDOMAN_TALING_WORDS.has(globalWord) ||
       PEDOMAN_TALING_WORDS.has(`${globalWord}:${syl.text}`) || TALING_DICT.has(globalWord)) return true;
   if (TALING_DICT.has(syl.text)) return true;
@@ -2651,7 +2658,7 @@ function syllableToJawi(syl, idx, allSyls, globalWord) {
     return consonantToJawiCons(syl.onset) + consonantToJawiCons(syl.coda);
   }
 
-  // HAMZAH 0 — KVVK hamzah dimatikan (semua hamzah via EXC)
+  // Pedoman 3.9–3.10: vowel-sequence hamzah is handled below.
 
   // Onset Jawi
   let onsetJ = consonantToJawiCons(syl.onset);
@@ -2677,7 +2684,7 @@ function syllableToJawi(syl, idx, allSyls, globalWord) {
       vowelJ = "";
     }
   } else if (vowel === "i") {
-    if (!hasOnset && idx > 0 && allSyls[idx - 1].vowel === 'u') {
+    if (!hasOnset && idx > 0 && allSyls[idx - 1].vowel === 'u' && !syl.isOpen) {
       vowelJ = "ءي"; // Pedoman 3.9: ui in KVVK, e.g. buih/keruing
     } else if (!hasOnset && idx === 0) vowelJ = "اي"; // i awal kata: alif-ya
     else vowelJ = "ي"; // medial i, including an onset-free vowel sequence
@@ -2834,7 +2841,16 @@ function appendSuffix(baseLatin, baseJawi, suffix) {
   const last = syllables[syllables.length - 1];
   if (!last) return baseJawi;
   // Pedoman 11.6: alif maqsurah changes to ordinary alif before an ending.
-  if (baseJawi.endsWith("ى")) baseJawi = baseJawi.slice(0, -1) + "ا";
+  // The same code point represents final pepet (4.5); do not alter that vowel.
+  if (last.vowel === "a" && baseJawi.endsWith("ى")) baseJawi = baseJawi.slice(0, -1) + "ا";
+
+  // Pedoman 11.4: restore the unwritten final vowel of an Arabic loan
+  // before any suffix or particle. This operates on the root spelling, not
+  // a dictionary of derived words (fardu -> fardukan, haji -> hajilah).
+  if (last.isOpen && ["i", "u"].includes(last.vowel)) {
+    const letter = last.vowel === "i" ? "ي" : "و";
+    if (!baseJawi.endsWith(letter)) baseJawi += letter;
+  }
 
   if (suffix === "an") {
     if (last.isOpen && (last.vowel === "u" || last.vowel === "au")) return baseJawi + "ان";
@@ -2876,7 +2892,11 @@ function wordToJawiMorpheme(word) {
     const candidate = (prefix ? PREFIX_RULES[prefix] : "") + baseJawi;
     // A longer overt prefix is stronger evidence than a coincidental longer
     // stem beginning inside that prefix (mengarang is meng+arang, not men+garang).
-    const score = prefix.length * 100 + base.length * 10 + suffix.length;
+    // Within that prefix, prefer a validated suffix boundary over a longer
+    // corpus token: BASE_SET contains inflected words too (me+lalu+i, not
+    // me+lalui). A 50-point bonus covers the longest suffix without defeating
+    // the independently stronger evidence of a longer prefix.
+    const score = prefix.length * 100 + base.length * 10 + suffix.length + (suffix ? 50 : 0);
     if (score > bestScore) {
       best = candidate;
       bestScore = score;
@@ -10307,7 +10327,7 @@ function jawiToLatin(text) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { latinToJawi, jawiToLatin, wordToJawi, wordToJawiMorpheme, baseWordToJawi, syllabify, jawiToRumi, heurJawiToRumi, EXCEPTION_DICT, EXCEPTION_DICT_PRPM_INCREMENT, TALING_DICT, JAWI_TO_LATIN_AUTO, REVERSE_DICT, BASE_SET };
+  module.exports = { appendSuffix, latinToJawi, jawiToLatin, wordToJawi, wordToJawiMorpheme, baseWordToJawi, syllabify, jawiToRumi, heurJawiToRumi, EXCEPTION_DICT, EXCEPTION_DICT_PRPM_INCREMENT, TALING_DICT, JAWI_TO_LATIN_AUTO, REVERSE_DICT, BASE_SET };
 }
 if (typeof window !== 'undefined') {
   window.JawiConverter = { latinToJawi, jawiToLatin, wordToJawi, syllabify, jawiToRumi, EXCEPTION_DICT, TALING_DICT };
