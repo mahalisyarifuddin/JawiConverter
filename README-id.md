@@ -13,7 +13,7 @@ Antarmuka tersedia dalam **Bahasa Inggris** dan **Bahasa Melayu**. Konversi berl
 - **Jawi → Rumi**: Memeriksa ejaan balik yang persis, lalu bentuk tak ambigu dari daftar kata bawaan, dan terakhir menggunakan transliterasi per karakter. Karena vokal pendek sering tidak ditulis dalam Jawi, beberapa kata tetap ambigu tanpa konteks.
 - Jawi yang ditempel dinormalisasi sebelum pencarian: hamzah tinggi **ٴ** (U+0674) yang dipakai sebagian sumber Jawi sebagai ganti hamzah disatukan dengan hamzah standar **ء** (U+0621), sehingga kedua ejaan menghasilkan konversi yang sama.
 - Aplikasi mempertahankan spasi biasa dan tanda baca umum, serta mendukung bentuk bertanda hubung dan reduplikasi yang tersedia di kamus.
-- Ketik **é** untuk memaksa taling dan **ě** untuk memaksa pepet (schwa); **e** tanpa aksen diproses dengan aturan pepet/taling pada mesin konversi (setem → سيتيم, sětem → ستيم).
+- Ketik **é** untuk memaksa taling dan **ě** (atau **ê**, sebagaimana kamus Indonesia menuliskan pepet) untuk memaksa pepet; **e** tanpa aksen diproses dengan aturan pepet/taling pada mesin konversi (setem → سيتيم, sětem/sêtem → ستيم).
 - Tanda hanya menetapkan sebutan: kata bertanda tetap cocok dengan entri kamus, kelas Pedoman, dan batas imbuhan yang sama seperti ejaan tanpa tanda.
 
 ## Mulai Cepat

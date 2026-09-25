@@ -2428,13 +2428,20 @@ const VALID_CLUSTERS = new Set([
 ]); // only true Malay onset clusters (stop/ fricative + l/r), not st/sp/sk/sm/sn which split as C|C
 
 
-// é (also typed è/ê) forces taling, ě forces pepet (schwa). Both markers stay
-// in the string here so syllabify() can see which vowel the writer marked;
-// plainE() removes them for lexical lookups, so a marked word still matches
-// the same dictionary entries and PEDOMAN classes as its unmarked form.
+// Pronunciation markers for the unwritten Malay /e/: é forces taling and ě
+// forces pepet (schwa). ê is accepted as a pepet marker too, because the
+// Indonesian tradition (KBBI and most dictionaries) writes the pepet with a
+// circumflex, and è remains an alias of é. Markers stay in the string here so
+// syllabify() can see which vowel the writer marked; plainE() removes them for
+// lexical lookups, so a marked word still matches the same dictionary entries
+// and PEDOMAN classes as its unmarked form.
 function isVowel(ch) { return /[aiueoéèêě]/.test(ch); }
-function normalizeE(word) { return word.normalize('NFC').replace(/[èê]/g, 'é'); }
-function plainE(word) { return normalizeE(word).replace(/[éě]/g, 'e'); }
+function isTalingMarker(vowel) { return vowel === 'é' || vowel === 'è'; }
+function isPepetMarker(vowel) { return vowel === 'ě' || vowel === 'ê'; }
+// Fold the aliases onto the canonical markers, after NFC so decomposed
+// e + combining accent input behaves exactly like the precomposed letter.
+function normalizeE(word) { return word.normalize('NFC').replace(/è/g, 'é').replace(/ê/g, 'ě'); }
+function plainE(word) { return normalizeE(word).replace(/[éèěê]/g, 'e'); }
 
 // Helper: is char consonant (single)
 function isCons(ch) { return /^[bcdfghjklmnpqrstvwxyz]$/.test(ch); }
@@ -2539,15 +2546,15 @@ function syllabify(word) {
 }
 
 // ---------- 4. Pepet vs Taling ----------
-// The writer may mark a vowel directly: é forces taling, ě forces pepet
+// The writer may mark a vowel directly: é forces taling, ě/ê force pepet
 // (schwa). An explicit marker outranks every lexical and shape hint below.
 // For unmarked e, pronunciation metadata and conservative shape rules decide.
 function isPepet(globalWord, syl) {
-  return (syl.vowel === 'e' || syl.vowel === 'ě') && !isTaling(globalWord, syl);
+  return (syl.vowel === 'e' || isPepetMarker(syl.vowel)) && !isTaling(globalWord, syl);
 }
 function isTaling(globalWord, syl) {
-  if (syl.vowel === 'é') return true;
-  if (syl.vowel === 'ě') return false;
+  if (isTalingMarker(syl.vowel)) return true;
+  if (isPepetMarker(syl.vowel)) return false;
   if (syl.vowel !== 'e') return false;
   // Lookup keys are unmarked, so forcing a marker on one syllable neither
   // hides nor invents a dictionary/PEDOMAN pronunciation for the word.
@@ -2705,12 +2712,12 @@ function syllableToJawi(syl, idx, allSyls, globalWord) {
       vowelJ = "ءي"; // Pedoman 3.9: ui in KVVK, e.g. buih/keruing
     } else if (!hasOnset && idx === 0) vowelJ = "اي"; // i awal kata: alif-ya
     else vowelJ = "ي"; // medial i, including an onset-free vowel sequence
-  } else if (vowel === "é") {
+  } else if (isTalingMarker(vowel)) {
     if (!hasOnset && idx === 0) vowelJ = "اي";
     else vowelJ = "ي";
-  } else if (vowel === "e" || vowel === "ě") {
-    // ě is the explicit pepet (schwa) marker: it never becomes taling.
-    let taling = vowel === "ě" ? false : isTaling(globalWord, syl);
+  } else if (vowel === "e" || isPepetMarker(vowel)) {
+    // An explicit pepet marker (ě or ê) never becomes taling.
+    let taling = isPepetMarker(vowel) ? false : isTaling(globalWord, syl);
     if (taling) {
       if (!hasOnset && idx === 0) vowelJ = "اي";
       else vowelJ = "ي";
@@ -2801,7 +2808,7 @@ const FIXED_SUFFIX_JAWI = {
 function baseWordToJawi(word) {
   const lower = normalizeE(word.toLowerCase());
   // Dictionary hits and fixed PEDOMAN classes are keyed on unmarked Rumi:
-  // writing ě/é selects pronunciation, it does not create a new word.
+  // writing ê/ě/é selects pronunciation, it does not create a new word.
   const plain = plainE(lower);
   if (PEDOMAN_ARABIC_HAMZAH[plain]) return PEDOMAN_ARABIC_HAMZAH[plain];
   if (PEDOMAN_WORD_ACRONYMS[plain]) return PEDOMAN_WORD_ACRONYMS[plain];
@@ -2835,7 +2842,7 @@ function rootExists(surface, prefix = "") { return rootKind(surface, prefix) !==
 
 function adjustBaseForPrefix(baseJawi, baseLatin, prefix) {
   let output = baseJawi;
-  // Only the unmarked stem decides carrier-letter behaviour; ě and é are
+  // Only the unmarked stem decides carrier-letter behaviour; ê/ě/é are
   // spelling markers, not part of the vowel these prefix rules test for.
   const plainBase = plainE(baseLatin);
   // After meN-/peN-, initial i/e/o/u drops only its carrier alif while ya/wau
@@ -10429,7 +10436,7 @@ if (typeof window !== 'undefined') {
 					'Pilih arah penukaran: Rumi → Jawi atau Jawi → Rumi (atau tekan butang Tukar).',
 					'Taip atau tampal teks di panel Sumber — penukaran berlaku langsung (atau matikan dan tekan Tukar).',
 					'Salin hasil dari panel Terjemahan, atau muat naik fail .txt.',
-					'Huruf khas: taip é untuk memaksa taling dan ě untuk memaksa pepet/schwa (contoh: setem → سيتيم, sětem → ستيم). E tanpa tanda mengikut aturan mesin. Huruf tambahan: ڬ ga, ڠ nga, ڽ nya, ڤ pa, چ ca, ۏ va.'
+					'Huruf khas: taip é untuk memaksa taling dan ě atau ê untuk memaksa pepet/schwa (contoh: setem → سيتيم, sětem/sêtem → ستيم). E tanpa tanda mengikut aturan mesin. Huruf tambahan: ڬ ga, ڠ nga, ڽ nya, ڤ pa, چ ca, ۏ va.'
 				],
 				shortcutList: [
 					['Ctrl ⌘ + Enter', 'Tukar sekarang'],
@@ -10486,7 +10493,7 @@ if (typeof window !== 'undefined') {
 					'Choose a direction: Rumi → Jawi or Jawi → Rumi (or press the Swap button).',
 					'Type or paste text in the Source panel — conversion is live (or turn it off and press Convert).',
 					'Copy the result from the Translation panel, or upload a .txt file.',
-					'Special letters: type é to force taling and ě to force pepet/schwa (setem → سيتيم, sětem → ستيم). Plain e follows the engine rules. Extra letters: ڬ ga, ڠ nga, ڽ nya, ڤ pa, چ ca, ۏ va.'
+					'Special letters: type é to force taling and ě or ê to force pepet/schwa (setem → سيتيم, sětem/sêtem → ستيم). Plain e follows the engine rules. Extra letters: ڬ ga, ڠ nga, ڽ nya, ڤ pa, چ ca, ۏ va.'
 				],
 				shortcutList: [
 					['Ctrl ⌘ + Enter', 'Convert now'],

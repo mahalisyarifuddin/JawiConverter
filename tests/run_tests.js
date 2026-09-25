@@ -127,50 +127,66 @@ assert.strictEqual(
   'saya main dengan baik.'
 );
 
-// Explicit pronunciation markers: é forces taling, ě forces pepet (schwa).
-// A marker outranks the engine's lexical and shape guesses, but stays
-// invisible to the lexicon — a marked word still resolves to the same
-// dictionary entry, PEDOMAN class, root, and affix boundary as its plain form.
+// Explicit pronunciation markers: é (or è) forces taling, ě forces pepet
+// (schwa), and ê is accepted as a second pepet marker because Indonesian
+// dictionaries write the schwa with a circumflex. A marker outranks the
+// engine's lexical and shape guesses, but stays invisible to the lexicon — a
+// marked word still resolves to the same dictionary entry, PEDOMAN class,
+// root, and affix boundary as its plain form.
 const PEPET = '\u011b'; // ě
-const plainE = value => value.replace(/[éě]/g, 'e');
+const PEPET_HAT = '\u00ea'; // ê
+const PEPET_MARKERS = [PEPET, PEPET_HAT];
+const MARKER_RE = /[\u00e8\u00e9\u00ea\u011b]/;
 for (const engine of [ruleOnly, optimized]) {
   // Forced pepet overrides a taling hint or shape guess...
   assert.strictEqual(engine.wordToJawi('setem'), 'سيتيم');
   assert.strictEqual(engine.wordToJawi(`s${PEPET}tem`), 'ستيم');
+  assert.strictEqual(engine.wordToJawi(`s${PEPET_HAT}tem`), 'ستيم');
   assert.strictEqual(engine.wordToJawi('kereta'), 'کريتا');
   assert.strictEqual(engine.wordToJawi(`ker${PEPET}ta`), 'کرتا');
+  assert.strictEqual(engine.wordToJawi(`ker${PEPET_HAT}ta`), 'کرتا');
   assert.strictEqual(engine.wordToJawi('sate'), 'ساتي');
   assert.strictEqual(engine.wordToJawi(`sat${PEPET}`), 'ساتى'); // final open pepet → ى
+  assert.strictEqual(engine.wordToJawi(`sat${PEPET_HAT}`), 'ساتى');
   // ...and é still forces taling, including against a pepet hint.
   assert.strictEqual(engine.wordToJawi(`${PEPET}mas`), engine.wordToJawi('emas'));
+  assert.strictEqual(engine.wordToJawi(`${PEPET_HAT}mas`), engine.wordToJawi('emas'));
   assert.strictEqual(engine.wordToJawi('sé'), 'سي');
-  assert.strictEqual(engine.wordToJawi(`s${PEPET}`), engine.wordToJawi('se'));
-  // Markers never leak into Jawi output and never change the lexicon.
-  for (const word of [`s${PEPET}bab`, `ker${PEPET}ta`, `sat${PEPET}`]) {
-    assert(!engine.wordToJawi(word).includes(PEPET) && !engine.wordToJawi(word).includes('é'));
+  assert.strictEqual(engine.wordToJawi('èlok'), engine.wordToJawi('élok'));
+  for (const marker of PEPET_MARKERS) {
+    assert.strictEqual(engine.wordToJawi(`s${marker}`), engine.wordToJawi('se'));
+    // Markers never leak into Jawi output and never change the lexicon.
+    for (const word of [`s${marker}bab`, `ker${marker}ta`, `sat${marker}`]) {
+      assert(!MARKER_RE.test(engine.wordToJawi(word)), `marker leaked from ${word}`);
+    }
+    assert.strictEqual(engine.wordToJawi(`s${marker}bab`), engine.wordToJawi('sebab'));
+    assert.strictEqual(engine.wordToJawi(`m${marker}ngambil`), engine.wordToJawi('mengambil'));
   }
-  assert.strictEqual(engine.wordToJawi(`s${PEPET}bab`), engine.wordToJawi('sebab'));
-  assert.strictEqual(engine.wordToJawi(`m${PEPET}ngambil`), engine.wordToJawi('mengambil'));
-  // Decomposed input (e + combining caron) composes to the same marker.
+  // Decomposed input (e + combining accent) composes to the same markers.
   assert.strictEqual(engine.wordToJawi('se\u030cbab'), engine.wordToJawi(`s${PEPET}bab`));
+  assert.strictEqual(engine.wordToJawi('se\u0302bab'), engine.wordToJawi(`s${PEPET_HAT}bab`));
 }
-// A marker must never destroy a verified (EXC) spelling: passing over every
-// dictionary key with e -> ě has to be a no-op.
+// A pepet marker must never destroy a verified (EXC) spelling: passing over
+// every dictionary key with e -> ě (and e -> ê) has to be a no-op.
 for (const key of Object.keys(optimized.EXCEPTION_DICT)) {
   if (!key.includes('e')) continue;
-  assert.strictEqual(
-    optimized.wordToJawi(key.split('e').join(PEPET)),
-    optimized.wordToJawi(key),
-    `marker changed the verified spelling of ${key}`
-  );
+  for (const marker of PEPET_MARKERS) {
+    assert.strictEqual(
+      optimized.wordToJawi(key.split('e').join(marker)),
+      optimized.wordToJawi(key),
+      `${marker} changed the verified spelling of ${key}`
+    );
+  }
 }
 // Sentence-level behaviour: markers survive tokenization, joined di/ke, and
 // reduplication, and the plain forms are unchanged.
 assert.strictEqual(optimized.latinToJawi(`di ${PEPET}mas`), 'دأمس');
+assert.strictEqual(optimized.latinToJawi(`di ${PEPET_HAT}mas`), 'دأمس');
 assert.strictEqual(optimized.latinToJawi(`b${PEPET}sar-b${PEPET}sar`), 'بسر٢');
+assert.strictEqual(optimized.latinToJawi(`b${PEPET_HAT}sar-b${PEPET_HAT}sar`), 'بسر٢');
 assert.strictEqual(optimized.latinToJawi('setem'), 'سيتيم');
 assert.strictEqual(optimized.latinToJawi('saté'), optimized.latinToJawi('sate'));
-assert(!/[\u00e9\u011b]/.test(optimized.latinToJawi(`s${PEPET}tem, s${PEPET}tem`)));
+assert(!MARKER_RE.test(optimized.latinToJawi(`s${PEPET}tem, s${PEPET_HAT}tem`)));
 
 // Negative tests: no optimizer may bypass the rule-first preflight or accept
 // a derived-word regression just because every selected EXC key looks valid.
@@ -218,6 +234,7 @@ if (fs.existsSync(path.join(root, 'jawi_converter.js'))) {
   } else if (browserEngine.latinToJawi('buku-buku') !== 'بوکو٢' ||
              browserEngine.latinToJawi('se\u0301') !== browserEngine.latinToJawi('sé') ||
              browserEngine.latinToJawi('s\u011btem') !== 'ستيم' ||
+             browserEngine.latinToJawi('s\u00eatem') !== 'ستيم' ||
              browserEngine.jawiToLatin('سيکو') !== 'siku' ||
              browserEngine.jawiToLatin('با\u0674يق') !== 'baik' ||
              browserEngine.jawiToLatin('غاءيره') !== 'ghairah') {
