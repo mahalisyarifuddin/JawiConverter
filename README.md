@@ -37,11 +37,11 @@ Run the tests and the PRPM-cache benchmark with:
 node tests/run_tests.js
 ```
 
-The current word-level snapshot contains **4,056 non-null PRPM forms**. Tests first remove every EXC entry and run 160 rule-only cases covering Pedoman sections 3–19. The optimizer runs only after those pass, and protects all 169 Pedoman cases while evaluating each +50 PRPM batch:
+The current word-level snapshot contains **4,067 non-null PRPM forms**. Tests first remove every EXC entry and run 160 rule-only cases covering Pedoman sections 3–19. The optimizer runs only after those pass, and protects all 169 Pedoman cases while evaluating each +50 PRPM batch:
 
 | EXC entries | Average accuracy |
 | ---: | ---: |
-| 0 | 83.91% |
+| 0 | 83.83% |
 | 50 | 85.32% |
 | 100 | 86.65% |
 | 150 | 87.94% |
@@ -57,9 +57,9 @@ The current word-level snapshot contains **4,056 non-null PRPM forms**. Tests fi
 | 650 | 97.37% |
 | 700 | 97.99% |
 | 750 | 98.59% |
-| **800** | **99.21%** |
+| **800** | **99.09%** |
 
-At 800 entries, the individual scores are **98.79%** Rumi → Jawi and **99.63%** Jawi → Rumi. This is the first 50-entry boundary to reach the 99% average target. The optimizer greedily maximizes combined exact-match gains, uses PRPM frequency to break ties, and rejects candidates that conflict with a protected Pedoman form. Since entries are selected from this same PRPM snapshot, this is an in-corpus benchmark, not a held-out accuracy guarantee. Unicode is normalized to NFC and invisible formatting controls are ignored; spellings are otherwise compared exactly.
+At 800 entries, the individual scores are **98.70%** Rumi → Jawi and **99.48%** Jawi → Rumi. This is the first 50-entry boundary to reach the 99% average target. The optimizer greedily maximizes combined exact-match gains, uses PRPM frequency to break ties, and rejects candidates that conflict with a protected Pedoman form. Since entries are selected from this same PRPM snapshot, this is an in-corpus benchmark, not a held-out accuracy guarantee. Unicode is normalized to NFC and invisible formatting controls are ignored; spellings are otherwise compared exactly.
 
 `JawiConverter.html` is the sole engine source. Node tools and tests use `tools/app_engine.js` to extract its marked inline engine into a disposable operating-system temporary directory, load it, and remove the copy. No duplicate engine JavaScript is shipped.
 

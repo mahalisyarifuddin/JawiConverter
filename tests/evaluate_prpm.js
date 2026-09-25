@@ -67,8 +67,8 @@ function evaluate() {
   console.log(`EXC entries: ${exceptionCount} (${baseCount} base + ${incrementEntries.length} optimized)`);
 
   let failures = 0;
-  if (entries.length !== 4056) {
-    console.error(`Expected 4,056 non-null PRPM forms; found ${entries.length}.`);
+  if (entries.length !== 4067) {
+    console.error(`Expected 4,067 non-null PRPM forms; found ${entries.length}.`);
     failures++;
   }
   if (baseCount !== 0 || exceptionCount === 0 || incrementEntries.length !== exceptionCount ||
