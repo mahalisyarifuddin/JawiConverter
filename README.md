@@ -37,29 +37,33 @@ Run the tests and the PRPM-cache benchmark with:
 node tests/run_tests.js
 ```
 
-The current word-level snapshot contains **4,067 non-null PRPM forms**. Tests first remove every EXC entry and run 160 rule-only cases covering Pedoman sections 3–19. The optimizer runs only after those pass, and protects all 169 Pedoman cases while evaluating each +50 PRPM batch:
+The current word-level snapshot contains **4,067 non-null PRPM forms**. Tests first remove every EXC entry and run 223 rule-only cases covering Pedoman sections 3–19. The optimizer runs only after those pass, and protects all 236 Pedoman cases while evaluating each +50 PRPM batch:
 
 | EXC entries | Average accuracy |
 | ---: | ---: |
-| 0 | 83.83% |
-| 50 | 85.32% |
-| 100 | 86.65% |
-| 150 | 87.94% |
-| 200 | 89.19% |
-| 250 | 90.42% |
-| 300 | 91.68% |
-| 350 | 92.91% |
-| 400 | 94.14% |
-| 450 | 94.83% |
-| 500 | 95.51% |
-| 550 | 96.13% |
-| 600 | 96.76% |
-| 650 | 97.37% |
-| 700 | 97.99% |
-| 750 | 98.59% |
-| **800** | **99.09%** |
+| 0 | 84.63% |
+| 50 | 86.01% |
+| 100 | 87.34% |
+| 150 | 88.66% |
+| 200 | 89.89% |
+| 250 | 91.15% |
+| 300 | 92.38% |
+| 350 | 93.59% |
+| 400 | 94.55% |
+| 450 | 95.24% |
+| 500 | 95.88% |
+| 550 | 96.51% |
+| 600 | 97.11% |
+| 650 | 97.74% |
+| 700 | 98.34% |
+| 750 | 98.97% |
+| **800** | **99.55%** |
 
-At 800 entries, the individual scores are **98.70%** Rumi → Jawi and **99.48%** Jawi → Rumi. This is the first 50-entry boundary to reach the 99% average target. The optimizer greedily maximizes combined exact-match gains, uses PRPM frequency to break ties, and rejects candidates that conflict with a protected Pedoman form. Since entries are selected from this same PRPM snapshot, this is an in-corpus benchmark, not a held-out accuracy guarantee. Unicode is normalized to NFC and invisible formatting controls are ignored; spellings are otherwise compared exactly.
+At 800 entries, the individual scores are **99.46%** Rumi → Jawi and **99.63%** Jawi → Rumi. This is the first 50-entry boundary to reach the 99% average target. The optimizer greedily maximizes combined exact-match gains, uses PRPM frequency to break ties, and rejects candidates that conflict with a protected Pedoman form. Since entries are selected from this same PRPM snapshot, this is an in-corpus benchmark, not a held-out accuracy guarantee. Unicode is normalized to NFC and invisible formatting controls are ignored; spellings are otherwise compared exactly.
+
+“Rule-only” means the PRPM EXC batch is disabled, not dictionary-free conversion: pronunciation/root metadata, fixed PEDOMAN lexical classes, and the existing reverse lookup table remain. Tests cover the operational numbered subrules, but representative examples are not proof of correctness for every possible word or context. See [the PEDOMAN audit](docs/PEDOMAN_AUDIT.md) for scope and limitations.
+
+The optimizer rechecks **all protected outputs after every batch**, including derivatives affected by root exceptions, and refuses to write a failing result. After writing, it runs the full test suite and restores the prior engine if validation fails.
 
 `JawiConverter.html` is the sole engine source. Node tools and tests use `tools/app_engine.js` to extract its marked inline engine into a disposable operating-system temporary directory, load it, and remove the copy. No duplicate engine JavaScript is shipped.
 
