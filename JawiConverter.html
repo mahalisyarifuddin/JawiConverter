@@ -10109,8 +10109,18 @@ const JAWI_TO_LATIN_AUTO = {
 };
 
 
+// The Jawi hamzah is ARABIC LETTER HAMZA, U+0621 (ء). Some Jawi sources,
+// keyboards and fonts instead type ARABIC LETTER HIGH HAMZA, U+0674 (ٴ), the
+// code point Unicode shares with the Kazakh letter and with the DBP "hamzah
+// tiga suku" form. It is the same letter for conversion purposes, so pasted
+// text is folded onto U+0621 before any dictionary lookup or tokenization.
+const JAWI_HAMZAH_VARIANTS = /\u0674/g;
+
 function normalizeJawiInput(jawi) {
-  return String(jawi).normalize('NFC').replace(/[\u0080-\u009F\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF]/g, '');
+  return String(jawi)
+    .normalize('NFC')
+    .replace(JAWI_HAMZAH_VARIANTS, '\u0621')
+    .replace(/[\u0080-\u009F\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF]/g, '');
 }
 
 // Build REVERSE_DICT from normalized EXCEPTION_DICT forms (Jawi -> Latin, first wins).

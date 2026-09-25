@@ -88,6 +88,45 @@ for (const [latin, jawi, suffix, expected] of [
   ['lipase', 'ليڤاسى', 'nya', 'ليڤاسىڽ']
 ]) assert.strictEqual(ruleOnly.appendSuffix(latin, jawi, suffix), expected);
 
+// Jawi input alias: some Jawi sources type ARABIC LETTER HIGH HAMZA (U+0674),
+// the code point shared with the DBP "hamzah tiga suku" form, instead of the
+// canonical hamzah (U+0621). Pasted text must convert exactly like the
+// standard spelling — in dictionary lookups, in the fallback heuristic, and
+// when the hamzah precedes Arabic digit two.
+const HIGH_HAMZA = '\u0674';
+const CANONICAL_HAMZA = '\u0621';
+const withHighHamza = jawi => jawi.split(CANONICAL_HAMZA).join(HIGH_HAMZA);
+const HAMZAH_WORDS = [
+  ['ماءين', 'main'], ['باءيق', 'baik'], ['دوءيت', 'duit'], ['سوءال', 'soal'],
+  ['باءو', 'bau'], ['اءير', 'air'], ['لاءوت', 'laut'], ['کاءين', 'kain'],
+  ['ماءين٢', 'main-main']
+];
+for (const engine of [ruleOnly, optimized]) {
+  for (const [canonical] of HAMZAH_WORDS) {
+    const pasted = withHighHamza(canonical);
+    assert.strictEqual(engine.jawiToRumi(pasted), engine.jawiToRumi(canonical));
+    assert.strictEqual(engine.jawiToLatin(pasted), engine.jawiToLatin(canonical));
+  }
+  // Unseen words and the bare letter reach the character-level fallback with
+  // the canonical letter and never leak the variant into the output.
+  assert.strictEqual(engine.jawiToRumi(`زم${HIGH_HAMZA}ون`), engine.jawiToRumi(`زم${CANONICAL_HAMZA}ون`));
+  assert.strictEqual(engine.jawiToLatin(HIGH_HAMZA), engine.jawiToLatin(CANONICAL_HAMZA));
+}
+for (const [canonical, expected] of HAMZAH_WORDS) {
+  const pasted = withHighHamza(canonical);
+  assert.strictEqual(optimized.jawiToLatin(pasted), expected);
+  assert(!optimized.jawiToLatin(pasted).includes(HIGH_HAMZA));
+}
+// EXC-only spellings (absent from JAWI_TO_LATIN_AUTO) must resolve as well.
+for (const [canonical, expected] of [
+  ['قرءان', 'quran'], ['ستياءوسها', 'setiausaha'], ['فناء', 'fana'], ['علماء', 'ulama']
+]) assert.strictEqual(optimized.jawiToLatin(withHighHamza(canonical)), expected);
+// Whole sentences, spacing, and punctuation are handled by the same alias.
+assert.strictEqual(
+  optimized.jawiToLatin(`ساي ما${HIGH_HAMZA}ين دڠن با${HIGH_HAMZA}يق.`),
+  'saya main dengan baik.'
+);
+
 // Negative tests: no optimizer may bypass the rule-first preflight or accept
 // a derived-word regression just because every selected EXC key looks valid.
 assert.strictEqual(assertRuleOnlyPedoman(ruleOnly), ruleTotal);
@@ -99,7 +138,7 @@ assertProtectedPedoman(optimized);
 assert.throws(() => assertProtectedPedoman({ ...optimized,
   latinToJawi: word => word === 'menghajikan' ? 'broken' : optimized.latinToJawi(word)
 }), /protected Pedoman/);
-console.log('Subrule coverage, productive suffix rules, and optimizer safety checks passed');
+console.log('Subrule coverage, productive suffix rules, hamzah aliases, and optimizer safety checks passed');
 
 // Prove that Node tooling consumes a disposable copy of the app's inline code.
 const temporary = copyEngineToTemp();
@@ -134,6 +173,7 @@ if (fs.existsSync(path.join(root, 'jawi_converter.js'))) {
   } else if (browserEngine.latinToJawi('buku-buku') !== 'بوکو٢' ||
              browserEngine.latinToJawi('se\u0301') !== browserEngine.latinToJawi('sé') ||
              browserEngine.jawiToLatin('سيکو') !== 'siku' ||
+             browserEngine.jawiToLatin('با\u0674يق') !== 'baik' ||
              browserEngine.jawiToLatin('غاءيره') !== 'ghairah') {
     console.error('The standalone browser engine smoke test failed.');
     failures++;

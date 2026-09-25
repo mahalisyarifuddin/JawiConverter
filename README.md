@@ -11,6 +11,7 @@ The interface is available in **English** and **Bahasa Melayu**. The converter r
 ## How It Works
 - **Rumi → Jawi**: Applies letter, syllable, vowel, and final-consonant rules, then uses verified whole-word spellings where the rules are ambiguous.
 - **Jawi → Rumi**: Checks exact reverse spellings, then unambiguous forms from the built-in base-word set, and finally uses a character-level fallback. Since short vowels are often unwritten in Jawi, some words remain ambiguous without context.
+- Pasted Jawi is normalized before lookup: the high hamza **ٴ** (U+0674) that some Jawi sources type in place of the hamzah is folded onto the standard hamzah **ء** (U+0621), so both spellings convert the same way.
 - The app preserves ordinary spacing and common punctuation, and supports hyphenated forms and reduplication entries.
 - Type **é** to explicitly mark a taling vowel; unaccented **e** is handled by the engine’s pepet/taling rules.
 
