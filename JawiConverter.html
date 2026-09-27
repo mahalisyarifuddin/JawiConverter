@@ -10649,12 +10649,22 @@ if (typeof window !== 'undefined') {
 			copyOut() {
 				const jawiOut = document.getElementById('jawiOut');
 				const latinOut = document.getElementById('latinOut');
+				const copyBtn = document.getElementById('copyBtn');
+				const t = text[this.lang] || text.ms;
 				const out = this.mode === 'lj'
 					? (jawiOut && jawiOut.textContent)
 					: (latinOut && latinOut.textContent);
 				if (!out) return;
 				if (navigator.clipboard && navigator.clipboard.writeText) {
-					navigator.clipboard.writeText(out).catch(() => {});
+					navigator.clipboard.writeText(out).then(() => {
+						if (copyBtn) {
+							copyBtn.textContent = t.copied || 'Disalin!';
+							clearTimeout(this.copyTimer);
+							this.copyTimer = setTimeout(() => {
+								copyBtn.textContent = t.copyBtn || 'Salin semua';
+							}, 2000);
+						}
+					}).catch(() => {});
 				}
 			},
 
