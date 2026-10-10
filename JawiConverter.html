@@ -1211,7 +1211,7 @@
 					<span class="hint nums" id="topCount">0 aksara</span>
 				</div>
 				<div class="panel-body">
-					<textarea id="inputArea" placeholder="Taip teks Rumi di sini…"></textarea>
+					<textarea id="inputArea" placeholder="Taip teks Rumi di sini…" aria-label="Taip teks Rumi di sini…"></textarea>
 					<div id="inputCaption" class="hint">Taip teks Rumi. Penukaran berlaku secara langsung.</div>
 				</div>
 				<div class="panel-footer">
@@ -10402,6 +10402,8 @@ if (typeof window !== 'undefined') {
 				swapTitle: 'Tukar arah dan pindahkan hasil ke sumber',
 				inputPanelTitle: 'Sumber',
 				outputPanelTitle: 'Terjemahan',
+				inputPlaceholderLJ: 'Taip teks Rumi di sini…',
+				inputPlaceholderJL: 'Taip teks Jawi di sini…',
 				inputCaptionLJ: 'Taip teks Rumi. Penukaran berlaku secara langsung.',
 				inputCaptionJL: 'Taip teks Jawi (kanan ke kiri).',
 				outputCaptionJL: 'Transliterasi songsang dibantu kamus; vokal pendek dalam Jawi boleh samar.',
@@ -10459,6 +10461,8 @@ if (typeof window !== 'undefined') {
 				swapTitle: 'Swap direction and move the output into the source',
 				inputPanelTitle: 'Source',
 				outputPanelTitle: 'Translation',
+				inputPlaceholderLJ: 'Type Rumi text here…',
+				inputPlaceholderJL: 'Type Jawi text here…',
 				inputCaptionLJ: 'Enter Rumi text. Conversion happens live.',
 				inputCaptionJL: 'Enter Jawi text (right to left).',
 				outputCaptionJL: 'Dictionary-assisted reverse transliteration; short vowels in Jawi may be ambiguous.',
@@ -10627,7 +10631,17 @@ if (typeof window !== 'undefined') {
 				if (btnLJ && t.dirLJTitle) btnLJ.title = t.dirLJTitle;
 				if (btnJL && t.dirJLTitle) btnJL.title = t.dirJLTitle;
 				const swapBtn = document.getElementById('swapBtn');
-				if (swapBtn && t.swapTitle) swapBtn.title = t.swapTitle;
+				if (swapBtn && t.swapTitle) {
+					swapBtn.title = t.swapTitle;
+					swapBtn.setAttribute('aria-label', t.swapTitle);
+				}
+				if (area) {
+					const placeholder = lj
+						? (t.inputPlaceholderLJ || 'Taip teks Rumi di sini…')
+						: (t.inputPlaceholderJL || 'Taip teks Jawi di sini…');
+					area.placeholder = placeholder;
+					area.setAttribute('aria-label', placeholder);
+				}
 				this.update();
 			},
 
