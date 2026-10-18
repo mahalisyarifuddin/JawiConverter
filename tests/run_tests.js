@@ -223,6 +223,9 @@ if (fs.existsSync(path.join(root, 'jawi_converter.js'))) {
 } else if (/<script\b[^>]*\bsrc\s*=/i.test(html)) {
   console.error('The standalone HTML references an external JavaScript file.');
   failures++;
+} else if (!/<\/html>\s*$/i.test(html)) {
+  console.error('The standalone HTML contains extra content after the closing </html> tag.');
+  failures++;
 } else {
   const browserContext = { window: {}, console };
   vm.runInNewContext(engineSource, browserContext, { timeout: 30000 });
