@@ -79,11 +79,12 @@ node tests/evaluate_corpus.js \
 | Tuned `2026-11-09-rule-based-2` | 53.35% | 52.62% | 53.80% |
 | Refined `2026-11-09-rule-based-3` | 48.90% | 48.08% | 49.14% |
 | Full-train tuned `2026-11-09-rule-based-4` | 46.63% | 45.89% | 46.99% |
-| **Refined `2026-11-09-rule-based-5`** | **44.51%** | **43.66%** | **44.43%** |
+| Refined `2026-11-09-rule-based-5` | 44.51% | 43.66% | 44.43% |
+| **Refined `2026-11-09-rule-based-6`** | **44.22%** | **43.46%** | **44.04%** |
 
-The current rule-based-5 result is **17,030 edits / 38,326 reference words = 44.4346% test WER**, with 69 exact test sentences. Relative to rule-based-2, this is a **9.3618-point** test reduction; relative to the punctuation-corrected baseline, it is **13.6617 points**. On the full validation split WER falls from 45.8942% to **43.6558%**, a further **2.2384 points** over rule-based-4.
+The current rule-based-6 result is **16,880 edits / 38,326 reference words = 44.0406% test WER**, with 68 exact test sentences. Relative to rule-based-2, this is a **9.7558-point** test reduction; relative to the punctuation-corrected baseline, it is **14.0557 points**. On the full validation split WER falls to **43.4619%**, a further **0.1939 points** over rule-based-5.
 
-Rule-based-5 adds two general orthographic rules, both derived from measured train-split regularities rather than word lists:
+Rule-based-6 adds one further general rule, selected on the complete train split and accepted on the complete validation split: a **medial schwa before r** (ke-r-ana, me-r-eka, be-r-apa) has no Jawi vowel letter, and before r it is by far the most frequent such context (2,941 train cases, versus roughly a thousand spread across every other consonant). Rule-based-5 added two general orthographic rules, both derived from measured train-split regularities rather than word lists:
 
 - **`di` + nasal.** No Malay passive root begins with `ng`/`ny`, so the joined-`di` priority now excludes `د` + `nga`/`nya`. This alone fixed a large class, for example `دڠن → dengan` (previously `dingan`, 1,993 train occurrences) and `دڠر → dengar`.
 - **Unwritten initial vowel.** Jawi writes `/a/` with alif but leaves schwa unwritten. When the first two letters are consonants and the word has three or more syllables, an inserted initial vowel is schwa in 38,537 train cases versus 3,365 for `/a/`. This restores `نݢري → negeri`, `نݢارا → negara`, `ڤلاجر → pelajar`. Two-syllable words are genuinely mixed and are left neutral.

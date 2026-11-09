@@ -203,4 +203,40 @@ Rejected on sample screens (each held 500 evenly spaced train and validation sen
 
 Rule-based-5 lowers full validation WER by **2.2384 points** over rule-based-4 and its comparative test WER by **2.5596 points**. Full validation Rumi → Jawi is unchanged at **34.9822%** (13,097 edits / 37,439 words, 40 exact sentences), because the changed rules act only in the inverse direction. Test was not used for any selection; it remains a comparative benchmark because it was inspected in the first cycle.
 
+## Fifth-cycle: medial schwa and alignment quality
+
+Rule-based-6 came from a corrected error analysis. Sentence word counts agree in only 55.9% of train rows, so naively pairing words by position invents substitutions. Analysis now uses a word-level edit alignment, and claims are checked against the engine directly before a rule is proposed.
+
+| Measurement (train) | Result | Rule |
+| --- | --- | --- |
+| Rumi open /e/ after a stop, vowel letter unwritten | 35,387 cases | governs the medial-schwa context |
+| ... of those, followed by `r` | 2,941 (largest single consonant) | prefer a medial schwa before `r` |
+| Final vowel omitted by Jawi vs spuriously added (aligned) | 9,151 vs 3,294 | context examined but no rule retained |
+| Words gaining a syllable (`majlis→mejelis`) | 7,742 | penalties tried at several scopes; all regressed |
+
+| Change | Full train | Full validation | Decision |
+| --- | --- | --- | --- |
+| `medialER=0.1` | 44.5142% → 44.2201% | 43.6558% → 43.4619% | Accepted |
+| `medialER=0.05` (tuner proposal) | 44.2195% (1 fewer edit) | 43.4724% (4 more edits) | Rejected by the validation gate |
+
+A direct sweep on the full splits around the boundary (0, 0.025, 0.05, 0.075, 0.1, 0.15) confirmed 0.1 as the validation optimum; 0.05 and 0.075 tie on train at 135,618 edits while 0.1 gives 135,620, so the trade is a single train edit against four validation edits.
+
+Rejected after measurement, each on 500 evenly spaced train and validation sentences:
+
+- penalising a contiguous-cluster consonant reading, at three scopes: too broad, it also penalises correct `meN-`/`peN-` words;
+- `C-e-CC` schwa-in-cluster cost (`majlis`, `lumpur`): that shape is far more often correct than wrong;
+- penalising the bare form of short consonant-final tokens: most such tokens really are bare (`terhadap`, `sistem`);
+- raising the final-vowel cost floor or penalising joined `di` above 0.5: both regressed;
+- a medial-schwa cost restricted to non-`r` contexts, and closed-syllable vowel quality.
+
+The `itu`/`ini`/`pada` class remains: the correct form always carries a forward edit distance of 1 while the bare form is exact, so `forwardBonus` outweighs any affordable final-vowel cost. Both directions were tested and both regress, which is direct evidence that the class is underdetermined by the orthography rather than badly ranked.
+
+| Engine | Split | Sentences | Reference words | S | D | I | Total edits | WER | Exact sentences |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| **Refined rule-based-6** | train | 15,881 | 306,693 | 126,506 | 8,965 | 149 | 135,620 | **44.2201%** | 670 |
+| **Refined rule-based-6** | validation | 1,989 | 38,153 | 15,477 | 1,086 | 19 | 16,582 | **43.4619%** | 97 |
+| **Refined rule-based-6** | test (comparative) | 1,972 | 38,326 | 16,726 | 1,126 | 28 | 16,880 | **44.0406%** | 68 |
+
+Rule-based-6 lowers full validation WER by **0.1939 points** and comparative test WER by **0.3939 points** over rule-based-5. Test was not used for any selection and remains a comparative benchmark because it was inspected in the first cycle.
+
 The aggregate metrics contain no corpus sentences. Detailed JSON metrics and error reports remain in Git-ignored `artifacts/`; downloaded Parquet files remain in Git-ignored `corpus/`.

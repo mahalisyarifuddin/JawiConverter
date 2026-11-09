@@ -79,11 +79,12 @@ Nilai `0` berarti seluruh split. Batas yang lebih kecil berguna selama pengemban
 | `2026-11-09-rule-based-2` hasil tuning | 53,35% | 52,62% | 53,80% |
 | `2026-11-09-rule-based-3` hasil penyempurnaan | 48,90% | 48,08% | 49,14% |
 | `2026-11-09-rule-based-4` hasil tuning seluruh train | 46,63% | 45,89% | 46,99% |
-| **`2026-11-09-rule-based-5` hasil penyempurnaan** | **44,51%** | **43,66%** | **44,43%** |
+| `2026-11-09-rule-based-5` hasil penyempurnaan | 44,51% | 43,66% | 44,43% |
+| **`2026-11-09-rule-based-6` hasil penyempurnaan** | **44,22%** | **43,46%** | **44,04%** |
 
-Hasil rule-based-5 saat ini adalah **17.030 edit / 38.326 kata referensi = 44,4346% WER test**, dengan 69 kalimat test yang cocok persis. Dibanding rule-based-2, WER test turun **9,3618 poin persentase**; dibanding baseline dengan koreksi tanda baca, penurunannya **13,6617 poin**. Pada seluruh split validation, WER turun dari 45,8942% menjadi **43,6558%**, yaitu **2,2384 poin** lebih baik daripada rule-based-4.
+Hasil rule-based-6 saat ini adalah **16.880 edit / 38.326 kata referensi = 44,0406% WER test**, dengan 68 kalimat test yang cocok persis. Dibanding rule-based-2, WER test turun **9,7558 poin persentase**; dibanding baseline dengan koreksi tanda baca, penurunannya **14,0557 poin**. Pada seluruh split validation, WER turun menjadi **43,4619%**, yaitu **0,1939 poin** lebih baik daripada rule-based-5.
 
-Rule-based-5 menambahkan dua aturan ejaan umum, keduanya diturunkan dari keteraturan terukur pada split train, bukan dari daftar kata:
+Rule-based-6 menambahkan satu aturan umum lagi, dipilih pada split train lengkap dan diterima pada split validation lengkap: **pepet medial sebelum r** (ke-r-ana, me-r-eka, be-r-apa) tidak memiliki huruf vokal Jawi, dan sebelum r konteks itu paling dominan (2.941 kasus train, dibanding sekitar seribu yang tersebar pada konsonan lain). Rule-based-5 menambahkan dua aturan ejaan umum, keduanya diturunkan dari keteraturan terukur pada split train, bukan dari daftar kata:
 
 - **`di` + sengau.** Tidak ada akar pasif Melayu yang dimulai dengan `ng`/`ny`, sehingga prioritas `di` rangkai kini mengecualikan `د` + `nga`/`nya`. Aturan ini memperbaiki kelas besar, misalnya `دڠن → dengan` (sebelumnya `dingan`, 1.993 kemunculan di train) dan `دڠر → dengar`.
 - **Vokal awal tidak tertulis.** Jawi menulis `/a/` dengan alif tetapi membiarkan pepet tidak tertulis. Bila dua huruf pertama adalah konsonan dan kata memiliki tiga suku kata atau lebih, vokal awal sisipan adalah pepet pada 38.537 kasus train dibanding 3.365 untuk `/a/`. Aturan ini memulihkan `نݢري → negeri`, `نݢارا → negara`, `ڤلاجر → pelajar`. Kata dua suku kata memang campuran dan dibiarkan netral.

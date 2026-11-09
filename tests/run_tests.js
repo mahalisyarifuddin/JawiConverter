@@ -144,6 +144,11 @@ assert.strictEqual(engine.jawiToLatin('دڠر'), 'dengar');
 assert.strictEqual(engine.jawiToLatin('نݢري'), 'negeri');
 assert.strictEqual(engine.jawiToLatin('نݢارا'), 'negara');
 assert.strictEqual(engine.jawiToLatin('ڤلاجر'), 'pelajar');
+/* Rumi /e/ in a medial open syllable is unwritten in Jawi; before r that is the
+ * dominant context (ke-r-ana, be-r-apa), so the medial schwa is preferred. */
+assert.strictEqual(engine.jawiToLatin('کران'), 'kerana');
+assert.strictEqual(engine.jawiToLatin('براڤ'), 'berapa');
+assert(engine.phonotacticCost('kerana') < engine.phonotacticCost('karana'));
 assert(engine.phonotacticCost('plajar') > engine.phonotacticCost('pelajar'));
 assert(engine.phonotacticCost('tersbut') > engine.phonotacticCost('tersebut'));
 assert.strictEqual(engine.jawiToLatin('غاءيره'), engine.jawiToLatin('غاٴيره'));
