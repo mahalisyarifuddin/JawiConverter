@@ -51,6 +51,17 @@ No spelling correction, stemming, punctuation stripping, or reference-guided can
 
 ## Commands
 
+Fetch the official splits into the Git-ignored `corpus/` directory. The host is
+configurable for a mirror or an offline copy:
+
+```sh
+tools/fetch_corpus.sh corpus
+UTUSAN_BASE_URL=https://mirror.example/dataset tools/fetch_corpus.sh corpus
+```
+
+If the host is unreachable, stop there: do not substitute synthetic or partial
+data, and do not publish WER numbers for these splits.
+
 JSONL, JSON, CSV, and Parquet are supported. Parquet conversion uses `tools/parquet_to_jsonl.py` and requires `pyarrow`; all other formats need only Node.js.
 
 ```sh
