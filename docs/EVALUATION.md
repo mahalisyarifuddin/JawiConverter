@@ -110,4 +110,26 @@ The official Parquet files were downloaded and validated locally: 15,881 train, 
 
 The tuned engine reduces full test WER by **4.3000 percentage points** (a 7.40% relative reduction) and increases exact test sentences from 11 to 59. Full validation WER falls by **4.5212 percentage points**. The pre-tuning baseline already includes deterministic Arabic-punctuation conversion, so this comparison isolates the accepted tuning passes rather than combining them with the earlier punctuation gain.
 
-The aggregate metrics above contain no corpus sentences. Detailed JSON metrics and error reports remain in Git-ignored `artifacts/`; downloaded Parquet files remain in Git-ignored `corpus/`. Test was not used to select rules or parameters, and no subsequent tuning was performed after viewing test. These results establish a measured local optimum for the performed coordinate search, not a mathematical global minimum over an open-ended rule space.
+At the end of this first cycle, test had not selected rules or parameters and no post-test tuning had been performed. The result established a measured local optimum for that coordinate search, not a mathematical global minimum over an open-ended rule space.
+
+## Second-cycle rule refinement
+
+A later development cycle analyzed recurring errors on train and refined general orthographic rules rather than adding lexical mappings:
+
+- the explicit Pedoman §7.2 spelling of `dan`;
+- pass-through for already-Latin tokens in mixed-script input;
+- joined `di/ke/se` hamzah contexts and joined-`di` ranking;
+- contextual waw/ya handling around those prefixes and before final `ه`;
+- general `aya/ai`, forward-consistency, and prefix costs selected on train samples.
+
+The retained configuration is `2026-11-09-rule-based-3`. One additional sampled coordinate pass proposed `pairAya=-0.125`; although both 200-sentence samples improved, full validation worsened by five edits, so that adjustment was rejected and `pairAya=-0.25` retained. The accepted `forwardWeight=0.25` adjustment and structural rules were checked on the full validation split.
+
+| Engine | Split | Sentences | Reference words | S | D | I | Total edits | WER | Exact sentences |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| **Refined rule-based-3** | train | 15,881 | 306,693 | 140,851 | 8,963 | 147 | 149,961 | **48.8961%** | 601 |
+| **Refined rule-based-3** | validation | 1,989 | 38,153 | 17,239 | 1,086 | 19 | 18,344 | **48.0801%** | 94 |
+| **Refined rule-based-3** | test (comparative) | 1,972 | 38,326 | 17,677 | 1,126 | 29 | 18,832 | **49.1364%** | 66 |
+
+Rule-based-3 reduces full validation WER by **4.5449 percentage points** over rule-based-2. Its comparative test WER is **4.6600 points** lower than rule-based-2 and **8.9599 points** lower than the punctuation-corrected baseline. Because test had already been inspected during the first cycle, the rule-based-3 test score is **not a pristine-holdout result** and must not be presented as one. Test did not select the second-cycle rules or costs, but a genuinely untouched holdout would be needed for a new generalization claim.
+
+The aggregate metrics contain no corpus sentences. Detailed JSON metrics and error reports remain in Git-ignored `artifacts/`; downloaded Parquet files remain in Git-ignored `corpus/`.

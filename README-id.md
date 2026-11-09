@@ -76,9 +76,12 @@ Nilai `0` berarti seluruh split. Batas yang lebih kecil berguna selama pengemban
 | Mesin | WER train | WER validation | WER test |
 | --- | ---: | ---: | ---: |
 | Pra-tuning, koreksi tanda baca | — | 57,15% | 58,10% |
-| **`2026-11-09-rule-based-2` hasil tuning** | **53,35%** | **52,62%** | **53,80%** |
+| `2026-11-09-rule-based-2` hasil tuning | 53,35% | 52,62% | 53,80% |
+| **`2026-11-09-rule-based-3` hasil penyempurnaan** | **48,90%** | **48,08%** | **49,14%** |
 
-Hasil test akhir adalah **20.618 edit / 38.326 kata referensi = 53,7964% WER**. WER test turun **4,30 poin persentase**, dan kalimat test yang cocok persis naik dari 11 menjadi 59. Empat tahap coordinate descent yang diterima memakai 200 kalimat train dan validation dengan jarak merata, disusul verifikasi validation penuh; tahap kelima tidak menemukan perbaikan dan ditolak. Test tidak digunakan sampai mesin dibekukan. Hasil ini adalah perbaikan lokal terverifikasi, bukan klaim minimum global atas semua aturan yang mungkin. Baca [docs/EVALUATION.md](docs/EVALUATION.md) untuk jumlah dan protokol reproduksi.
+Hasil rule-based-3 saat ini adalah **18.832 edit / 38.326 kata referensi = 49,1364% WER test**, dengan 66 kalimat test yang cocok persis. Dibanding rule-based-2, WER test turun **4,6600 poin persentase**; dibanding baseline dengan koreksi tanda baca, penurunannya **8,9599 poin**. Penyempurnaan ini menambah ejaan Pedoman untuk `dan`, konteks hamzah untuk `di/ke/se` yang dirangkai, pemertahanan token Latin campuran, serta biaya vokal/awalan umum yang disetel ulang. Tidak ada inventaris kata atau pemetaan pengecualian.
+
+Rule-based-2 dibekukan sebelum evaluasi test pertamanya. Rule-based-3 adalah penyempurnaan train/validation berikutnya, sehingga angka testnya merupakan **tolok ukur perbandingan, bukan klaim holdout yang masih murni**. Satu penyesuaian coordinate pada sampel siklus kedua ditolak karena gagal memperbaiki validation penuh. Hasil ini adalah perbaikan lokal terverifikasi, bukan klaim minimum global. Baca [docs/EVALUATION.md](docs/EVALUATION.md) untuk jumlah dan protokol reproduksi.
 
 ## Privasi
 

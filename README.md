@@ -76,9 +76,12 @@ node tests/evaluate_corpus.js \
 | Engine | Train WER | Validation WER | Test WER |
 | --- | ---: | ---: | ---: |
 | Pre-tuning, punctuation-corrected | — | 57.15% | 58.10% |
-| **Tuned `2026-11-09-rule-based-2`** | **53.35%** | **52.62%** | **53.80%** |
+| Tuned `2026-11-09-rule-based-2` | 53.35% | 52.62% | 53.80% |
+| **Refined `2026-11-09-rule-based-3`** | **48.90%** | **48.08%** | **49.14%** |
 
-The final test result is **20,618 edits / 38,326 reference words = 53.7964% WER**. Test WER fell by **4.30 percentage points**, and exact test sentences rose from 11 to 59. Four accepted coordinate passes used 200 evenly spaced train and validation sentences, with full-validation verification after each pass; a fifth pass found no improvement and was rejected. Test remained untouched until the engine was frozen. This is a verified local improvement, not a claim of a global minimum over all possible rules. See [docs/EVALUATION.md](docs/EVALUATION.md) for counts and the reproducibility protocol.
+The current rule-based-3 result is **18,832 edits / 38,326 reference words = 49.1364% test WER**, with 66 exact test sentences. Relative to rule-based-2, this is a **4.6600-point** test reduction; relative to the punctuation-corrected baseline, it is **8.9599 points**. The refinement adds the Pedoman spelling of `dan`, joined `di/ke/se` hamzah contexts, mixed Latin-token pass-through, and retuned general vowel/prefix costs. It uses no word inventory or exception mapping.
+
+Rule-based-2 was frozen before its first test evaluation. Rule-based-3 is a later train/validation refinement, so its test number is a **comparative benchmark, not a pristine-holdout claim**. A sampled second-cycle coordinate adjustment that failed full validation was rejected. These are verified local improvements, not a claim of a global minimum. See [docs/EVALUATION.md](docs/EVALUATION.md) for counts and the reproducibility protocol.
 
 ## Privacy
 

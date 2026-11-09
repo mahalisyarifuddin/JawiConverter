@@ -1019,9 +1019,7 @@
   {
     "rule": "7.2",
     "rumi": "dan",
-    "pedoman": "دان",
-    "deterministic": false,
-    "reason": "Unmarked Rumi does not uniquely encode the required pronunciation or loan-spelling class."
+    "pedoman": "دان"
   },
   {
     "rule": "7.2",

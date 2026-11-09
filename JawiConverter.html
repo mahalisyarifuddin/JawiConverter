@@ -1629,7 +1629,7 @@ function alifForA(word, syllables, index) {
   if (s.vowel !== 'a') return false;
   if (!s.onset) return true;
   if (!s.open) {
-    if (syllables.length === 1) return s.onset.startsWith('w');
+    if (syllables.length === 1) return s.onset.startsWith('w') || plainRumi(word) === 'dan';
     if (s.penultimate && syllables.length === 2 && !last.open && /^(?:m|ng)/.test(s.coda)) return true;
     return false;
   }
@@ -1828,8 +1828,8 @@ const TUNE = {
   insertA:0, insertE:0.25, insertI:2.2, insertU:2.2, insertO:2.4,
   finalNone:0, finalA:0, finalI:1.4, finalU:1.4, finalE:0, finalO:2,
   wawO:0.3125, wawW:0.5, initialO:0.2, yaE:0, yaY:0.625,
-  pairAya:0, pairAwa:0, forwardWeight:0, forwardBonus:1.875,
-  invalidCluster:3, prefixBonus:1, beam:250, shortlist:40
+  pairAya:-0.25, pairAwa:0, forwardWeight:0.25, forwardBonus:1.875,
+  invalidCluster:3, prefixBonus:1, diPrefixBonus:3, beam:250, shortlist:40
 };
 const LATIN_VOWELS = 'aeiou';
 function latinConsonantAtEnd(value) { return /[bcdfghjklmnpqrstvwxyz]$/i.test(value); }
@@ -1861,9 +1861,17 @@ function inverseCandidates(word) {
         consume(2, following === 'ي' ? [['i',0],['e',0.25],['ai',1.5]] : [['u',0],['o',TUNE.initialO],['w',1]]);
       } else if ((ch === 'ا' || ch === 'أ') && following === 'ء' && (third === 'ي' || third === 'و')) {
         consume(3, third === 'ي' ? [['ai',0],['a',0.5]] : [['au',0],['a',0.5]]);
+      /* Joined di/ke/se use hamzah above alif before a vowel-initial root. */
+      } else if (ch === 'أ' && i === 1 && state.text === 'd') {
+        consume(1, following === 'و' || following === 'ي' ? [['i',0]] : [['ia',0],['ie',0.5],['ii',0.5],['iu',0.5],['io',0.5]]);
+      } else if (ch === 'أ' && i === 1 && (state.text === 'k' || state.text === 's')) {
+        consume(1, following === 'و' || following === 'ي' ? [['e',0]] : [['ea',0],['ee',0],['eo',0],['ei',0.5],['eu',0.5]]);
       } else if ((ch === 'ا' || ch === 'أ' || ch === 'آ') && (following === 'ي' || following === 'و')) {
-        consume(2, following === 'ي' ? [['ai',0],['aya',TUNE.pairAya],['a',0.8]] : [['au',0],['awa',TUNE.pairAwa],['a',0.8]]);
-      } else if (ch === 'ا' || ch === 'أ' || ch === 'آ' || ch === 'إ') consume(1, [[ch === 'إ' ? 'i' : 'a',0]]);
+        consume(2, following === 'ي' ? [['ai',0],['aya',TUNE.pairAya],['a',0.8]] : third === 'ه' ? [['awa',0]] : [['au',0],['awa',TUNE.pairAwa],['a',0.8]]);
+      }
+      else if (ch === 'ا' || ch === 'أ' || ch === 'آ' || ch === 'إ') consume(1, [[ch === 'إ' ? 'i' : 'a',0]]);
+      else if ((ch === 'و' || ch === 'ؤ') && i === 2 && word[1] === 'أ' && state.text === 'se') consume(1, [['o',0],['u',0.5],['w',0.5]]);
+      else if ((ch === 'و' || ch === 'ؤ') && following === 'ه' && /[aeiou]$/.test(state.text)) consume(1, [['w',0]]);
       else if (ch === 'و' || ch === 'ؤ') consume(1, i === 0 ? [['w',0],['u',0.4],['o',0.5]] : [['u',0],['o',TUNE.wawO],['w',TUNE.wawW]]);
       else if (ch === 'ي' || ch === 'ئ') consume(1, i === 0 ? [['y',0],['i',0.5]] : [['i',0],['e',TUNE.yaE],['y',TUNE.yaY]]);
       else if (ch === 'ى') consume(1, [['e',0],['a',0.5]]);
@@ -1906,6 +1914,7 @@ function phonotacticCost(text) {
   }
   if (/([aeiou])\1/.test(text) && !/aa/.test(text)) cost += 0.5;
   if (/^(?:me(?:ng|ny|m|n)|pe(?:ng|ny|m|n)|ber|ter|per|ke|se)/.test(text)) cost -= TUNE.prefixBonus;
+  if (/^di/.test(text)) cost -= TUNE.diPrefixBonus;
   if (/(?:nya|lah|kah|pun|kan|an|i)$/.test(text)) cost -= 0.1;
   return cost;
 }
@@ -1919,7 +1928,9 @@ function decodeJawiWord(input) {
   for (const candidate of candidates) {
     const forward = normalizeJawiInput(wordToJawi(candidate.text));
     const distance = editDistance(forward, word);
-    const cost = candidate.baseCost + distance * TUNE.forwardWeight - (distance === 0 ? TUNE.forwardBonus : 0);
+    const joinedDi = /^di/.test(candidate.text) && /^د[^اآأإويى]/.test(word);
+    const consistent = distance === 0 || joinedDi;
+    const cost = candidate.baseCost + distance * TUNE.forwardWeight - (consistent ? TUNE.forwardBonus : 0);
     if (cost < bestCost || (cost === bestCost && candidate.text.length < best.length)) {
       best = candidate.text; bestCost = cost;
     }
@@ -1994,13 +2005,15 @@ function jawiToLatin(text) {
     .replace(/[۔]/g, '.').replace(/٫/g, '.').replace(/٪/g, '%');
   return text.split(/(\s+|[^\p{L}\p{M}\p{N}\-])/gu).map(token => {
     if (!token || /^\s+$/u.test(token) || /[^\p{L}\p{M}\p{N}\-]/u.test(token) || /^\d+$/u.test(token)) return token;
+    /* Mixed Latin/Jawi sources keep already-Latin tokens unchanged. */
+    if (/^[\p{Script=Latin}\p{M}\p{N}'’/-]+$/u.test(token)) return token;
     return token.split(/([-/])/u).map(p => /[-/]/u.test(p) ? p : jawiToRumi(p)).join('');
   }).join('')
     .replace(/\s+([,.;:!?])/g, '$1')
     .replace(/([({\[])\s+/g, '$1').replace(/\s+([)}\]])/g, '$1');
 }
 
-const RULE_VERSION = '2026-11-09-rule-based-2';
+const RULE_VERSION = '2026-11-09-rule-based-3';
 if (typeof module !== 'undefined' && module.exports) module.exports = {
   RULE_VERSION, appendSuffix, latinToJawi, jawiToLatin, wordToJawi, baseWordToJawi:wordToJawi,
   syllabify, jawiToRumi, heurJawiToRumi, inverseCandidates, phonotacticCost, editDistance,

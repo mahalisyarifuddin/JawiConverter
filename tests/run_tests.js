@@ -43,8 +43,8 @@ for (const testCase of cases) {
     `${testCase.rule || '?'} ${testCase.rumi}`);
   deterministic++;
 }
-assert.strictEqual(deterministic, 178);
-assert.strictEqual(underdetermined, 58);
+assert.strictEqual(deterministic, 179);
+assert.strictEqual(underdetermined, 57);
 console.log(`Pedoman audit: ${deterministic} deterministic forms passed; ${underdetermined} underdetermined forms converted safely`);
 
 // Numbered operational rules stay represented in the deterministic audit.
@@ -127,7 +127,13 @@ for (const [canonicalJawi, expected] of [
 }
 assert.strictEqual(engine.jawiToLatin(HIGH_HAMZA), '');
 assert.strictEqual(engine.jawiToLatin('١٢ ، ٣.٥؟'), '12, 3.5?');
+assert.strictEqual(engine.jawiToLatin('MBJB Press e-peper'), 'MBJB Press e-peper');
 assert.strictEqual(engine.jawiToLatin('يڠ'), 'yang');
+assert.strictEqual(engine.jawiToLatin('دأمبيل'), 'diambil');
+assert.strictEqual(engine.jawiToLatin('سأورڠ'), 'seorang');
+assert.strictEqual(engine.jawiToLatin('دسيني'), 'disini');
+assert.strictEqual(engine.jawiToLatin('دباوه'), 'dibawah');
+assert.strictEqual(engine.jawiToLatin('دالم'), 'dalam');
 assert.strictEqual(engine.jawiToLatin('غاءيره'), engine.jawiToLatin('غاٴيره'));
 assert(engine.jawiToLatin('غاءيره').length > 0);
 for (const candidate of engine.inverseCandidates('ممباچ')) {
