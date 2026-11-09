@@ -1827,9 +1827,9 @@ const CONSONANT_REVERSE = Object.freeze({
 const TUNE = {
   insertA:0, insertE:0, insertI:2.2, insertU:2.2, insertO:2.4,
   finalA:-0.1, finalI:1.4, finalU:1.4, finalE:0, finalO:2,
-  wawO:0.3125, wawW:0.5, initialO:0.2, yaE:0, yaY:0.625,
+  wawO:0.3125, wawW:0.5, initialO:0.2, yaE:0.5, yaY:0.625,
   pairAya:-0.25, pairAwa:0, forwardWeight:0.25, forwardBonus:1.875,
-  invalidCluster:3, complexOnset:0.5, complexCoda:0.5, prefixBonus:1, diPrefixBonus:3, beam:250, shortlist:40
+  invalidCluster:3, complexOnset:0.5, complexCoda:0.5, initialE:0.25, prefixBonus:1, diPrefixBonus:3, beam:250, shortlist:40
 };
 const LATIN_VOWELS = 'aeiou';
 function latinConsonantAtEnd(value) { return /[bcdfghjklmnpqrstvwxyz]$/i.test(value); }
@@ -1918,7 +1918,10 @@ function phonotacticCost(text) {
   }
   if (/([aeiou])\1/.test(text) && !/aa/.test(text)) cost += 0.5;
   if (/^(?:me(?:ng|ny|m|n)|pe(?:ng|ny|m|n)|ber|ter|per|ke|se)/.test(text)) cost -= TUNE.prefixBonus;
-  if (/^di/.test(text)) cost -= TUNE.diPrefixBonus;
+  /* A passive di- root never starts with the velar or palatal nasal: the
+   * remainder must be the root, so di- + ngV/nyV is read as /d/ + vowel + nasal
+   * (Pedoman: دڠن is dengan, not *dingan). */
+  if (/^di/.test(text) && !/^di(?:ng|ny)/.test(text)) cost -= TUNE.diPrefixBonus;
   if (/(?:nya|lah|kah|pun|kan|an|i)$/.test(text)) cost -= 0.1;
   return cost;
 }
@@ -1937,13 +1940,23 @@ function decodeJawiWord(input) {
   const candidates = inverseCandidates(word).map(candidate => ({
     ...candidate, baseCost:candidate.cost + phonotacticCost(candidate.text)
   })).sort((a,b) => a.baseCost - b.baseCost).slice(0, TUNE.shortlist);
+  /* Jawi writes /a/ with alif but leaves schwa unwritten. When the first two
+   * letters are consonants the initial vowel has no Jawi letter, and in a word
+   * of three or more syllables that vowel is overwhelmingly schwa
+   * (38,537 vs 3,365 train cases). Two-syllable words are genuinely mixed. */
+  /* Joined di- is spelled without the hamzah, so its vowel letter is not an
+   * inserted one; that context keeps its own deterministic rule below. */
+  const insertedInitial = /^[بتجچدذرفڤکݢسههلنمڽغ][^اآأإويى]/.test(word) &&
+    !/^د[^اآأإويى]/.test(word);
   let best = null, bestCost = Infinity;
   for (const candidate of candidates) {
     const forward = forwardForInverse(candidate.text);
     const distance = editDistance(forward, word);
     const joinedDi = /^di/.test(candidate.text) && /^د[^اآأإويى]/.test(word);
     const consistent = distance === 0 || joinedDi;
-    const cost = candidate.baseCost + distance * TUNE.forwardWeight - (consistent ? TUNE.forwardBonus : 0);
+    let cost = candidate.baseCost + distance * TUNE.forwardWeight - (consistent ? TUNE.forwardBonus : 0);
+    if (insertedInitial && consistent && syllabify(candidate.text).length >= 3 &&
+        candidate.text[1] === 'e') cost -= TUNE.initialE;
     if (cost < bestCost || (cost === bestCost && candidate.text.length < best.length)) {
       best = candidate.text; bestCost = cost;
     }
@@ -2026,7 +2039,7 @@ function jawiToLatin(text) {
     .replace(/([({\[])\s+/g, '$1').replace(/\s+([)}\]])/g, '$1');
 }
 
-const RULE_VERSION = '2026-11-09-rule-based-4';
+const RULE_VERSION = '2026-11-09-rule-based-5';
 if (typeof module !== 'undefined' && module.exports) module.exports = {
   RULE_VERSION, appendSuffix, latinToJawi, jawiToLatin, wordToJawi, baseWordToJawi:wordToJawi,
   syllabify, jawiToRumi, heurJawiToRumi, inverseCandidates, phonotacticCost, editDistance,

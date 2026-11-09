@@ -78,13 +78,21 @@ Nilai `0` berarti seluruh split. Batas yang lebih kecil berguna selama pengemban
 | Pra-tuning, koreksi tanda baca | — | 57,15% | 58,10% |
 | `2026-11-09-rule-based-2` hasil tuning | 53,35% | 52,62% | 53,80% |
 | `2026-11-09-rule-based-3` hasil penyempurnaan | 48,90% | 48,08% | 49,14% |
-| **`2026-11-09-rule-based-4` hasil tuning seluruh train** | **46,63%** | **45,89%** | **46,99%** |
+| `2026-11-09-rule-based-4` hasil tuning seluruh train | 46,63% | 45,89% | 46,99% |
+| **`2026-11-09-rule-based-5` hasil penyempurnaan** | **44,51%** | **43,66%** | **44,43%** |
 
-Hasil rule-based-4 saat ini adalah **18.011 edit / 38.326 kata referensi = 46,9942% WER test**, dengan 65 kalimat test yang cocok persis. Dibanding rule-based-2, WER test turun **6,8022 poin persentase**; dibanding baseline dengan koreksi tanda baca, penurunannya **11,1021 poin**. Pada seluruh split validation, WER turun dari 48,0801% menjadi **45,8942%**, yaitu **2,1859 poin** lebih baik daripada rule-based-3.
+Hasil rule-based-5 saat ini adalah **17.030 edit / 38.326 kata referensi = 44,4346% WER test**, dengan 69 kalimat test yang cocok persis. Dibanding rule-based-2, WER test turun **9,3618 poin persentase**; dibanding baseline dengan koreksi tanda baca, penurunannya **13,6617 poin**. Pada seluruh split validation, WER turun dari 45,8942% menjadi **43,6558%**, yaitu **2,2384 poin** lebih baik daripada rule-based-4.
 
-Rule-based-4 dipilih melalui pencarian koordinat penuh pada train dan validation, bukan sampel: tuner mengevaluasi seluruh 15.881 kalimat train untuk setiap nilai biaya. Penyempurnaan ini menambahkan biaya umum untuk gugus dua konsonan pada onset dan koda (`complexOnset`/`complexCoda`, masing-masing 0,5, yang memulihkan bentuk seperti `pelajar` dari `ڤلاجر`), menetapkan `insertE=0` agar vokal yang tidak tertulis secara bawaan menjadi `e` dan bukan `a`, serta sedikit mengutamakan pemulihan `a` akhir (`finalA=-0,1`). Tidak ada inventaris kata atau pemetaan pengecualian. Evaluasi juga menunjukkan bahwa penalti koda-tertutup menyeluruh sangat merugikan dan ditolak.
+Rule-based-5 menambahkan dua aturan ejaan umum, keduanya diturunkan dari keteraturan terukur pada split train, bukan dari daftar kata:
 
-Rule-based-2 dibekukan sebelum evaluasi test pertamanya. Rule-based-3 dan rule-based-4 adalah penyempurnaan train/validation berikutnya, sehingga angka testnya merupakan **tolok ukur perbandingan, bukan klaim holdout yang masih murni**. Penyesuaian `pairAya=-0,125` pada sampel gagal di validation penuh dan ditolak. Usulan seluruh train untuk menurunkan `diPrefixBonus` ke 2,25 memperbaiki kedua split hanya beberapa edit, tetapi menghasilkan `dasini` untuk ejaan rangkai yang deterministik, sehingga gerbang regresi membatalkannya; varian yang lebih sempit yang mempertahankan kasus itu tidak memperbaiki validation dan juga ditolak. Hasil ini adalah perbaikan lokal terverifikasi, bukan klaim minimum global. Baca [docs/EVALUATION.md](docs/EVALUATION.md) untuk jumlah dan protokol reproduksi.
+- **`di` + sengau.** Tidak ada akar pasif Melayu yang dimulai dengan `ng`/`ny`, sehingga prioritas `di` rangkai kini mengecualikan `د` + `nga`/`nya`. Aturan ini memperbaiki kelas besar, misalnya `دڠن → dengan` (sebelumnya `dingan`, 1.993 kemunculan di train) dan `دڠر → dengar`.
+- **Vokal awal tidak tertulis.** Jawi menulis `/a/` dengan alif tetapi membiarkan pepet tidak tertulis. Bila dua huruf pertama adalah konsonan dan kata memiliki tiga suku kata atau lebih, vokal awal sisipan adalah pepet pada 38.537 kasus train dibanding 3.365 untuk `/a/`. Aturan ini memulihkan `نݢري → negeri`, `نݢارا → negara`, `ڤلاجر → pelajar`. Kata dua suku kata memang campuran dan dibiarkan netral.
+
+Tuner seluruh train kemudian menerima `yaE=0,5`, yaitu sedikit mengutamakan `e` daripada `i` untuk `ي`. Seluruh pemilihan memakai split train lengkap dan setiap perubahan yang diterima diperiksa ulang pada split validation lengkap; test hanya dipakai untuk tolok ukur perbandingan terakhir.
+
+Beberapa hipotesis terukur ditolak, bukan dipaksakan: pemulihan vokal akhir yang banyak dihilangkan (`ايت → itu`, `کڤد → kepada`), biaya vokal akhir berdasarkan kelas konsonan, pembacaan geminat `C-e-C`, kecenderungan `/u/` pada suku kata tertutup, dan perumusan ulang konteks pepet dari sisi Jawi. Semuanya memperburuk kedua split atau netral; hal ini sendiri menunjukkan kelas tersebut memang ambigu secara ejaan. Tidak ada kamus, daftar pengecualian, atau tambalan per kata.
+
+Rule-based-2 dibekukan sebelum evaluasi test pertamanya. Versi berikutnya adalah penyempurnaan train/validation, sehingga angka testnya merupakan **tolok ukur perbandingan, bukan klaim holdout yang masih murni**. Hasil ini adalah perbaikan lokal terverifikasi, bukan klaim minimum global. Baca [docs/EVALUATION.md](docs/EVALUATION.md) untuk jumlah dan protokol reproduksi.
 
 ## Privasi
 

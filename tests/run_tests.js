@@ -135,6 +135,15 @@ assert.strictEqual(engine.jawiToLatin('دسيني'), 'disini');
 assert.strictEqual(engine.jawiToLatin('دباوه'), 'dibawah');
 assert.strictEqual(engine.jawiToLatin('دالم'), 'dalam');
 assert.strictEqual(engine.jawiToLatin('جوݢ'), 'juga');
+/* d + vowel + nasal is not a passive di- root: no Malay root starts with ng/ny. */
+assert.strictEqual(engine.jawiToLatin('دڠن'), 'dengan');
+assert.strictEqual(engine.jawiToLatin('دڠر'), 'dengar');
+/* Schwa is unwritten in Jawi while /a/ takes alif, so an unwritten initial
+ * vowel in a polysyllabic word is read as e. Ambiguous roots such as سڤرتي
+ * (separti/seperti/separeti) are left to the general costs. */
+assert.strictEqual(engine.jawiToLatin('نݢري'), 'negeri');
+assert.strictEqual(engine.jawiToLatin('نݢارا'), 'negara');
+assert.strictEqual(engine.jawiToLatin('ڤلاجر'), 'pelajar');
 assert(engine.phonotacticCost('plajar') > engine.phonotacticCost('pelajar'));
 assert(engine.phonotacticCost('tersbut') > engine.phonotacticCost('tersebut'));
 assert.strictEqual(engine.jawiToLatin('غاءيره'), engine.jawiToLatin('غاٴيره'));

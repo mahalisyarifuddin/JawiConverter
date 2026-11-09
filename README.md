@@ -78,13 +78,21 @@ node tests/evaluate_corpus.js \
 | Pre-tuning, punctuation-corrected | — | 57.15% | 58.10% |
 | Tuned `2026-11-09-rule-based-2` | 53.35% | 52.62% | 53.80% |
 | Refined `2026-11-09-rule-based-3` | 48.90% | 48.08% | 49.14% |
-| **Full-train tuned `2026-11-09-rule-based-4`** | **46.63%** | **45.89%** | **46.99%** |
+| Full-train tuned `2026-11-09-rule-based-4` | 46.63% | 45.89% | 46.99% |
+| **Refined `2026-11-09-rule-based-5`** | **44.51%** | **43.66%** | **44.43%** |
 
-The current rule-based-4 result is **18,011 edits / 38,326 reference words = 46.9942% test WER**, with 65 exact test sentences. Relative to rule-based-2, this is a **6.8022-point** test reduction; relative to the punctuation-corrected baseline, it is **11.1021 points**. On the full validation split it reduces WER from 48.0801% to **45.8942%**, a further **2.1859 points** over rule-based-3.
+The current rule-based-5 result is **17,030 edits / 38,326 reference words = 44.4346% test WER**, with 69 exact test sentences. Relative to rule-based-2, this is a **9.3618-point** test reduction; relative to the punctuation-corrected baseline, it is **13.6617 points**. On the full validation split WER falls from 45.8942% to **43.6558%**, a further **2.2384 points** over rule-based-4.
 
-Rule-based-4 was selected with exact full-train/full-validation coordinate searches instead of samples: the tuner evaluated every one of the 15,881 train sentences per candidate cost. It adds general costs for two-consonant onsets and codas (`complexOnset`/`complexCoda`, 0.5 each, which restore forms such as `pelajar` from `ڤلاجر`), sets `insertE=0` so an unwritten vowel defaults to `e` rather than `a`, and favors a restored final `a` slightly (`finalA=-0.1`). It still uses no word inventory or exception mapping. The evaluation also confirmed that a blanket closed-syllable penalty is strongly harmful and rejected it.
+Rule-based-5 adds two general orthographic rules, both derived from measured train-split regularities rather than word lists:
 
-Rule-based-2 was frozen before its first test evaluation. Rule-based-3 and rule-based-4 are later train/validation refinements, so their test numbers are **comparative benchmarks, not pristine-holdout claims**. A sampled `pairAya=-0.125` adjustment failed full validation and was rejected. A full-train proposal lowering `diPrefixBonus` to 2.25 improved both splits by a handful of edits but produced `dasini` for a deterministic joined spelling, so the regression gate rolled it back; a narrower variant that preserved that case did not improve validation and was also rejected. These are verified local improvements, not a claim of a global minimum. See [docs/EVALUATION.md](docs/EVALUATION.md) for counts and the reproducibility protocol.
+- **`di` + nasal.** No Malay passive root begins with `ng`/`ny`, so the joined-`di` priority now excludes `د` + `nga`/`nya`. This alone fixed a large class, for example `دڠن → dengan` (previously `dingan`, 1,993 train occurrences) and `دڠر → dengar`.
+- **Unwritten initial vowel.** Jawi writes `/a/` with alif but leaves schwa unwritten. When the first two letters are consonants and the word has three or more syllables, an inserted initial vowel is schwa in 38,537 train cases versus 3,365 for `/a/`. This restores `نݢري → negeri`, `نݢارا → negara`, `ڤلاجر → pelajar`. Two-syllable words are genuinely mixed and are left neutral.
+
+The full-train tuner then accepted `yaE=0.5`, slightly preferring `e` over `i` for `ي`. All selection used the complete train split and every accepted change was re-checked on the complete validation split; test was used only for the final comparative benchmark.
+
+Several measured hypotheses were rejected rather than fitted: honouring the many omitted final vowels (`ايت → itu`, `کڤد → kepada`), a consonant-class final-vowel cost, geminate `C-e-C` readings, a closed-syllable `/u/` preference, and Jawi-side reformulations of the schwa context. Each either regressed both splits or was neutral, which is itself evidence that those classes are genuinely underdetermined from the orthography alone. No dictionaries, exception lists, or per-word patches are used.
+
+Rule-based-2 was frozen before its first test evaluation. Later versions are train/validation refinements, so their test numbers are **comparative benchmarks, not pristine-holdout claims**. These are verified local improvements, not a claim of a global minimum. See [docs/EVALUATION.md](docs/EVALUATION.md) for counts and the reproducibility protocol.
 
 ## Privacy
 

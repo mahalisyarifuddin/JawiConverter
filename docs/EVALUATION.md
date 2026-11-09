@@ -159,4 +159,33 @@ To keep the deterministic joined spelling while accepting the small global gain,
 
 Rule-based-4 lowers full validation WER by a further **2.1859 percentage points** over rule-based-3 and raises exact validation sentences from 94 to 102. Its comparative test WER is **2.1422 points** lower than rule-based-3. The reverse direction is unchanged by these inverse costs: full validation Rumi → Jawi remains **34.9822%** (13,097 edits / 37,439 words, 40 exact sentences). Because test was inspected in the first cycle, this remains a comparative benchmark rather than a pristine-holdout claim.
 
+## Fourth-cycle orthographic refinement
+
+Rule-based-5 came from error analysis of the complete train split, looking for regularities that generalise rather than for individual words. Every measurement below used train only, and every accepted change was re-checked on the complete validation split.
+
+| Measurement (train) | Result | Rule |
+| --- | --- | --- |
+| `دڠن` decoded as `dingan` | 1,993 occurrences | joined `di-` priority excluded before `ng`/`ny`, since no Malay passive root starts with a nasal |
+| Initial vowel unwritten, 3+ syllables | schwa 38,537 vs `/a/` 3,365 vs others 5,894 | inserted initial vowel read as `e` under that context |
+| Initial vowel unwritten, 2 syllables | schwa 6,986 vs `/a/` 5,595 | left neutral: genuinely mixed |
+| Final-vowel omission (5,032 tokens) | `d` 67.8%, `n` 43.7%, `t` 36.8%, `m` 10%, other ≤1% | no rule retained; class costs regressed both splits |
+
+| Change | Full train | Full validation | Decision |
+| --- | --- | --- | --- |
+| `di` + nasal exclusion | 47.365% → 46.742% (sample screen) | 45.171% → 44.385% (sample screen) | Accepted, then confirmed by the full-split runs below |
+| Initial-schwa rule (`initialE=0.25`), on top of the `di` + nasal exclusion | 46.7992% → 44.5999% | 46.0803% → 43.7423% | Accepted |
+| `yaE=0.5` | 44.5999% → 44.5142% | 43.7423% → 43.6558% | Accepted by full-train tuner with validation gate |
+
+The `initialE` sweep on the full splits is flat above 0.25 (136,785 edits from 0.25 through 1.5, versus 140,962 at 0), so the smallest sufficient value is retained rather than a fitted maximum. The tuner's own coordinate proposal reported no objective change at that point, which is consistent with the plateau.
+
+Rejected on sample screens (each held 500 evenly spaced train and validation sentences): honouring elided final vowels as forward-consistent matches (`ايت → itu`, `کڤد → kepada`) made consonant-final words expand freely (`دالم → dalama`); consonant-class final-vowel costs, geminate `C-e-C` readings, closed-syllable `/u/` preference, and Jawi-side reformulations of the schwa context all regressed both splits. These negative results are recorded because they show the affected classes are underdetermined by the orthography rather than badly ranked.
+
+| Engine | Split | Sentences | Reference words | S | D | I | Total edits | WER | Exact sentences |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| **Refined rule-based-5** | train | 15,881 | 306,693 | 127,408 | 8,965 | 149 | 136,522 | **44.5142%** | 672 |
+| **Refined rule-based-5** | validation | 1,989 | 38,153 | 15,551 | 1,086 | 19 | 16,656 | **43.6558%** | 97 |
+| **Refined rule-based-5** | test (comparative) | 1,972 | 38,326 | 15,875 | 1,126 | 29 | 17,030 | **44.4346%** | 69 |
+
+Rule-based-5 lowers full validation WER by **2.2384 points** over rule-based-4 and its comparative test WER by **2.5596 points**. Full validation Rumi → Jawi is unchanged at **34.9822%** (13,097 edits / 37,439 words, 40 exact sentences), because the changed rules act only in the inverse direction. Test was not used for any selection; it remains a comparative benchmark because it was inspected in the first cycle.
+
 The aggregate metrics contain no corpus sentences. Detailed JSON metrics and error reports remain in Git-ignored `artifacts/`; downloaded Parquet files remain in Git-ignored `corpus/`.
