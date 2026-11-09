@@ -21,6 +21,10 @@ The required separation is:
 3. Freeze the engine and run **test** only for final evaluation.
 4. If test results motivate another change, treat that as further development and obtain a genuinely untouched holdout before making a new generalization claim.
 
+## Corpus availability and protocol when it is absent
+
+The corpus is external, Git-ignored, and downloaded from the dataset host. When that host is unreachable (for example in a restricted sandbox), **do not** substitute ad-hoc or invented data and do not report any WER figure for the Utusan splits. In that situation the verified-in-repo `tools/prpm_cache.json` word pairs on `main` may be used only as a development benchmark with the status "unverified against the official splits".
+
 `tools/tune_rules.js` intentionally has no test-path option. Its JSON report records `testSplitUsed: false` and `globalOptimalityClaimed: false`.
 
 ## Metric
