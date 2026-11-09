@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   download:
@@ -32,13 +32,22 @@ jobs:
               assert table.num_rows == rows, (split, table.num_rows, rows)
               print(f'{split}: {table.num_rows} rows')
           PY
-          sha256sum output/*.parquet > output/SHA256SUMS
-          cat output/SHA256SUMS
-      - name: Store Parquet files temporarily
-        uses: actions/upload-artifact@v4
-        with:
-          name: utusan-jawi-parquet-${{ github.run_id }}
-          path: |
-            output/*.parquet
-            output/SHA256SUMS
-          retention-days: 1
+          sha256sum output/*.parquet | tee output/SHA256SUMS
+      - name: Transport files as unreferenced Git blobs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          for split in train validation test; do
+            python3 - "$split" <<'PY'
+          import base64, json, sys
+          split = sys.argv[1]
+          with open(f'output/{split}.parquet', 'rb') as source:
+              payload = {'content': base64.b64encode(source.read()).decode('ascii'), 'encoding': 'base64'}
+          with open(f'output/{split}.blob.json', 'w') as target:
+              json.dump(payload, target)
+          PY
+            sha=$(gh api --method POST "repos/${GITHUB_REPOSITORY}/git/blobs" \
+              --input "output/$split.blob.json" --jq '.sha')
+            echo "PARQUET_BLOB $split $sha"
+          done
