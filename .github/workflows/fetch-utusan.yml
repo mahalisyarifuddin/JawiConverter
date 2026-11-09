@@ -1,0 +1,44 @@
+name: Fetch Utusan Parquet artifacts
+
+on:
+  push:
+    paths:
+      - .github/workflows/fetch-utusan.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  download:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download and validate the three official splits
+        run: |
+          set -euo pipefail
+          mkdir -p output
+          base='https://huggingface.co/datasets/mahalisyarifuddin/utusan-jawi-sentences/resolve/main'
+          for split in train validation test; do
+            curl --fail --location --retry 5 --retry-all-errors \
+              "$base/$split.parquet" --output "output/$split.parquet"
+          done
+          python3 -m pip install --quiet pyarrow
+          python3 - <<'PY'
+          import pyarrow.parquet as pq
+          expected = {'train': 15881, 'validation': 1989, 'test': 1972}
+          for split, rows in expected.items():
+              path = f'output/{split}.parquet'
+              table = pq.read_table(path, columns=['text', 'latin_text'])
+              assert table.num_rows == rows, (split, table.num_rows, rows)
+              print(f'{split}: {table.num_rows} rows')
+          PY
+          sha256sum output/*.parquet > output/SHA256SUMS
+          cat output/SHA256SUMS
+      - name: Store Parquet files temporarily
+        uses: actions/upload-artifact@v4
+        with:
+          name: utusan-jawi-parquet-${{ github.run_id }}
+          path: |
+            output/*.parquet
+            output/SHA256SUMS
+          retention-days: 1
