@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: write
+  statuses: write
 
 jobs:
   download:
@@ -50,4 +51,6 @@ jobs:
             sha=$(gh api --method POST "repos/${GITHUB_REPOSITORY}/git/blobs" \
               --input "output/$split.blob.json" --jq '.sha')
             echo "PARQUET_BLOB $split $sha"
+            gh api --method POST "repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
+              -f state='success' -f context="utusan-parquet-$split" -f description="$sha" --silent
           done
