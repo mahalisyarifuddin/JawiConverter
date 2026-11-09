@@ -1,0 +1,8 @@
+# Local evaluation output and externally supplied copyrighted corpora
+artifacts/
+corpus/
+*.parquet
+
+# Tool/runtime caches
+__pycache__/
+*.pyc
