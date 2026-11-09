@@ -77,11 +77,14 @@ node tests/evaluate_corpus.js \
 | --- | ---: | ---: | ---: |
 | Pre-tuning, punctuation-corrected | — | 57.15% | 58.10% |
 | Tuned `2026-11-09-rule-based-2` | 53.35% | 52.62% | 53.80% |
-| **Refined `2026-11-09-rule-based-3`** | **48.90%** | **48.08%** | **49.14%** |
+| Refined `2026-11-09-rule-based-3` | 48.90% | 48.08% | 49.14% |
+| **Full-train tuned `2026-11-09-rule-based-4`** | **46.63%** | **45.89%** | **46.99%** |
 
-The current rule-based-3 result is **18,832 edits / 38,326 reference words = 49.1364% test WER**, with 66 exact test sentences. Relative to rule-based-2, this is a **4.6600-point** test reduction; relative to the punctuation-corrected baseline, it is **8.9599 points**. The refinement adds the Pedoman spelling of `dan`, joined `di/ke/se` hamzah contexts, mixed Latin-token pass-through, and retuned general vowel/prefix costs. It uses no word inventory or exception mapping.
+The current rule-based-4 result is **18,011 edits / 38,326 reference words = 46.9942% test WER**, with 65 exact test sentences. Relative to rule-based-2, this is a **6.8022-point** test reduction; relative to the punctuation-corrected baseline, it is **11.1021 points**. On the full validation split it reduces WER from 48.0801% to **45.8942%**, a further **2.1859 points** over rule-based-3.
 
-Rule-based-2 was frozen before its first test evaluation. Rule-based-3 is a later train/validation refinement, so its test number is a **comparative benchmark, not a pristine-holdout claim**. A sampled second-cycle coordinate adjustment that failed full validation was rejected. These are verified local improvements, not a claim of a global minimum. See [docs/EVALUATION.md](docs/EVALUATION.md) for counts and the reproducibility protocol.
+Rule-based-4 was selected with exact full-train/full-validation coordinate searches instead of samples: the tuner evaluated every one of the 15,881 train sentences per candidate cost. It adds general costs for two-consonant onsets and codas (`complexOnset`/`complexCoda`, 0.5 each, which restore forms such as `pelajar` from `ڤلاجر`), sets `insertE=0` so an unwritten vowel defaults to `e` rather than `a`, and favors a restored final `a` slightly (`finalA=-0.1`). It still uses no word inventory or exception mapping. The evaluation also confirmed that a blanket closed-syllable penalty is strongly harmful and rejected it.
+
+Rule-based-2 was frozen before its first test evaluation. Rule-based-3 and rule-based-4 are later train/validation refinements, so their test numbers are **comparative benchmarks, not pristine-holdout claims**. A sampled `pairAya=-0.125` adjustment failed full validation and was rejected. A full-train proposal lowering `diPrefixBonus` to 2.25 improved both splits by a handful of edits but produced `dasini` for a deterministic joined spelling, so the regression gate rolled it back; a narrower variant that preserved that case did not improve validation and was also rejected. These are verified local improvements, not a claim of a global minimum. See [docs/EVALUATION.md](docs/EVALUATION.md) for counts and the reproducibility protocol.
 
 ## Privacy
 

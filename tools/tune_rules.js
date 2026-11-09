@@ -82,7 +82,10 @@ function parameters(engine, direction, requested) {
 }
 function candidates(value) {
   if (typeof value === 'boolean') return [false, true];
-  const values = value === 0 ? [0, 0.1, 0.25, 0.5, 1] :
+  /* Zero is not a one-sided boundary: a negative cost can encode a general
+   * preference (for example, a restored final vowel) just as a positive cost
+   * encodes a penalty. Keep the grid small enough for full-split searches. */
+  const values = value === 0 ? [-1, -0.5, -0.25, -0.1, 0, 0.1, 0.25, 0.5, 1] :
     [0, value * 0.5, value * 0.75, value, value * 1.25, value * 1.5, value * 2];
   return [...new Set(values.map(number => Number(number.toFixed(6))))];
 }

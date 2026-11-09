@@ -77,11 +77,14 @@ Nilai `0` berarti seluruh split. Batas yang lebih kecil berguna selama pengemban
 | --- | ---: | ---: | ---: |
 | Pra-tuning, koreksi tanda baca | — | 57,15% | 58,10% |
 | `2026-11-09-rule-based-2` hasil tuning | 53,35% | 52,62% | 53,80% |
-| **`2026-11-09-rule-based-3` hasil penyempurnaan** | **48,90%** | **48,08%** | **49,14%** |
+| `2026-11-09-rule-based-3` hasil penyempurnaan | 48,90% | 48,08% | 49,14% |
+| **`2026-11-09-rule-based-4` hasil tuning seluruh train** | **46,63%** | **45,89%** | **46,99%** |
 
-Hasil rule-based-3 saat ini adalah **18.832 edit / 38.326 kata referensi = 49,1364% WER test**, dengan 66 kalimat test yang cocok persis. Dibanding rule-based-2, WER test turun **4,6600 poin persentase**; dibanding baseline dengan koreksi tanda baca, penurunannya **8,9599 poin**. Penyempurnaan ini menambah ejaan Pedoman untuk `dan`, konteks hamzah untuk `di/ke/se` yang dirangkai, pemertahanan token Latin campuran, serta biaya vokal/awalan umum yang disetel ulang. Tidak ada inventaris kata atau pemetaan pengecualian.
+Hasil rule-based-4 saat ini adalah **18.011 edit / 38.326 kata referensi = 46,9942% WER test**, dengan 65 kalimat test yang cocok persis. Dibanding rule-based-2, WER test turun **6,8022 poin persentase**; dibanding baseline dengan koreksi tanda baca, penurunannya **11,1021 poin**. Pada seluruh split validation, WER turun dari 48,0801% menjadi **45,8942%**, yaitu **2,1859 poin** lebih baik daripada rule-based-3.
 
-Rule-based-2 dibekukan sebelum evaluasi test pertamanya. Rule-based-3 adalah penyempurnaan train/validation berikutnya, sehingga angka testnya merupakan **tolok ukur perbandingan, bukan klaim holdout yang masih murni**. Satu penyesuaian coordinate pada sampel siklus kedua ditolak karena gagal memperbaiki validation penuh. Hasil ini adalah perbaikan lokal terverifikasi, bukan klaim minimum global. Baca [docs/EVALUATION.md](docs/EVALUATION.md) untuk jumlah dan protokol reproduksi.
+Rule-based-4 dipilih melalui pencarian koordinat penuh pada train dan validation, bukan sampel: tuner mengevaluasi seluruh 15.881 kalimat train untuk setiap nilai biaya. Penyempurnaan ini menambahkan biaya umum untuk gugus dua konsonan pada onset dan koda (`complexOnset`/`complexCoda`, masing-masing 0,5, yang memulihkan bentuk seperti `pelajar` dari `ڤلاجر`), menetapkan `insertE=0` agar vokal yang tidak tertulis secara bawaan menjadi `e` dan bukan `a`, serta sedikit mengutamakan pemulihan `a` akhir (`finalA=-0,1`). Tidak ada inventaris kata atau pemetaan pengecualian. Evaluasi juga menunjukkan bahwa penalti koda-tertutup menyeluruh sangat merugikan dan ditolak.
+
+Rule-based-2 dibekukan sebelum evaluasi test pertamanya. Rule-based-3 dan rule-based-4 adalah penyempurnaan train/validation berikutnya, sehingga angka testnya merupakan **tolok ukur perbandingan, bukan klaim holdout yang masih murni**. Penyesuaian `pairAya=-0,125` pada sampel gagal di validation penuh dan ditolak. Usulan seluruh train untuk menurunkan `diPrefixBonus` ke 2,25 memperbaiki kedua split hanya beberapa edit, tetapi menghasilkan `dasini` untuk ejaan rangkai yang deterministik, sehingga gerbang regresi membatalkannya; varian yang lebih sempit yang mempertahankan kasus itu tidak memperbaiki validation dan juga ditolak. Hasil ini adalah perbaikan lokal terverifikasi, bukan klaim minimum global. Baca [docs/EVALUATION.md](docs/EVALUATION.md) untuk jumlah dan protokol reproduksi.
 
 ## Privasi
 

@@ -134,6 +134,9 @@ assert.strictEqual(engine.jawiToLatin('سأورڠ'), 'seorang');
 assert.strictEqual(engine.jawiToLatin('دسيني'), 'disini');
 assert.strictEqual(engine.jawiToLatin('دباوه'), 'dibawah');
 assert.strictEqual(engine.jawiToLatin('دالم'), 'dalam');
+assert.strictEqual(engine.jawiToLatin('جوݢ'), 'juga');
+assert(engine.phonotacticCost('plajar') > engine.phonotacticCost('pelajar'));
+assert(engine.phonotacticCost('tersbut') > engine.phonotacticCost('tersebut'));
 assert.strictEqual(engine.jawiToLatin('غاءيره'), engine.jawiToLatin('غاٴيره'));
 assert(engine.jawiToLatin('غاءيره').length > 0);
 for (const candidate of engine.inverseCandidates('ممباچ')) {

@@ -1825,11 +1825,11 @@ const CONSONANT_REVERSE = Object.freeze({
  * rule candidates, never by a lexicon. Costs encode only phonotactic and
  * orthographic preferences. */
 const TUNE = {
-  insertA:0, insertE:0.25, insertI:2.2, insertU:2.2, insertO:2.4,
-  finalNone:0, finalA:0, finalI:1.4, finalU:1.4, finalE:0, finalO:2,
+  insertA:0, insertE:0, insertI:2.2, insertU:2.2, insertO:2.4,
+  finalA:-0.1, finalI:1.4, finalU:1.4, finalE:0, finalO:2,
   wawO:0.3125, wawW:0.5, initialO:0.2, yaE:0, yaY:0.625,
   pairAya:-0.25, pairAwa:0, forwardWeight:0.25, forwardBonus:1.875,
-  invalidCluster:3, prefixBonus:1, diPrefixBonus:3, beam:250, shortlist:40
+  invalidCluster:3, complexOnset:0.5, complexCoda:0.5, prefixBonus:1, diPrefixBonus:3, beam:250, shortlist:40
 };
 const LATIN_VOWELS = 'aeiou';
 function latinConsonantAtEnd(value) { return /[bcdfghjklmnpqrstvwxyz]$/i.test(value); }
@@ -1908,6 +1908,10 @@ function phonotacticCost(text) {
   const codas = new Set(['ng','ny','nt','nd','mp','mb','nk','ng','ks','ps','st','sk','sp','lk','rk','lt','rt','pt','kt','ft','ms','ns','ls','rs','lm','rm','rn','rl','lr']);
   for (const syl of syllabify(text)) {
     const onset = units(syl.onset), coda = units(syl.coda);
+    /* Malay permits these clusters, but independent consonants are markedly
+     * less preferred than digraphs and simple onsets/codas. */
+    if (onset.length === 2) cost += TUNE.complexOnset;
+    if (coda.length === 2) cost += TUNE.complexCoda;
     if (onset.length > 2 || (onset.length === 2 && !CLUSTERS.has(syl.onset) && !DIGRAPHS.has(syl.onset) &&
         !['st','sp','sk','sm','sn','sl','sw','sf','sj'].includes(syl.onset))) cost += TUNE.invalidCluster;
     if (coda.length > 2 || (coda.length === 2 && !codas.has(syl.coda))) cost += TUNE.invalidCluster;
@@ -1918,6 +1922,15 @@ function phonotacticCost(text) {
   if (/(?:nya|lah|kah|pun|kan|an|i)$/.test(text)) cost -= 0.1;
   return cost;
 }
+/* Forward spellings are independent of inverse TUNE costs. Reuse this bounded
+ * runtime cache while ranking candidates; no lexical data is shipped. */
+const INVERSE_FORWARD_MEMO = new Map();
+function forwardForInverse(text) {
+  if (INVERSE_FORWARD_MEMO.has(text)) return INVERSE_FORWARD_MEMO.get(text);
+  const result = normalizeJawiInput(wordToJawi(text));
+  if (INVERSE_FORWARD_MEMO.size < 100000) INVERSE_FORWARD_MEMO.set(text, result);
+  return result;
+}
 function decodeJawiWord(input) {
   const word = normalizeJawiInput(input);
   if (!word) return '';
@@ -1926,7 +1939,7 @@ function decodeJawiWord(input) {
   })).sort((a,b) => a.baseCost - b.baseCost).slice(0, TUNE.shortlist);
   let best = null, bestCost = Infinity;
   for (const candidate of candidates) {
-    const forward = normalizeJawiInput(wordToJawi(candidate.text));
+    const forward = forwardForInverse(candidate.text);
     const distance = editDistance(forward, word);
     const joinedDi = /^di/.test(candidate.text) && /^د[^اآأإويى]/.test(word);
     const consistent = distance === 0 || joinedDi;
@@ -2013,7 +2026,7 @@ function jawiToLatin(text) {
     .replace(/([({\[])\s+/g, '$1').replace(/\s+([)}\]])/g, '$1');
 }
 
-const RULE_VERSION = '2026-11-09-rule-based-3';
+const RULE_VERSION = '2026-11-09-rule-based-4';
 if (typeof module !== 'undefined' && module.exports) module.exports = {
   RULE_VERSION, appendSuffix, latinToJawi, jawiToLatin, wordToJawi, baseWordToJawi:wordToJawi,
   syllabify, jawiToRumi, heurJawiToRumi, inverseCandidates, phonotacticCost, editDistance,

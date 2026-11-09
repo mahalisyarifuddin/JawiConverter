@@ -132,4 +132,31 @@ The retained configuration is `2026-11-09-rule-based-3`. One additional sampled 
 
 Rule-based-3 reduces full validation WER by **4.5449 percentage points** over rule-based-2. Its comparative test WER is **4.6600 points** lower than rule-based-2 and **8.9599 points** lower than the punctuation-corrected baseline. Because test had already been inspected during the first cycle, the rule-based-3 test score is **not a pristine-holdout result** and must not be presented as one. Test did not select the second-cycle rules or costs, but a genuinely untouched holdout would be needed for a new generalization claim.
 
+## Third-cycle full-train tuning
+
+Rule-based-4 was selected without sampling. Each coordinate was evaluated on all 15,881 train sentences (306,693 reference words) and every accepted change was re-checked on all 1,989 validation sentences. A full-train Jawi → Rumi evaluation takes about 71 seconds, so a coordinate can sweep its whole candidate grid on train and validation while remaining practical.
+
+The tuning infrastructure gained two changes: zero-valued costs now explore negative as well as positive values (a negative cost encodes a general preference, not only a penalty), and forward spellings computed while ranking inverse candidates are memoized in a bounded runtime cache. The cache stores generated strings only, ships no data, and changes no candidate or score.
+
+| Change | Train effect | Full-validation effect | Decision |
+| --- | --- | --- | --- |
+| `finalA=-0.1` | 48.8961% → 48.8534% | 48.0801% → 47.9988% | Accepted |
+| `complexOnset=0.5`, `complexCoda=0.5` | 48.8534% → 46.7992% | 47.9988% → 46.0803% | Accepted; each cost also improved both samples on its own, and full train preferred only a marginally larger onset cost |
+| `complexOnset=0.625` | small gain | worse than 0.5 | Rejected by validation |
+| `insertE=0` (was 0.25) | 46.7992% → 46.6346% | 46.0803% → 45.8942% | Accepted |
+| `insertA=0`, `finalNone` removal | neutral | neutral | `insertA` retained at 0; unused `finalNone` parameter removed |
+| `diPrefixBonus=2.25` | 46.6346% → 46.5958% (112 edits) | 45.8942% → 45.8260% (25 edits) | Rejected: offline suite failed (`دسيني` decoded as `dasini`) |
+
+A blanket closed-syllable penalty was rejected outright: on 500-sentence samples it raised train WER from 49.36% to 62.51% and validation WER from 47.47% to 60.86%. Final-I/final-U costs, `wawO`, `initialO`, `forwardBonus`, `forwardWeight`, `prefixBonus`, and `pairAya` were screened and left unchanged because changes were neutral, non-monotone, or worse.
+
+To keep the deterministic joined spelling while accepting the small global gain, `diPrefixBonus` was also split into a lower general cost plus an explicit bonus for the joined `د + consonant` context. That variant passed every regression but scored 45.8994% validation WER, two edits worse than rule-based-4, so it was discarded and the engine restored to `diPrefixBonus=3`.
+
+| Engine | Split | Sentences | Reference words | S | D | I | Total edits | WER | Exact sentences |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| **Full-train rule-based-4** | train | 15,881 | 306,693 | 133,913 | 8,964 | 148 | 143,025 | **46.6346%** | 664 |
+| **Full-train rule-based-4** | validation | 1,989 | 38,153 | 16,405 | 1,086 | 19 | 17,510 | **45.8942%** | 102 |
+| **Full-train rule-based-4** | test (comparative) | 1,972 | 38,326 | 16,856 | 1,126 | 29 | 18,011 | **46.9942%** | 65 |
+
+Rule-based-4 lowers full validation WER by a further **2.1859 percentage points** over rule-based-3 and raises exact validation sentences from 94 to 102. Its comparative test WER is **2.1422 points** lower than rule-based-3. The reverse direction is unchanged by these inverse costs: full validation Rumi → Jawi remains **34.9822%** (13,097 edits / 37,439 words, 40 exact sentences). Because test was inspected in the first cycle, this remains a comparative benchmark rather than a pristine-holdout claim.
+
 The aggregate metrics contain no corpus sentences. Detailed JSON metrics and error reports remain in Git-ignored `artifacts/`; downloaded Parquet files remain in Git-ignored `corpus/`.
