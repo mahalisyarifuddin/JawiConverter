@@ -423,4 +423,27 @@ Re-extracting the alignment pairs after rule-based-10 put `dari -> diri` (893), 
 
 Rule-based-11 lowers full validation WER by **0.0210 points** and comparative test WER by **0.0366 points** over rule-based-10. This is a small gain and marks the cost surface as saturated a second time; further progress needs the rank-gap problem, not another cost. Test was not used for any selection.
 
+## Twelfth-cycle: the majority oracle and four rejected rules
+
+Four structural hypotheses were measured this round. None was accepted, and the tree is unchanged from rule-based-11.
+
+| Hypothesis | Measurement | Verdict |
+| --- | --- | --- |
+| Gate `diPrefixBonus` on a joined `di-` prefix | `daripada -> dirpad` survives with the bonus at 0; gating gives 42.415% / 40.734% | rejected |
+| A prefix must not launder an illegal root onset | `rootCluster` 0.5 → 43.495% / 41.272% | rejected |
+| Medial schwa writes a `ي` carrier in the forward direction | 56.9% "carrier written" statistic is confounded; emitting one gives 45.9%–52.0% forward | rejected |
+| `muhammad -> mahmad` (1,066) is rule-reachable | not producible at all | out of scope |
+
+**Why the `dirpad` lead did not convert.** `phonotacticCost('dirpad')` is −3.00 while `phonotacticCost('rpad')` is +3.50: prefixing `di-` erases the illegal-onset penalty, which looked like a clean bug. But removing or gating the bonus does not change the `daripada` output, and penalising the root's cluster regresses both splits by ~2 points. The corpus itself contains many `dirpad`-shaped readings, so the penalty removes correct readings faster than it removes wrong ones. The intuition was reasonable and the data refused it.
+
+**The forward-direction correction.** `wordToJawi('mereka')` returns `مرکا`, dropping the schwa, while the corpus writes `مريک`. Emitting a carrier for medial schwa looked like a fix, and the supporting statistic — 56.9% of medial-schwa words contain a mid-word `ي`/`و`/`ى` — was computed by counting any vowel letter in the middle of the word. That count cannot separate a schwa carrier from the consonant's own vowel in the *next* syllable, so it overstates the case. Implemented honestly, the change costs 4 to 11 points forward. The statistic was withdrawn, not the rule rescued.
+
+**A ceiling, now measured.** Building a token→reading table from the train split and always choosing each Jawi token's most frequent reading reaches **96.03%** word accuracy on positionally aligned train tokens, against the engine's **56.33%**. This is not a target the rule-based design can approach without memorising the corpus, and it is reported here only to make the size of the gap explicit. The 24% "rank gap" is token-identity information: `دي` is `dia` because the corpus says so 278 times, not because of anything in its three letters.
+
+| Engine | Split | WER | Exact sentences |
+| --- | --- | ---: | ---: |
+| **Refined rule-based-11** (unchanged) | train | **41.5380%** | 699 |
+| **Refined rule-based-11** (unchanged) | validation | **40.5656%** | 109 |
+| **Refined rule-based-11** (unchanged) | test (comparative) | **41.3870%** | 81 |
+
 The aggregate metrics contain no corpus sentences. Detailed JSON metrics and error reports remain in Git-ignored `artifacts/`; downloaded Parquet files remain in Git-ignored `corpus/`.
