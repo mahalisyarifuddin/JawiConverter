@@ -3,7 +3,7 @@
 # JawiConverter
 *Rumi ↔ Jawi, lebih sederhana.*
 
-JawiConverter is a single-file, browser-based Malay Rumi (Latin) ↔ Jawi converter. Conversion is driven by a **rule-based engine** — morphology, phonotactics, and a weighted inverse decoder — with no per-word patches to the rules. Jawi → Rumi additionally ships a small **305-entry dictionary** (the measured Utopia point of the frontier, see below), enabled by default and toggleable from the interface; it covers only tokens the rules decode wrongly and is ranked on the training split by occurrences fixed, not by frequency. Rumi → Jawi uses no dictionary at all.
+JawiConverter is a single-file, browser-based Malay Rumi (Latin) ↔ Jawi converter. Conversion is driven by a **rule-based engine** — morphology, phonotactics, and a weighted inverse decoder — with no per-word patches to the rules. Jawi → Rumi additionally ships a small **385-entry dictionary** (the measured point of the frontier closest to the origin, see below), enabled by default and toggleable from the interface; it covers only tokens the rules decode wrongly and is ranked on the training split by occurrences fixed, not by frequency. Rumi → Jawi uses no dictionary at all.
 
 ## Quick start
 
@@ -93,7 +93,8 @@ node tests/evaluate_corpus.js \
 | v3: ke- splitting + 500 entries | 20.10% | 19.70% | 20.78% |
 | v4: expanded di- roots (269) + 500 entries | 20.07% | 19.67% | 20.77% |
 | v16: reachable ٢ dictionary keys (500 entries) | 19.95% | 19.52% | 20.68% |
-| **v17: shipped dictionary cut to the 305-word Utopia point** | **22.51%** | **22.06%** | 23.03% |
+| v17: shipped dictionary cut to the 305-word Utopia point (min-max) | 22.51% | 22.06% | 23.03% |
+| **v18: 385 words, closest to the origin (zero-max, log size)** | **21.20%** | **20.78%** | 21.85% |
 
 The current rule-based-11 result is **15,862 edits / 38,326 reference words = 41.3870% test WER**, with 81 exact test sentences. Relative to rule-based-2, this is a **12.4094-point** test reduction; relative to the punctuation-corrected baseline, it is **16.7093 points**. On the full validation split WER falls to **40.5656%**, a further **0.0210 points** over rule-based-10.
 

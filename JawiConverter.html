@@ -1221,7 +1221,7 @@
 					<button class="btn" id="pasteBtn" type="button">Tampal</button>
 					<button class="btn" id="uploadBtn" type="button">Muat naik .txt</button>
 					<input type="file" id="fileInput" accept=".txt,text/plain" class="hidden">
-					<label class="check" style="margin-left:auto"><input type="checkbox" id="chkDict" checked title="Guna kamus 305 kata (titik Utopia) untuk Jawi → Rumi"> <span id="dictLabel">Kamus</span></label>
+					<label class="check" style="margin-left:auto"><input type="checkbox" id="chkDict" checked title="Guna kamus 385 kata (titik terdekat asalan) untuk Jawi → Rumi"> <span id="dictLabel">Kamus</span></label>
 					<label class="check"><input type="checkbox" id="chkLive" checked> <span id="liveLabel">Langsung</span></label>
 				</div>
 				<div class="stats-bar">
@@ -1952,63 +1952,77 @@ function forwardForInverse(text) {
 /* Curated readings for the most frequent Jawi tokens. Entries are learned
  * from the train split only; see docs/EVALUATION.md for the Pareto sweep that
  * chooses how many to keep. Empty by default: the converter stays rule-based. */
-/* The 305 highest-value readings: the Utopia point of the dictionary frontier,
- * the vertex closest to the ideal (smallest vocabulary, lowest error) with both
- * axes normalised and equal weights. Ranked on the train split by the number of
+/* The 385 highest-value readings: the frontier vertex closest to the origin
+ * (smallest vocabulary, lowest error) when both axes are zero-max normalised
+ * and the size axis is logarithmic. Ranked on the train split by the number of
  * occurrences the rules decode wrongly, not by raw frequency; only tokens the
  * rules get wrong are included. See docs/EVALUATION.md. */
 const DICTIONARY_ENTRIES = {
-  "االله":"allah", "اتليت":"atlet", "اد":"ada", "اسماعيل":"ismail", "الدين":"al din", "القرءان":"al quran",
-  "الور":"alor", "امس":"emas", "امڤت":"empat", "انق٢":"anak anak", "انم":"enam", "اوجرڽ":"jarinya",
-  "اورڠ":"orang", "اوسها":"usaha", "اوسهاون":"shane", "اول":"awal", "اوليه":"oleh", "اونتوق":"untuk",
-  "اوندڠ٢":"undang undang", "اونيۏرسيتي":"universiti", "اوڤراسي":"operasi", "اي":"ia", "ايت":"itu", "اين":"ini",
-  "ايندوستري":"industri", "ايندونيسيا":"indonesia", "ايڠين":"ingin", "ايڤوه":"ipoh", "ايکسيکوتيف":"eksekutif", "ايکن":"akan",
-  "ايکورن":"ekoran", "ايکونومي":"ekonomi", "اڠݢوتا":"anggota", "اڤليکاسي":"aplikasi", "اݢينسي":"agensi", "بارو٢":"baru baru",
-  "بايي":"bayi", "براوسيا":"berusia", "براوچڤ":"berucap merasmikan", "براوڤراسي":"beroperasi", "برايکوتن":"berikutan", "برنيلاي":"bernilai",
-  "برکواس":"berkuasa", "بنتوان":"bantuan", "بنجير":"banjir", "بهارو":"bahru", "بهاس":"bahasa", "بهاوا":"bahawa",
-  "بهاݢين":"bahagian", "بوات":"buat", "بوت":"bot", "بولا":"bola sepak", "بوليه":"boleh", "بومبا":"bomba",
-  "بڠک":"bank", "بکرجا":"bekerja", "بݢيندا":"baginda", "تراوتام":"terutama", "ترباٴيق":"terbaik", "ترڠݢانو":"terengganu",
-  "تمبه":"tambah", "تمبهڽ":"tumbuhnya", "تمڤت":"tempat", "تنتڠ":"tentang", "توناي":"tunai", "تياد":"tiada",
+  "االله":"allah", "ابراهيم":"ibrahim", "اتليت":"atlet", "احوال":"ehwal", "اد":"ada", "ارواح":"arwah",
+  "اساس":"asas", "اسماعيل":"ismail", "اسيستن":"asisten komisioner", "الدين":"al din", "القرءان":"al quran", "الور":"alor",
+  "امس":"emas", "امڤت":"empat", "انق٢":"anak anak", "انم":"enam", "اوجرڽ":"jarinya", "اورڠ":"orang",
+  "اوسها":"usaha", "اوسهاون":"shane", "اول":"awal", "اوليه":"oleh", "اونتوق":"untuk", "اوندڠ٢":"undang undang",
+  "اونيۏرسيتي":"universiti", "اوڤراسي":"operasi", "اي":"ia", "ايت":"itu", "ايميݢريسين":"imigresen", "اين":"ini",
+  "ايندوستري":"industri", "ايندونيسيا":"indonesia", "اينستيتوسي":"institusi", "ايڠين":"ingin", "ايڤوه":"ipoh", "ايکسيکوتيف":"eksekutif",
+  "ايکن":"akan", "ايکورن":"ekoran", "ايکونومي":"ekonomi", "اڠݢوتا":"anggota", "اڤليکاسي":"aplikasi", "اݢينسي":"agensi",
+  "بارو٢":"baru baru", "بايي":"bayi", "براوسها":"berusaha", "براوسيا":"berusia", "براوچڤ":"berucap merasmikan", "براوڤراسي":"beroperasi",
+  "برايکوتن":"berikutan", "برتڠݢوڠجواب":"bertanggungjawab", "بردڤن":"berdepan", "برسام-سام":"bersama sama", "برنيلاي":"bernilai", "برکواس":"berkuasa",
+  "برکوڠسي":"berkongsi", "بنتوان":"bantuan", "بنجير":"banjir", "بهارو":"bahru", "بهاس":"bahasa", "بهاوا":"bahawa",
+  "بهاݢين":"bahagian", "بوات":"buat", "بوت":"bot", "بودايا":"budaya", "بولا":"bola sepak", "بوليه":"boleh",
+  "بومبا":"bomba", "بيݢ":"beg", "بڠک":"bank", "بکرجا":"bekerja", "بݢيندا":"baginda", "تايلند":"thailand",
+  "تراوتام":"terutama", "تراوتاماڽ":"terutamanya", "ترباٴيق":"terbaik", "ترڠݢانو":"terengganu", "تمبه":"tambah", "تمبهڽ":"tumbuhnya",
+  "تمڤت":"tempat", "تنتڠ":"tentang", "تولر":"telur", "توناي":"tunai", "تياد":"tiada", "تيبا٢":"tiba tiba",
   "تيدق":"tidak", "تيمڤوه":"tempoh", "تيندقن":"tindakan", "تيکنولوݢي":"teknologi", "تڠکو":"tengku", "تڠݢوڠجواب":"tanggungjawab",
   "جاوتنکواس":"jawatankuasa", "جاوي":"javi", "جاي":"jae", "جماعه":"jemaah", "جمبتن":"jambatan", "جوهر":"johor",
-  "جک":"jika", "حاج":"haji", "حرام":"haram", "حکومن":"hukuman", "خاص":"khas", "خصوصڽ":"khususnya",
-  "د":"di", "دأتس":"di atas", "داتوق":"datuk", "دالم":"dalam", "دان":"dan", "داٴيره":"daerah",
-  "دباوا":"dibawa ke", "دباوه":"di bawah", "دبهاݢين":"di bahagian", "دبوات":"dibuat", "دتامن":"di taman", "دتاهن":"ditahan",
-  "دتموٴي":"ditemui", "دتموکن":"ditemukan", "دتمڤت":"di tempat", "دجالن":"di jalan", "ددالم":"di dalam", "دداڤتي":"didapati",
-  "ددعوا":"didakwa", "دديوان":"di dewan", "درومه":"di rumah", "دري":"dari", "درڤد":"daripada", "دسببکن":"disebabkan",
-  "دسبواه":"di sebuah", "دسلوروه":"di seluruh", "دسمڤيڠ":"di samping", "دسيني":"di sini", "دسکوله":"di sekolah", "دسکيتر":"di sekitar",
-  "دشکي":"disyaki", "دفهمکن":"difahamkan", "دلقساناکن":"dilaksanakan", "دلوکاسي":"di lokasi", "دمسجد":"di masjid", "دمليسيا":"di malaysia",
-  "دمکين":"demikian", "دنيا":"dunia", "دنݢارا":"di", "دنݢري":"di", "دهادڤن":"di hadapan", "دهوسڤيتل":"di hospital",
-  "دهولو":"dahulu", "دوکتور":"doktor", "ديوان":"dewan", "دڠن":"dengan", "دڤريڠکت":"di peringkat", "دڤرچاياٴي":"dipercayai",
-  "دڤن":"depan", "دڤوست":"di pusat", "دکامڤوڠ":"di kampung", "دکاوسن":"di kawasan", "دکت":"dekat", "دکلوارکن":"dikeluarkan oleh",
-  "دکنلي":"dikenali", "رعية":"rakyat", "رعيت":"rakyat", "رمضان":"ramadan", "رنده":"rendah", "ريکود":"rekod",
-  "زکاة":"zakat", "س":"s", "سبنرڽ":"sebenarnya", "سبهاݢين":"sebahagian daripada", "ستياٴوسها":"setiausaha", "ستياڤ":"setiap",
-  "سلاڠور":"selangor", "سلساي":"selesai", "سلطان":"sultan", "سماکين":"semakin", "سمبوتن":"sambutan", "سمنتارا":"sementara itu",
-  "سمڤاي":"sampai", "سمڤنا":"sempena", "سنتياس":"sentiasa", "سهاج":"sahaja", "سوسيال":"sosial", "سوسڤيک":"suspek",
-  "سومبر":"sumber", "سوڠاي":"sungai", "سوڤايا":"supaya", "سياستن":"siasatan", "سياڤ":"siap", "سيتي":"seti",
-  "سيد":"syed", "سيستم":"sistem", "سينديکيت":"sindiket", "سيکشن":"seksyen", "سڤرتي":"seperti", "سڤنجڠ":"sepanjang",
-  "سڤنوهڽ":"sepenuhnya", "سکواد":"skuad", "سکوله":"sekolah", "شاه":"shah", "شريکت":"syarikat", "صلاة":"solat",
-  "عاقبة":"akibat", "عبدالرحمن":"abdul rahman", "علمو":"ilmu", "عوام":"awam", "عيدالفطري":"aidilfitri", "قدر":"kadar",
-  "لاڤورن":"laporan", "لمڤور":"lumpur", "لنجوت":"lanjut", "لوري":"lori", "لوکاسي":"lokasi", "ليم":"lima",
-  "لڠسوڠ":"langsung", "لڠکه":"langkah", "ماجيستريت":"majistret", "ماسيڠ٢":"masing masing", "مجليس":"majlis", "محمد":"muhammad",
-  "محکمه":"mahkamah", "مراسميکن":"merasmikan", "مريک":"mereka", "مسئله":"masalah", "مسجد":"masjid", "مشارکت":"masyarakat",
-  "معلومت":"maklumat", "ملايو":"melayu", "ملقساناکن":"melaksanakan", "مليسيا":"malaysia", "ممباوا":"membawa", "ممبوات":"membuat",
-  "ممبوليهکن":"membolehkan", "ممرلوکن":"memerlukan", "ممستيکن":"memastikan", "ممڤو":"mampu", "منداڤتي":"mendapati", "موت":"maut",
-  "موتوسيکل":"motosikal", "موڠکين":"mungkin", "ميت":"mayat", "ميديا":"media sosial", "ميمڠ":"memang", "مڠالمي":"mengalami",
-  "مڠسا":"mangsa", "مڠلوارکن":"mengeluarkan", "مڠمبيل":"mengambil", "مڽببکن":"menyebabkan", "مڽدياکن":"menyediakan", "مڽرتاٴي":"menyertai",
-  "مڽقسيکن":"menyaksikan", "ناسيونل":"nasional", "نجيب":"najib", "نيلاي":"nilai", "همڤير":"hampir", "هوسڤيتل":"hospital",
-  "ولايه":"wilayah", "ياٴيت":"iaitu", "يڠ":"yang", "چابرن":"cabaran", "چنسلور":"canselor", "چينا":"china",
-  "ڤاس":"pas", "ڤد":"pada", "ڤرخدمتن":"perkhidmatan", "ڤرسمبهن":"persembahan", "ڤرليس":"perlis", "ڤرمڤوان":"perempuan",
-  "ڤرنه":"pernah", "ڤروجيک":"projek", "ڤرودوک":"produk", "ڤروسيس":"proses", "ڤروفيسور":"profesor", "ڤروݢرم":"program",
-  "ڤريسيدن":"presiden", "ڤريميس":"premis", "ڤسرتا":"peserta", "ڤلاجرن":"pelajaran", "ڤلاکون":"pelakon", "ڤلباݢاي":"pelbagai",
-  "ڤلنچوڠ":"pelancong", "ڤلنچوڠن":"pelancongan", "ڤمندو":"pemandu", "ڤنتيڠ":"penting", "ڤنداڤتن":"pendapatan", "ڤندودوق":"penduduk",
-  "ڤوتراجاي":"putrajaya", "ڤوليس":"polis", "ڤوڤولر":"popular", "ڤوکول":"pukul", "ڤيراق":"perak", "ڤڠالمن":"pengalaman",
-  "ڤڠڠکوتن":"pengangkutan", "ڤڠݢيلن":"panggilan", "ڤکرجا":"pekerja", "ڤڽلامت":"penyelamat malaysia", "ڤݢاواي":"pegawai", "کأتس":"ke atas",
-  "کأره":"ke arah", "کأواڠن":"kewangan", "کاتݢوري":"kategori", "کانق٢":"kanak kanak", "کباکرن":"kebakaran", "کبڠساٴن":"kebangsaan",
-  "کدالم":"ke dalam", "کدوا-دوا":"kedua dua", "کرجاسام":"kerjasama", "کرجا٢":"kerja kerja", "کريتا":"kereta", "کسلامتن":"keselamatan",
-  "کسموا":"kesemua", "کسيقساٴن":"keseksaan", "کصيحتن":"kesihatan", "کلنتن":"kelantan", "کلڠ":"klang", "کمنترين":"kementerian",
-  "کهوسڤيتل":"ke hospital", "کواس":"kuasa", "کوتا":"kota", "کوس":"kos", "کيت":"kita", "کيرا٢":"kira kira",
-  "کچدراٴن":"kecederaan", "کڤد":"kepada", "کڤرلوان":"keperluan", "ۏيديو":"video", "ݢولوڠن":"golongan"
+  "جک":"jika", "حاج":"haji", "حرام":"haram", "حسن":"hasan", "حيوان":"haiwan", "حکومن":"hukuman",
+  "خاص":"khas", "خصوصڽ":"khususnya", "د":"di", "دأتس":"di atas", "داتوق":"datuk", "دالم":"dalam",
+  "دان":"dan", "داٴيره":"daerah", "دباوا":"dibawa ke", "دباوه":"di bawah", "دببراڤ":"di beberapa", "دبهاݢين":"di bahagian",
+  "دبوات":"dibuat", "دتامن":"di taman", "دتاهن":"ditahan", "دتموٴي":"ditemui", "دتموکن":"ditemukan", "دتمڤت":"di tempat",
+  "دجابتن":"di jabatan", "دجالن":"di jalan", "ددالم":"di dalam", "دداڤتي":"didapati", "ددعوا":"didakwa", "دديوان":"di dewan",
+  "درومه":"di rumah", "دري":"dari", "درڤد":"daripada", "دسببکن":"disebabkan", "دسبواه":"di sebuah", "دسدياکن":"disediakan",
+  "دسلوروه":"di seluruh", "دسمڤيڠ":"di samping", "دسيتو":"di situ", "دسيني":"di sini", "دسکوله":"di sekolah", "دسکيتر":"di sekitar",
+  "دشکي":"disyaki", "دفهمکن":"difahamkan", "دلقساناکن":"dilaksanakan", "دلوکاسي":"di lokasi", "دمان":"di mana", "دمسجد":"di masjid",
+  "دمليسيا":"di malaysia", "دمکين":"demikian", "دنيا":"dunia", "دنݢارا":"di", "دنݢري":"di", "دهادڤن":"di hadapan",
+  "دهوسڤيتل":"di hospital", "دهولو":"dahulu", "دورين":"durin", "دوکتور":"doktor", "دوکومن":"dokumen", "ديوان":"dewan",
+  "دڠن":"dengan", "دڤرتوا":"dipertua", "دڤريڠکت":"di peringkat", "دڤرچاياٴي":"dipercayai", "دڤن":"depan", "دڤوست":"di pusat",
+  "دکامڤوڠ":"di kampung", "دکاوسن":"di kawasan", "دکت":"dekat", "دکلوارکن":"dikeluarkan oleh", "دکناکن":"dikenakan", "دکنلي":"dikenali",
+  "رزقي":"rezeki", "رعية":"rakyat", "رعيت":"rakyat", "رمضان":"ramadan", "رنده":"rendah", "ريمن":"roman",
+  "ريکود":"rekod", "زکاة":"zakat", "س":"s", "سبنتر":"sini sebentar", "سبنرڽ":"sebenarnya", "سبهاݢين":"sebahagian daripada",
+  "ستياٴوسها":"setiausaha", "ستياڤ":"setiap", "سلاتن":"selatan", "سلاڠور":"selangor", "سلساي":"selesai", "سلطان":"sultan",
+  "سماکين":"semakin", "سمبوتن":"sambutan", "سمنتارا":"sementara itu", "سمڤاي":"sampai", "سمڤنا":"sempena", "سنتياس":"sentiasa",
+  "سهاج":"sahaja", "سوروهنجاي":"pencegahan rasuah", "سوسيال":"sosial", "سوسڤيک":"suspek", "سومبر":"sumber", "سوڠاي":"sungai",
+  "سوڤايا":"supaya", "سوکوڠن":"sokongan", "سياستن":"siasatan", "سياڤ":"siap", "سيتي":"seti", "سيد":"syed",
+  "سيستم":"sistem", "سينديکيت":"sindiket", "سيڤق":"sepak malaysia", "سيکشن":"seksyen", "سڤرتي":"seperti", "سڤنجڠ":"sepanjang",
+  "سڤنوهڽ":"sepenuhnya", "سکواد":"skuad", "سکوله":"sekolah", "شاه":"shah", "شريکت":"syarikat", "صالح":"saleh",
+  "صلاة":"solat", "عاقبة":"akibat", "عبداالله":"abdullah", "عبدالرحمن":"abdul rahman", "عبدالعزيز":"abdul aziz", "علمو":"ilmu",
+  "عوام":"awam", "عيدالفطري":"aidilfitri", "قاعده":"kaedah", "قدر":"kadar", "لاڤورن":"laporan", "لمڤور":"lumpur",
+  "لنجوت":"lanjut", "لوري":"lori", "لوکاسي":"lokasi", "ليم":"lima", "لڠسوڠ":"langsung", "لڠکه":"langkah",
+  "ماجيستريت":"majistret", "ماسيڠ٢":"masing masing", "ماٴنسي":"manusia", "مجليس":"majlis", "محمد":"muhammad", "محکمه":"mahkamah",
+  "مراسميکن":"merasmikan", "مريک":"mereka", "مسئله":"masalah", "مسجد":"masjid", "مشارکت":"masyarakat", "معلومت":"maklumat",
+  "ملايو":"melayu", "ملقساناکن":"melaksanakan", "مليسيا":"malaysia", "ملڠݢر":"melanggar", "ممباوا":"membawa", "ممبوات":"membuat",
+  "ممبوليهکن":"membolehkan", "ممرلوکن":"memerlukan", "ممستيکن":"memastikan", "ممعلومکن":"memaklumkan", "ممڤو":"mampu", "منجالني":"menjalani",
+  "منداڤتي":"mendapati", "منمبه":"menambah", "منڠکڤ":"menangkap akan", "موت":"maut", "موتوسيکل":"motosikal", "موڠکين":"mungkin",
+  "ميت":"mayat", "ميديا":"media sosial", "ميسين":"mesin", "ميمڠ":"memang", "مڠالمي":"mengalami", "مڠسا":"mangsa",
+  "مڠصحکن":"mengesahkan", "مڠلوارکن":"mengeluarkan", "مڠمبيل":"mengambil", "مڽببکن":"menyebabkan", "مڽدري":"menyedari", "مڽدياکن":"menyediakan",
+  "مڽرتاٴي":"menyertai", "مڽقسيکن":"menyaksikan", "مڽمڤايکن":"menyampaikan", "ناسيونل":"nasional", "نجيب":"najib", "نيلاي":"nilai",
+  "نݢري":"negeri", "هديه":"hadiah", "همڤير":"hampir", "هوسڤيتل":"hospital", "ولايه":"wilayah", "ياٴيت":"iaitu",
+  "يڠ":"yang", "چابرن":"cabaran", "چالون":"calon", "چمرلڠ":"cemerlang", "چنسلور":"canselor", "چينا":"china",
+  "ڤاس":"pas", "ڤاميرن":"pameran", "ڤد":"pada", "ڤرخدمتن":"perkhidmatan", "ڤرسمبهن":"persembahan", "ڤرسکوتوان":"persekutuan",
+  "ڤرليس":"perlis", "ڤرليمن":"parlimen", "ڤرمڤوان":"perempuan", "ڤرنه":"pernah", "ڤروجيک":"projek", "ڤرودوک":"produk",
+  "ڤروسيس":"proses", "ڤروفيسور":"profesor", "ڤروݢرم":"program", "ڤريسيدن":"presiden", "ڤريميس":"premis", "ڤرکمبڠن":"perkembangan",
+  "ڤسرتا":"peserta", "ڤلاجرن":"pelajaran", "ڤلاکون":"pelakon", "ڤلباݢاي":"pelbagai", "ڤلنچرن":"pelancaran", "ڤلنچوڠ":"pelancong",
+  "ڤلنچوڠن":"pelancongan", "ڤلڠݢن":"pelanggan", "ڤمندو":"pemandu", "ڤنتاي":"pantai", "ڤنتيڠ":"penting", "ڤنداڤتن":"pendapatan",
+  "ڤندودوق":"penduduk", "ڤنولوڠ":"penolong", "ڤنچاڤاين":"pencapaian", "ڤهڠ":"pahang", "ڤوتراجاي":"putrajaya", "ڤوسيتيف":"positif",
+  "ڤوليس":"polis", "ڤوڤولر":"popular", "ڤوکوق":"pokok", "ڤوکول":"pukul", "ڤيراق":"perak", "ڤڠالمن":"pengalaman",
+  "ڤڠيعترافن":"pengiktirafan", "ڤڠڠکوتن":"pengangkutan", "ڤڠݢيلن":"panggilan", "ڤکرجا":"pekerja", "ڤڽلامت":"penyelamat malaysia", "ڤڽوکوڠ":"penyokong",
+  "ڤݢاواي":"pegawai", "کأتس":"ke atas", "کأره":"ke arah", "کأواڠن":"kewangan", "کاتݢوري":"kategori", "کانق٢":"kanak kanak",
+  "کباکرن":"kebakaran", "کبڠساٴن":"kebangsaan", "کدالم":"ke dalam", "کداي":"kedai", "کدوا-دوا":"kedua dua", "کدوا-دواڽ":"kedua duanya",
+  "کرجاسام":"kerjasama", "کرجا٢":"kerja kerja", "کريتا":"kereta", "کسدرن":"kesedaran", "کسلامتن":"keselamatan", "کسلوروهن":"keseluruhan",
+  "کسموا":"kesemua", "کسيقساٴن":"keseksaan", "کسکوله":"ke sekolah", "کصيحتن":"kesihatan", "کلمارين":"kelmarin", "کلنتن":"kelantan",
+  "کلوکاسي":"ke lokasi", "کلڠ":"klang", "کمنترين":"kementerian", "کمودهن":"kemudahan", "کهوسڤيتل":"ke hospital", "کواس":"kuasa",
+  "کوتا":"kota", "کوس":"kos", "کوليج":"kolej", "کوڤراسي":"koperasi", "کيت":"kita", "کيرا٢":"kira kira",
+  "کيمڤين":"kempen", "کچدراٴن":"kecederaan", "کڤد":"kepada", "کڤرلوان":"keperluan", "ۏيديو":"video", "ݢامبر":"gembira",
+  "ݢولوڠن":"golongan"
 };
 const JawiDictionary = {
   /* token -> reading; consulted before the rule decoder. */
@@ -2164,7 +2178,7 @@ function jawiToLatin(text) {
     .replace(/([({\[])\s+/g, '$1').replace(/\s+([)}\]])/g, '$1');
 }
 
-const RULE_VERSION = '2026-11-10-rule-based-17-dict305';
+const RULE_VERSION = '2026-11-10-rule-based-18-dict385';
 if (typeof module !== 'undefined' && module.exports) module.exports = {
   RULE_VERSION, appendSuffix, latinToJawi, jawiToLatin, wordToJawi, baseWordToJawi:wordToJawi,
   syllabify, jawiToRumi, heurJawiToRumi, inverseCandidates, phonotacticCost, editDistance,
@@ -2180,7 +2194,7 @@ if (typeof window !== 'undefined') window.JawiConverter = { RULE_VERSION, append
 		const text = {
 			ms: {
 				title: 'JawiConverter',
-				subtitle: 'Penukaran teks Melayu berasaskan peraturan, dengan kamus 305 kata yang boleh dimatikan.',
+				subtitle: 'Penukaran teks Melayu berasaskan peraturan, dengan kamus 385 kata yang boleh dimatikan.',
 				dirLabel: 'Arah',
 				dirLJ: 'Rumi → Jawi',
 				dirJL: 'Jawi → Rumi',
@@ -2201,7 +2215,7 @@ if (typeof window !== 'undefined') window.JawiConverter = { RULE_VERSION, append
 				uploadBtn: 'Muat naik .txt',
 				copyBtn: 'Salin semua',
 				dictLabel: 'Kamus',
-				dictTitle: 'Guna kamus 305 kata (titik Utopia) untuk Jawi → Rumi',
+				dictTitle: 'Guna kamus 385 kata (titik terdekat asalan) untuk Jawi → Rumi',
 				liveLabel: 'Langsung',
 				autoScrollLabel: 'Auto-scroll',
 				examplesLabel: 'Contoh:',
@@ -2239,7 +2253,7 @@ if (typeof window !== 'undefined') window.JawiConverter = { RULE_VERSION, append
 			},
 			en: {
 				title: 'JawiConverter',
-				subtitle: 'Rule-based Malay text conversion with a toggleable 305-word dictionary.',
+				subtitle: 'Rule-based Malay text conversion with a toggleable 385-word dictionary.',
 				dirLabel: 'Mode',
 				dirLJ: 'Rumi → Jawi',
 				dirJL: 'Jawi → Rumi',
@@ -2260,7 +2274,7 @@ if (typeof window !== 'undefined') window.JawiConverter = { RULE_VERSION, append
 				uploadBtn: 'Upload .txt',
 				copyBtn: 'Copy all',
 				dictLabel: 'Dictionary',
-				dictTitle: 'Use the 305-word (Utopia point) dictionary for Jawi → Rumi',
+				dictTitle: 'Use the 385-word (closest-to-origin) dictionary for Jawi → Rumi',
 				liveLabel: 'Live',
 				autoScrollLabel: 'Auto-scroll',
 				examplesLabel: 'Examples:',

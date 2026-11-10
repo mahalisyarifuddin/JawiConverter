@@ -960,3 +960,39 @@ The change is a vocabulary cut, not a re-derivation. The ranking is unchanged (t
 The validation figure reproduces the independent sweep exactly (22.0586%, 241 exact sentences), which is the check that matters: the shipped engine is at the point the frontier analysis chose, measured by running the engine rather than by indexing the sweep.
 
 **This is deliberately a worse WER for a much smaller dictionary.** 195 fewer entries cost 2.53 validation points — about 0.013 points per entry — because the entries beyond the Utopia are, by construction, the ones where added vocabulary buys least. That is the trade the Utopia point selects: it is the best error achievable per unit of dictionary, not the best error achievable at all. The 500-entry point remains available in `artifacts/dictionary-500-v16.json` for anyone who wants the deeper end of the curve, and the full frontier is in `artifacts/pareto-v16.json`.
+
+## Twentieth-cycle: the point closest to the origin
+
+The previous cycle shipped the equal-weight Utopia point, which normalises both axes with min-max. The question "which frontier point is closest to (0,0)" is a different one, and it has no answer until the axes share a scale: the raw frontier spans 0–10,606 on size but only 0–0.395 on WER, so a raw Euclidean distance is 99.99% WER and collapses to the ten-word corner.
+
+Four defensible scalings, measured on the same 2,123-point increment-5 sweep:
+
+| Scaling | Size axis | Choice | Validation WER | Exact |
+| --- | --- | --- | ---: | ---: |
+| Raw units | linear | 10 words | 34.67% | 260 |
+| Min-max | linear | 1,145 words | 15.73% | 357 |
+| Min-max | log | 305 words | 22.06% | 241 |
+| **Zero-max** | **log** | **385 words** | **20.78%** | **257** |
+| Zero-max | linear | 1,750 words | 14.26% | 408 |
+
+The shipped choice is **zero-max with a log size axis**: each axis is divided by its maximum over the sweep, so the ideal corner is the origin itself rather than an offset, and the size axis is compressed logarithmically so that the first hundred entries count as much as the last thousand.
+
+**Result: 385 words at 20.7795% validation WER, 257 exact sentences.** Neighbouring points confirm it is a genuine minimum of the normalised distance rather than a step artefact:
+
+| Words | Validation WER | Exact | Normalised distance |
+| ---: | ---: | ---: | ---: |
+| 375 | 20.93% | 256 | 0.83069 |
+| 380 | 20.86% | 256 | 0.83069 |
+| **385** | **20.78%** | **257** | **0.83043** |
+| 390 | 20.77% | 257 | 0.83133 |
+| 395 | 20.74% | 257 | 0.83198 |
+
+| Split | v17 (305, min-max) | **v18 (385, zero-max)** | Exact sentences |
+| --- | ---: | ---: | ---: |
+| train | 22.51% | **21.20%** | 1,923 |
+| validation | 22.06% | **20.78%** | 257 |
+| test (comparative) | 23.03% | **21.85%** | 215 |
+
+The validation figure reproduces the sweep exactly from the shipped engine, and the point beats the previous choice on WER *and* on exact sentences while adding only 80 entries — a strictly better position on both objectives, which is why the scaling change was worth making rather than merely cosmetic.
+
+`RULE_VERSION` is now `2026-11-10-rule-based-18-dict385`. The 305-entry (v17) and 500-entry (v16) builds remain in `artifacts/` for the shallower and deeper points on the same curve.

@@ -3,7 +3,7 @@
 # JawiConverter
 *Rumi ↔ Jawi, lebih sederhana.*
 
-JawiConverter adalah alat satu file untuk mengonversi teks Melayu antara Rumi (Latin) dan Jawi. Konversi dijalankan oleh **mesin berbasis aturan** — morfologi, fonotaktik, dan penyahkod songsang berbobot — tanpa tampalan per kata pada aturannya. Jawi → Rumi juga menyertakan **kamus 305 entri** yang kecil (titik Utopia yang diukur, lihat di bawah), diaktifkan secara lalai dan boleh dimatikan dari antara muka; ia hanya meliputi token yang disalahtafsirkan oleh aturan dan disusun mengikut bilangan kejadian yang diperbaiki pada set latihan, bukan mengikut kekerapan. Rumi → Jawi tidak menggunakan kamus sama sekali.
+JawiConverter adalah alat satu file untuk mengonversi teks Melayu antara Rumi (Latin) dan Jawi. Konversi dijalankan oleh **mesin berbasis aturan** — morfologi, fonotaktik, dan penyahkod songsang berbobot — tanpa tampalan per kata pada aturannya. Jawi → Rumi juga menyertakan **kamus 385 entri** yang kecil (titik frontier paling dekat dengan asalan, lihat di bawah), diaktifkan secara lalai dan boleh dimatikan dari antara muka; ia hanya meliputi token yang disalahtafsirkan oleh aturan dan disusun mengikut bilangan kejadian yang diperbaiki pada set latihan, bukan mengikut kekerapan. Rumi → Jawi tidak menggunakan kamus sama sekali.
 
 ## Mulai cepat
 
@@ -93,7 +93,8 @@ Nilai `0` berarti seluruh split. Batas yang lebih kecil berguna selama pengemban
 | v3: pemisahan ke- + 500 entri | 20,10% | 19,70% | 20,78% |
 | v4: akar di- diperluas (269) + 500 entri | 20,07% | 19,67% | 20,77% |
 | v16: kunci kamus ٢ boleh dicapai (500 entri) | 19,95% | 19,52% | 20,68% |
-| **v17: kamus dikurangkan kepada titik Utopia 305 kata** | **22,51%** | **22,06%** | 23,03% |
+| v17: kamus dikurangkan kepada titik Utopia 305 kata (min-max) | 22,51% | 22,06% | 23,03% |
+| **v18: 385 kata, paling dekat dengan asalan (zero-max, paksi log)** | **21,20%** | **20,78%** | 21,85% |
 
 Hasil rule-based-11 saat ini adalah **15.862 edit / 38.326 kata referensi = 41,3870% WER test**, dengan 81 kalimat test yang cocok persis. Dibanding rule-based-2, WER test turun **12,4094 poin persentase**; dibanding baseline dengan koreksi tanda baca, penurunannya **16,7093 poin**. Pada seluruh split validation, WER turun menjadi **40,5656%**, yaitu **0,0210 poin** lebih baik daripada rule-based-10.
 
