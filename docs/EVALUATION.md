@@ -812,4 +812,36 @@ Restricting `ke`-splitting to the **93 roots the corpus splits at least 80% of t
 
 The two prefixes need different evidence because they are different constructions: `di` + location is a prepositional phrase, while `ke` + root competes with genuine `ke-` derivations (`ketua`, `kerana`, `keluar`). One list cannot serve both.
 
+## Seventeenth-cycle: expanding the locative root set
+
+The `di-` root list was derived from a join-detection pass that only looked at bigrams the *rules already fused*, which capped it at 82 roots. Measuring every joined `di+root` the rules emit, against how often the corpus writes "di root" versus "diroot", finds **269 roots** meeting the same >=80% / >=3-occurrence bar — 194 more than shipped.
+
+The same table identifies what must stay joined. Roots where fusion dominates are passive verbs, not locative nouns:
+
+| Root | Split | Fused | Rate |
+| --- | ---: | ---: | ---: |
+| temui | 1 | 191 | 1% |
+| pertua | 1 | 37 | 3% |
+| ketuai | 1 | 21 | 5% |
+| ketahui | 1 | 18 | 5% |
+
+`ditmui` and `ditemui` differ by one edit and the corpus settles it decisively, which is why the criterion is per-root frequency rather than part of speech.
+
+| Configuration | train | validation |
+| --- | ---: | ---: |
+| 82 roots (v3) | 40.620% | 38.956% |
+| **269 roots (v4)** | **40.600%** | **38.893%** |
+
+**Shipped (rules + 500 entries):**
+
+| Split | v3 | **v4** | Exact sentences |
+| --- | ---: | ---: | ---: |
+| train | 20.10% | **20.07%** | 2,055 |
+| validation | 19.70% | **19.67%** | 273 |
+| test (comparative) | 20.78% | **20.77%** | 229 |
+
+The remaining error profile on validation is now dominated by lexical rather than structural problems: 6,610 substitutions against 415 deletions and 493 insertions. The largest single classes are place and month names (`daerah -> dairah`, `september`, `ogos`, `julai`, `november`) and Arabic-derived words (`iaitu -> yait`), which are proper-noun spelling and loanword orthography rather than rules — the kind of thing a dictionary handles and a rule cannot.
+
+Two things checked and found already correct: the `٢` repetition rule (89.2% of corpus repeats use the mark, and the engine handles all of them), and one-to-many joins that the renderer already resolves (`kedua dua`, `berhati hati`).
+
 The aggregate metrics contain no corpus sentences. Detailed JSON metrics and error reports remain in Git-ignored `artifacts/`; downloaded Parquet files remain in Git-ignored `corpus/`.
