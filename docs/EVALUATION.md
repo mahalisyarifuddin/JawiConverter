@@ -298,4 +298,34 @@ Two findings explain the ceiling:
 
 The residual load is long-tail: the same Jawi token is overwhelmingly one reading (`ايت` is `itu` 1,305 times with 4 other readings across 15,881 sentences). Closing it needs a language model or lexicon, both of which are outside this rule-only design.
 
+## Eighth-cycle: generation gaps and search width
+
+The seventh cycle concluded that the cost surface was saturated. That was right about *costs* but wrong about the engine: two defects were not in the cost model at all.
+
+**A missing candidate transition.** Mid-word `ي` could only be read `i`, `e` or `y`, so `/ia/` words (`kejadian`, `ujian`, `perisian`) were never generated — 5,806 reference words, 1.9% of the corpus. `kejadian` was not merely mis-scored, it was absent from the candidate set.
+
+**Beam pruning before scoring.** The search keeps the best 1,000 states and then scores only the best 40 completed candidates. Measured on a sample, widening the beam from 250 to 1,000 and the shortlist from 40 to 80 improved both splits:
+
+| beam / shortlist | train WER (sample) | validation WER (sample) |
+| --- | --- | --- |
+| 250 / 40 | 43.795% | 41.644% |
+| 500 / 40 | 43.733% | 41.582% |
+| 500 / 80 | 43.557% | 41.417% |
+| 1,000 / 80 | 43.484% | 41.375% |
+| 2,000 / 80 | 43.422% | 41.375% (no further gain) |
+
+`iaCost=0` was retained: the full-train tuner found no better value, and a non-zero cost regressed both splits on samples.
+
+A scan for other unproducible targets found that 62.1% of distinct Jawi tokens have no candidate equal to the reference. Most are unreachable for a different reason — they are fragmented or misaligned corpus rows, not missing transitions — but the `ia` class was a genuine engine gap. `aa`, `ua`, `au`, `io` and the remaining diphthongs are producible through existing `alif`/`waw` transitions; they are under-ranked rather than absent, and every cost tested for them regressed.
+
+Search cost is the trade: a 200-sentence slice now takes about 8 seconds. Per-word results are memoised, and the reverse direction is unchanged, so only the first pass over new Jawi text pays the wider beam.
+
+| Engine | Split | Sentences | Reference words | S | D | I | Total edits | WER | Exact sentences |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| **Refined rule-based-8** | train | 15,881 | 306,693 | 124,873 | 8,965 | 149 | 133,987 | **43.2882%** | 675 |
+| **Refined rule-based-8** | validation | 1,989 | 38,153 | 15,120 | 1,086 | 19 | 16,225 | **42.3112%** | 99 |
+| **Refined rule-based-8** | test (comparative) | 1,972 | 38,326 | 16,368 | 1,126 | 28 | 16,522 | **43.1091%** | 68 |
+
+Rule-based-8 lowers full validation WER by **0.6291 points** and comparative test WER by **0.4540 points** over rule-based-7. Test was not used for any selection.
+
 The aggregate metrics contain no corpus sentences. Detailed JSON metrics and error reports remain in Git-ignored `artifacts/`; downloaded Parquet files remain in Git-ignored `corpus/`.

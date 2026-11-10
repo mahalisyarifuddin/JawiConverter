@@ -1829,7 +1829,7 @@ const TUNE = {
   finalA:-0.1, finalI:1.4, finalU:1.4, finalE:0.25, finalO:2,
   wawO:0.3125, wawW:0.5, initialO:0.2, yaE:0.75, yaY:0.625,
   pairAya:-0.25, pairAwa:0, forwardWeight:0.5, forwardBonus:1.875,
-  invalidCluster:3, noFinalVowel:0.625, medialER:0.1, complexOnset:0.5, complexCoda:0.5, initialE:0.25, prefixBonus:1, diPrefixBonus:3, beam:250, shortlist:40
+  invalidCluster:3, iaCost:0, noFinalVowel:0.625, medialER:0.1, complexOnset:0.5, complexCoda:0.5, initialE:0.25, prefixBonus:1, diPrefixBonus:3, beam:1000, shortlist:80
 };
 const LATIN_VOWELS = 'aeiou';
 function latinConsonantAtEnd(value) { return /[bcdfghjklmnpqrstvwxyz]$/i.test(value); }
@@ -1873,7 +1873,11 @@ function inverseCandidates(word) {
       else if ((ch === 'و' || ch === 'ؤ') && i === 2 && word[1] === 'أ' && state.text === 'se') consume(1, [['o',0],['u',0.5],['w',0.5]]);
       else if ((ch === 'و' || ch === 'ؤ') && following === 'ه' && /[aeiou]$/.test(state.text)) consume(1, [['w',0]]);
       else if (ch === 'و' || ch === 'ؤ') consume(1, i === 0 ? [['w',0],['u',0.4],['o',0.5]] : [['u',0],['o',TUNE.wawO],['w',TUNE.wawW]]);
-      else if (ch === 'ي' || ch === 'ئ') consume(1, i === 0 ? [['y',0],['i',0.5]] : [['i',0],['e',TUNE.yaE],['y',TUNE.yaY]]);
+      else if (ch === 'ي' || ch === 'ئ') consume(1, i === 0 ? [['y',0],['i',0.5]] :
+        [['i',0],['e',TUNE.yaE],['y',TUNE.yaY],
+         /* Mid-word ي before a consonant letter can also spell the /ia/
+          * sequence (kejadian, ujian, perisian). */
+         ...(/[^اآأإويىؤئ]/.test(following) ? [['ia',TUNE.iaCost]] : [])]);
       else if (ch === 'ى') consume(1, [['e',0],['a',0.5]]);
       else if (ch === 'ء') consume(1, [['',0]]);
       else if (Object.prototype.hasOwnProperty.call(CONSONANT_REVERSE, ch)) {
@@ -2047,7 +2051,7 @@ function jawiToLatin(text) {
     .replace(/([({\[])\s+/g, '$1').replace(/\s+([)}\]])/g, '$1');
 }
 
-const RULE_VERSION = '2026-11-09-rule-based-7';
+const RULE_VERSION = '2026-11-09-rule-based-8';
 if (typeof module !== 'undefined' && module.exports) module.exports = {
   RULE_VERSION, appendSuffix, latinToJawi, jawiToLatin, wordToJawi, baseWordToJawi:wordToJawi,
   syllabify, jawiToRumi, heurJawiToRumi, inverseCandidates, phonotacticCost, editDistance,

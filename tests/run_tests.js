@@ -153,6 +153,9 @@ assert(engine.phonotacticCost('kerana') < engine.phonotacticCost('karana'));
  * consonant is preferred (دالم dalam, سموا semua). */
 assert.strictEqual(engine.jawiToLatin('دالم'), 'dalam');
 assert.strictEqual(engine.jawiToLatin('سموا'), 'semua');
+/* Mid-word ي before a consonant can spell /ia/ (kejadian, ujian). */
+assert.strictEqual(engine.jawiToLatin('کجادين'), 'kejadian');
+assert.strictEqual(engine.jawiToLatin('اوجين'), 'ujian');
 assert(engine.phonotacticCost('plajar') > engine.phonotacticCost('pelajar'));
 assert(engine.phonotacticCost('tersbut') > engine.phonotacticCost('tersebut'));
 assert.strictEqual(engine.jawiToLatin('غاءيره'), engine.jawiToLatin('غاٴيره'));
