@@ -328,4 +328,36 @@ Search cost is the trade: a 200-sentence slice now takes about 8 seconds. Per-wo
 
 Rule-based-8 lowers full validation WER by **0.6291 points** and comparative test WER by **0.4540 points** over rule-based-7. Test was not used for any selection.
 
+## Ninth-cycle: an oracle decomposition, then the sequences it exposed
+
+The eighth cycle left the engine's remaining error undivided: WER say nothing about whether the right reading was *ranked* badly or never *generated*. Decomposing each aligned token by how far the reference sits from the nearest candidate separates the two ceilings:
+
+| Bucket | Share of aligned train tokens | Meaning |
+| --- | ---: | --- |
+| Perfect | 54.42% | the reference was chosen |
+| Rank gap | 24.86% | the reference was generated but scored worse |
+| Generation gap, distance 1 | 11.12% | one edit from every candidate |
+| Generation gap, distance > 1 | 9.60% | fragmented rows, abbreviations |
+
+The rank gap is the known ceiling and needs a language model. The generation gap is a rules problem, and sorting it by how often a word appears named the target: `kerajaan` (219) was the single largest gap. Its corpus spelling is `کراجاٴن`, using the high hamza `ٴ` as a vowel carrier; the engine passed that character through literally, producing `kerajaٴn`. Normalising `ٴ` to `ء` exposed the deeper fault: `ا` + `ء` before a consonant reads as one `a` with the hamzah dropped, so `kerajaan`'s second vowel could never be written. The same sequence explains `berkenaan` (185) and the general `aa` class.
+
+Two transitions were added, both at measured cost rather than guessed:
+
+| Change | Effect on samples (train / validation) |
+| --- | --- |
+| `اء` before a consonant can read `/aa/` (`aaCost` 0.25) | 42.467% / 40.527% → 42.436% / 40.465% |
+| Word-final `ي` after a consonant can read `/ia/` | neutral, but `berusia` becomes producible |
+
+The `ia` extension was kept despite a neutral sample score because it closes a generation gap without costing anything, and generation gaps are the bucket this cycle is reducing. After both changes the decomposition moves: perfect 54.42% → 55.40%, generation-gap-1 11.12% → 10.28%.
+
+**A rejected hypothesis, recorded for the same reason.** `دي → dia` looks like it completes the word-final `ia` class, but it does not: `dia` is already generated and scores −3.00, losing to `di` by two points. The rank gap is reward-shaped, not generation-shaped, and no `ia` reading fixes it.
+
+| Engine | Split | Sentences | Reference words | Total edits | WER | Exact sentences |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| **Refined rule-based-9** | train | 15,881 | 306,693 | 129,856 | **42.3407%** | 690 |
+| **Refined rule-based-9** | validation | 1,989 | 38,153 | 15,789 | **41.3702%** | 101 |
+| **Refined rule-based-9** | test (comparative) | 1,972 | 38,326 | 16,123 | **42.0680%** | 81 |
+
+Rule-based-9 lowers full validation WER by **0.9410 points** and comparative test WER by **1.0411 points** over rule-based-8. Test was not used for any selection.
+
 The aggregate metrics contain no corpus sentences. Detailed JSON metrics and error reports remain in Git-ignored `artifacts/`; downloaded Parquet files remain in Git-ignored `corpus/`.

@@ -1829,7 +1829,7 @@ const TUNE = {
   finalA:-0.1, finalI:1.4, finalU:1.4, finalE:0.25, finalO:2,
   wawO:0.3125, wawW:0.5, initialO:0.2, yaE:0.75, yaY:0.625,
   pairAya:-0.25, pairAwa:0, forwardWeight:0.5, forwardBonus:1.875,
-  invalidCluster:3, iaCost:0, noFinalVowel:0.625, medialER:0.1, complexOnset:0.5, complexCoda:0.5, initialE:0.25, prefixBonus:1, diPrefixBonus:3, beam:1000, shortlist:80
+  invalidCluster:3, iaCost:0, aaCost:0.25, noFinalVowel:0.625, medialER:0.1, complexOnset:0.5, complexCoda:0.5, initialE:0.25, prefixBonus:1, diPrefixBonus:3, beam:1000, shortlist:80
 };
 const LATIN_VOWELS = 'aeiou';
 function latinConsonantAtEnd(value) { return /[bcdfghjklmnpqrstvwxyz]$/i.test(value); }
@@ -1869,6 +1869,9 @@ function inverseCandidates(word) {
       } else if ((ch === 'ا' || ch === 'أ' || ch === 'آ') && (following === 'ي' || following === 'و')) {
         consume(2, following === 'ي' ? [['ai',0],['aya',TUNE.pairAya],['a',0.8]] : third === 'ه' ? [['awa',0]] : [['au',0],['awa',TUNE.pairAwa],['a',0.8]]);
       }
+      /* اء before a consonant spells the long /aa/ (kerajaan, berkenaan);
+       * otherwise the hamzah is silent and only one vowel is written. */
+      else if ((ch === 'ا' || ch === 'أ') && following === 'ء') consume(2, [['aa',TUNE.aaCost],['a',0.4]]);
       else if (ch === 'ا' || ch === 'أ' || ch === 'آ' || ch === 'إ') consume(1, [[ch === 'إ' ? 'i' : 'a',0]]);
       else if ((ch === 'و' || ch === 'ؤ') && i === 2 && word[1] === 'أ' && state.text === 'se') consume(1, [['o',0],['u',0.5],['w',0.5]]);
       else if ((ch === 'و' || ch === 'ؤ') && following === 'ه' && /[aeiou]$/.test(state.text)) consume(1, [['w',0]]);
@@ -1877,7 +1880,7 @@ function inverseCandidates(word) {
         [['i',0],['e',TUNE.yaE],['y',TUNE.yaY],
          /* Mid-word ي before a consonant letter can also spell the /ia/
           * sequence (kejadian, ujian, perisian). */
-         ...(/[^اآأإويىؤئ]/.test(following) ? [['ia',TUNE.iaCost]] : [])]);
+         ...((/[^اآأإويىؤئ]/.test(following) || following === '') ? [['ia',TUNE.iaCost]] : [])]);
       else if (ch === 'ى') consume(1, [['e',0],['a',0.5]]);
       else if (ch === 'ء') consume(1, [['',0]]);
       else if (Object.prototype.hasOwnProperty.call(CONSONANT_REVERSE, ch)) {
@@ -2051,7 +2054,7 @@ function jawiToLatin(text) {
     .replace(/([({\[])\s+/g, '$1').replace(/\s+([)}\]])/g, '$1');
 }
 
-const RULE_VERSION = '2026-11-09-rule-based-8';
+const RULE_VERSION = '2026-11-09-rule-based-9';
 if (typeof module !== 'undefined' && module.exports) module.exports = {
   RULE_VERSION, appendSuffix, latinToJawi, jawiToLatin, wordToJawi, baseWordToJawi:wordToJawi,
   syllabify, jawiToRumi, heurJawiToRumi, inverseCandidates, phonotacticCost, editDistance,

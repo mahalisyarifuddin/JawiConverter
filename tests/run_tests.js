@@ -156,6 +156,12 @@ assert.strictEqual(engine.jawiToLatin('سموا'), 'semua');
 /* Mid-word ي before a consonant can spell /ia/ (kejadian, ujian). */
 assert.strictEqual(engine.jawiToLatin('کجادين'), 'kejadian');
 assert.strictEqual(engine.jawiToLatin('اوجين'), 'ujian');
+/* اء before a consonant spells long /aa/ (kerajaan, berkenaan). */
+assert.strictEqual(engine.jawiToLatin('کراجاءن'), 'kerajaan');
+assert.strictEqual(engine.jawiToLatin('برکناءن'), 'berkenaan');
+assert.strictEqual(engine.jawiToLatin('کراجاٴن'), 'kerajaan');
+/* Word-final ي after a consonant can spell /ia/ (berusia). */
+assert.strictEqual(engine.jawiToLatin('بروسيا'), 'berusia');
 assert(engine.phonotacticCost('plajar') > engine.phonotacticCost('pelajar'));
 assert(engine.phonotacticCost('tersbut') > engine.phonotacticCost('tersebut'));
 assert.strictEqual(engine.jawiToLatin('غاءيره'), engine.jawiToLatin('غاٴيره'));
