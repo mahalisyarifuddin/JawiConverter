@@ -276,4 +276,26 @@ Residual classes such as `mereka → merika` are forward limits, not ranking bug
 
 Rule-based-7 lowers full validation WER by **0.5216 points** and comparative test WER by **0.4775 points** over rule-based-6, and raises exact validation sentences from 97 to 99. Test was not used for any selection.
 
+## Seventh-cycle exploration: the remaining ceiling
+
+After rule-based-7 a systematic search for further inverse cost changes found none. The full 25-parameter grid was re-swept on 500-sentence samples and **every coordinate was neutral or worse**. The grid included `yaE`, `wawO`, `wawW`, `initialO`, all five `final*` costs, all five `insert*` costs, `initialE`, `medialER`, `noFinalVowel`, `prefixBonus`, `forwardBonus`, `forwardWeight`, `pairAya`, `pairAwa`, `complexOnset`, `complexCoda`, `yaY`, and `invalidCluster`.
+
+Several structural hypotheses were measured and rejected on both splits:
+
+| Hypothesis | Evidence | Result |
+| --- | --- | --- |
+| Open-syllable vowel quality costs | final open syllables are u 11.1%, o 0.7%, e 2.3% | neutral below 0.5, then sharply worse |
+| Closed final syllable `/a/` preference | closed final syllables are a 67.2% | worse from the smallest value tested |
+| Score appended final vowels separately | appended candidates currently outrank correct bare forms (`majlis`, `langsung`) | worse at every value |
+| Prefer shorter readings on exact ties | exact ties occur in **42.2% of tokens** | already optimal; a vowel-count tie-break was worse (44.00% → 44.74%) |
+| Final-vowel elision as forward-consistent | `itu`/`ini`/`pada` ≈ 7,400 cases | 44.00% → 45.99% (train), 42.08% → 44.05% (validation) |
+| Initial `ي` as `/e/`, `ي` between consonants as schwa carrier | 4,270 vs 185 aligned cases for the first | neutral then worse; worse |
+
+Two findings explain the ceiling:
+
+1. **Exact ties are pervasive.** On a 500-sentence train sample, 3,979 of 9,430 tokens (42.2%) have at least two candidates with identical scores at the top. The current shortest-form tie-break recovers the reference in 17,517 cases and misses 5,498, so it is already better than any alternative tested.
+2. **The corpus writes final vowels.** Measured on positionally aligned rows: final `/i/` is written with a vowel letter 80.2% of the time, `/u/` 62.1%, `/a/` 48.6%. The forward spelling `itu → ايتو` is therefore majority-correct, and the `itu => it` errors are the irreducible minority, not a bug. Changing it would require accepting a 20–50% loss on the majority class.
+
+The residual load is long-tail: the same Jawi token is overwhelmingly one reading (`ايت` is `itu` 1,305 times with 4 other readings across 15,881 sentences). Closing it needs a language model or lexicon, both of which are outside this rule-only design.
+
 The aggregate metrics contain no corpus sentences. Detailed JSON metrics and error reports remain in Git-ignored `artifacts/`; downloaded Parquet files remain in Git-ignored `corpus/`.
