@@ -91,7 +91,8 @@ Nilai `0` berarti seluruh split. Batas yang lebih kecil berguna selama pengemban
 | Dihantar: kamus 500 kata (pasangan v1) | 27,62% | 26,59% | 27,50% |
 | v2: pasangan kata dibetulkan + 500 entri | 20,23% | 19,79% | 20,95% |
 | v3: pemisahan ke- + 500 entri | 20,10% | 19,70% | 20,78% |
-| **v4: akar di- diperluas (269) + 500 entri** | **20,07%** | **19,67%** | 20,77% |
+| v4: akar di- diperluas (269) + 500 entri | 20,07% | 19,67% | 20,77% |
+| **v16: kunci kamus ٢ boleh dicapai** | **19,95%** | **19,52%** | 20,68% |
 
 Hasil rule-based-11 saat ini adalah **15.862 edit / 38.326 kata referensi = 41,3870% WER test**, dengan 81 kalimat test yang cocok persis. Dibanding rule-based-2, WER test turun **12,4094 poin persentase**; dibanding baseline dengan koreksi tanda baca, penurunannya **16,7093 poin**. Pada seluruh split validation, WER turun menjadi **40,5656%**, yaitu **0,0210 poin** lebih baik daripada rule-based-10.
 

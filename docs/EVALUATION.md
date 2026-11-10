@@ -875,3 +875,70 @@ The remaining error profile on validation is now dominated by lexical rather tha
 Two things checked and found already correct: the `٢` repetition rule (89.2% of corpus repeats use the mark, and the engine handles all of them), and one-to-many joins that the renderer already resolves (`kedua dua`, `berhati hati`).
 
 The aggregate metrics contain no corpus sentences. Detailed JSON metrics and error reports remain in Git-ignored `artifacts/`; downloaded Parquet files remain in Git-ignored `corpus/`.
+
+## Eighteenth-cycle: retuning, and the ٢ key that could never match
+
+The cycle asked for three things: rework the rules, re-tune the constants, recount the utopia. Two produced results.
+
+### The tuning surface is saturated
+
+All 29 `TUNE` parameters were screened against the v4 system on 250-sentence train and validation samples, two values each, bracketing the incumbent, with a full forward-and-inverse decode per cell. **Every parameter reported no gain.** Moving any single cost, bonus, or vowel-weight either left the objective unchanged or improved train while worsening validation.
+
+That is the expected result, not a null one. These constants have been fitted on the same corpus for seventeen cycles; the surviving error is lexical rather than parametric, which is exactly what the error profile has said for several cycles (substitution-dominated, months and proper nouns and loanwords). Retuning cannot spell `september`.
+
+The `TUNE` block is therefore unchanged, and `RULE_VERSION` stays on the same constants.
+
+### A dictionary key that the engine stripped before looking it up
+
+The error profile listed `kira-kira -> kira` 55 times on validation. That pair should have been impossible: the `٢` rule already reads `kira٢` as `kira kira`, and the dictionary shipped an entry for it.
+
+The cause was an ordering bug. `jawiToLatin` expands the repeat mark by matching `(letters)\s*٢` and calling `jawiToRumi` on the **captured letters**, with the mark already removed. `jawiToRumi` then normalises and consults `JawiDictionary.entries[word]`. So the lookup key was always `kira`, never `kira٢`, and the ten entries that carried the mark in their key were unreachable. Whether a repeated word came out right depended only on the rule decoder.
+
+Worse, the ranking harness that built those entries had the same defect from the other side: it paired one Jawi token with one Rumi word, so a token written `kira٢` against the reference `kira kira` looked like a 1:1 pair and was recorded as the reading `kira`. The dictionary was therefore storing the *wrong* answer for exactly the tokens it was meant to fix.
+
+Both halves were corrected:
+
+1. The aligner now treats a token carrying `٢` as one token against the repeated phrase, so `kira٢ -> kira kira` is recorded as such.
+2. The repeat handler consults the dictionary with the mark **still on the key** (`word + '٢'`) before falling back to the rule decoder and doubling. A reading that is already the repeated phrase is emitted once; anything else is doubled as before.
+
+Re-ranking produced 291 `٢`-keyed entries, all of them genuinely reachable for the first time. The top twenty of the 500 shipped now include `kira٢ -> kira kira` (477 corpus occurrences) and `baru٢ -> baru baru` (212), where the previous build had `kira` and `baru`.
+
+| Split | v4 | **v16** | Exact sentences |
+| --- | ---: | ---: | ---: |
+| train | 20.07% | **19.95%** | 2,072 |
+| validation | 19.67% | **19.52%** | 275 |
+| test (comparative) | 20.77% | **20.68%** | 232 |
+
+Both selection splits improve, which is the acceptance condition; the test split is reported only as a check that nothing broke.
+
+### Utopia, recounted on v16
+
+The frontier was rebuilt at increment 5 (2,123 points, real engine at every point, 10,606-entry mismatch space):
+
+| Dictionary words | Validation WER | Exact sentences |
+| ---: | ---: | ---: |
+| 0 | 39.50% | 117 |
+| 100 | 28.06% | 182 |
+| 250 | 23.14% | 229 |
+| **305 (utopia)** | **22.06%** | 241 |
+| 500 (shipped) | 19.67% | 273 |
+| 1,000 | 16.39% | 343 |
+| 3,000 | 13.39% | 459 |
+| 5,000 | 12.84% | 487 |
+| 10,606 (all) | 12.64% | 511 |
+
+**Utopia: 305 words at 22.06% validation WER** — unchanged from v4. Weight sensitivity, recomputed on the new curve:
+
+| Vocabulary weight | Choice | Validation WER |
+| ---: | ---: | ---: |
+| 0.3 | 710 words | 17.82% |
+| 0.4 | 560 words | 18.99% |
+| **0.5** | **305 words** | **22.06%** |
+| 0.6 | 180 words | 24.79% |
+| 0.7 | 20 words | 32.66% |
+
+The utopia point is stable because it depends on the *shape* of the early curve, and the `٢` correction lives almost entirely in the tail: it changes the floor from 12.6648% to 12.6438% and the shipped 500-entry point from 19.6734% to 19.5240%. The knee does not move when the floor does.
+
+### What this says about the remaining headroom
+
+Two consecutive cycles have now failed to move the constants, and the only gain available was a correctness bug rather than an optimisation. The rules are done; the frontier is flat past 5,000 entries; the residual is spelling. Further work on this engine should be directed at lexical coverage and at the metric's treatment of proper nouns, not at more rule shape.
