@@ -119,7 +119,7 @@ const HIGH_HAMZA = '\u0674';
 const withHighHamza = jawi => jawi.replace(/ء/g, HIGH_HAMZA);
 for (const [canonicalJawi, expected] of [
   ['ماءين', 'main'], ['باءيق', 'baik'], ['دوءيت', 'duit'], ['باءو', 'bau'],
-  ['اءير', 'air'], ['لاءوت', 'laut'], ['کاءين', 'kain'], ['ماءين٢', 'main main'] // corpus writes a space, not a hyphen
+  ['اءير', 'air'], ['لاءوت', 'laut'], ['کاءين', 'kain'], ['ماءين٢', 'main-main'] // standard Malay & Utusan corpus hyphenate reduplication
 ]) {
   const pasted = withHighHamza(canonicalJawi);
   assert.strictEqual(engine.jawiToLatin(pasted), expected);
@@ -134,8 +134,8 @@ assert.strictEqual(engine.jawiToLatin('سأورڠ'), 'seorang');
 /* One Jawi token, two Rumi words: دسيني is "di sini" in the corpus. */
 assert.strictEqual(engine.jawiToLatin('دسيني'), 'di sini');
 assert.strictEqual(engine.jawiToLatin('دباوه'), 'di bawah');
-/* ٢ marks repetition, written with a space in the corpus (kira kira). */
-assert.strictEqual(engine.jawiToLatin('کيرا٢'), 'kira kira');
+/* ٢ marks repetition, hyphenated in standard Rumi and the corpus (kira-kira). */
+assert.strictEqual(engine.jawiToLatin('کيرا٢'), 'kira-kira');
 assert.strictEqual(engine.jawiToLatin('دباوه'), 'di bawah');
 assert.strictEqual(engine.jawiToLatin('دالم'), 'dalam');
 assert.strictEqual(engine.jawiToLatin('جوݢ'), 'juga');
