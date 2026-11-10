@@ -732,4 +732,50 @@ Two test expectations changed, both because the corpus disagrees with the old ex
 
 No dictionary entry overrides a Pedoman-deterministic expectation: all 179 deterministic forms and 57 underdetermined forms still pass.
 
+## Fifteenth-cycle: the pairing was wrong — rebuild from the corpus
+
+A reviewer reading the shipped output found the foundational error. `دسيني` is **"di sini"**, two Rumi words, not `disini`; `دباوه` is "di bawah". The dictionary had been built by pairing the *n*-th Jawi token with the *n*-th reference word inside sentences whose token and word counts happened to match. Several thousand such pairs assumed one Jawi token equals one Rumi word. It does not.
+
+Aligning Jawi tokens against Rumi words with 1:2 and 2:1 operations, on the train split:
+
+| Jawi | Rumi | Occurrences |
+| --- | --- | ---: |
+| `دسيني` | di sini | 619 |
+| `کيرا٢` | kira kira | 331 |
+| `دباوه` | di bawah | 148 |
+| `کانق٢` | kanak kanak | 119 |
+| `دکاوسن` | di kawasan | 115 |
+| `دسمنتارا` | sementara itu | 102 |
+| `ددالم` | di dalam | 67 |
+
+Two systematic facts fall out of this, and both are rule-level, not dictionary-level:
+
+1. **`٢` marks repetition and is written with a space, not a hyphen.** The forward direction already emitted `٢` for repeated words, but the inverse rendered `kira-kira`. The corpus writes `kira kira` (and `main main` rather than `main-main`).
+2. **Joined `di-`/`ke-` plus a locative root is two Rumi words.** `دسيني` is "di sini", and the same applies to `ددالم`, `دکاوسن`, `دباوه` and 78 further roots with at least three corpus occurrences. Active verbs are unaffected: `دبنتو` remains `dibantu`, because its root is not locative.
+
+Affix splitting applies only when the rendered root is in a set derived from corpus evidence (82 roots with >=3 occurrences), and only when the Jawi shows a joined `د`+consonant prefix.
+
+**Rule-only improvement (samples, 500 sentences each):**
+
+| | train | validation |
+| --- | ---: | ---: |
+| v1 rules | 41.492% | 39.731% |
+| **v2 rules** | **40.807%** | **39.121%** |
+
+The repetition change alone was net-negative (42.727%); it only pays with the affix split, because `kira kira` and `di sini` must be adopted together.
+
+**Dictionary rebuilt on word-level pairing.** Entries now carry full Rumi phrases where needed (72 of the 500 are multi-word), and value is counted against the phrase. `دسيني = "di sini"` rises to rank 3 with 1,022 mismatched train occurrences.
+
+| Configuration | train | validation | test |
+| --- | ---: | ---: | ---: |
+| rule-based-11 (rules only) | 41.54% | 40.57% | 41.39% |
+| v1 rules + v1 500-entry dictionary | 27.62% | 26.59% | 27.50% |
+| **v2 rules + v2 500-entry dictionary** | **20.23%** | **19.79%** | **20.95%** |
+
+Validation exact-match sentences rise from 167 to **272** (of 1,989).
+
+Correcting the pairing was worth **6.8 validation points** on its own — more than any rule-tuning cycle in this project. Test was not used for selection.
+
+Four test expectations were corrected rather than preserved, each on corpus evidence: `دسيني`, `دباوه`, `ماءين٢` (space, not hyphen), and `مريک`.
+
 The aggregate metrics contain no corpus sentences. Detailed JSON metrics and error reports remain in Git-ignored `artifacts/`; downloaded Parquet files remain in Git-ignored `corpus/`.

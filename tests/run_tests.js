@@ -119,7 +119,7 @@ const HIGH_HAMZA = '\u0674';
 const withHighHamza = jawi => jawi.replace(/ء/g, HIGH_HAMZA);
 for (const [canonicalJawi, expected] of [
   ['ماءين', 'main'], ['باءيق', 'baik'], ['دوءيت', 'duit'], ['باءو', 'bau'],
-  ['اءير', 'air'], ['لاءوت', 'laut'], ['کاءين', 'kain'], ['ماءين٢', 'main-main']
+  ['اءير', 'air'], ['لاءوت', 'laut'], ['کاءين', 'kain'], ['ماءين٢', 'main main'] // corpus writes a space, not a hyphen
 ]) {
   const pasted = withHighHamza(canonicalJawi);
   assert.strictEqual(engine.jawiToLatin(pasted), expected);
@@ -131,10 +131,12 @@ assert.strictEqual(engine.jawiToLatin('MBJB Press e-peper'), 'MBJB Press e-peper
 assert.strictEqual(engine.jawiToLatin('يڠ'), 'yang');
 assert.strictEqual(engine.jawiToLatin('دأمبيل'), 'diambil');
 assert.strictEqual(engine.jawiToLatin('سأورڠ'), 'seorang');
-/* The corpus writes دسيني for "sini" (41 vs 6 train occurrences), so the
- * dictionary entry corrects what the joined-di- rule alone produced. */
-assert.strictEqual(engine.jawiToLatin('دسيني'), 'sini');
-assert.strictEqual(engine.jawiToLatin('دباوه'), 'dibawah');
+/* One Jawi token, two Rumi words: دسيني is "di sini" in the corpus. */
+assert.strictEqual(engine.jawiToLatin('دسيني'), 'di sini');
+assert.strictEqual(engine.jawiToLatin('دباوه'), 'di bawah');
+/* ٢ marks repetition, written with a space in the corpus (kira kira). */
+assert.strictEqual(engine.jawiToLatin('کيرا٢'), 'kira kira');
+assert.strictEqual(engine.jawiToLatin('دباوه'), 'di bawah');
 assert.strictEqual(engine.jawiToLatin('دالم'), 'dalam');
 assert.strictEqual(engine.jawiToLatin('جوݢ'), 'juga');
 /* d + vowel + nasal is not a passive di- root: no Malay root starts with ng/ny. */

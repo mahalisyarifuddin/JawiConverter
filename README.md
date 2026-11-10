@@ -88,7 +88,8 @@ node tests/evaluate_corpus.js \
 | **Refined `2026-11-09-rule-based-11`** | **41.54%** | **40.57%** | **41.39%** |
 | + 70-word dictionary (Pareto knee) | 33.69% | 32.84% | — |
 | + full 21,271-word dictionary | 7.97%* | **7.97%** | 8.12% |
-| **Shipped: 500-word dictionary (on by default)** | 27.62% | **26.59%** | 27.50% |
+| Shipped: 500-word dictionary (v1 pairing) | 27.62% | 26.59% | 27.50% |
+| **v2: corrected word pairing + 500 entries** | **20.23%** | **19.79%** | 20.95% |
 
 The current rule-based-11 result is **15,862 edits / 38,326 reference words = 41.3870% test WER**, with 81 exact test sentences. Relative to rule-based-2, this is a **12.4094-point** test reduction; relative to the punctuation-corrected baseline, it is **16.7093 points**. On the full validation split WER falls to **40.5656%**, a further **0.0210 points** over rule-based-10.
 
