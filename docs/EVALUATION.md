@@ -360,4 +360,41 @@ The `ia` extension was kept despite a neutral sample score because it closes a g
 
 Rule-based-9 lowers full validation WER by **0.9410 points** and comparative test WER by **1.0411 points** over rule-based-8. Test was not used for any selection.
 
+## Tenth-cycle: alignment-based error extraction
+
+Earlier cycles ranked errors by pairing words positionally inside same-length sentences. That pairing is not the alignment the evaluator uses, and it fabricated cases such as `bandaraya -> dan` that no decoder ever produced. Re-extracting the substitution pairs through the evaluator's own sentence-level alignment changed the priorities completely: the largest single error was not a vowel at all.
+
+| Reference → hypothesis | Count | Cause |
+| --- | ---: | --- |
+| `di` → (deleted) | 4,251 | standalone `دي` decoded as the preposition |
+| `itu` → `it` | 2,467 | known minority final-vowel spelling |
+| `ini` → `in` | 1,854 | same |
+| `pada` → `pad` | 1,759 | same |
+| `mereka` → `merika` | 899 | schwa read as full `/e/` |
+| `mangsa` → `mengesa` | 496 | intrusive schwa |
+
+**The affix bug.** The `di` prefix bonus was awarded by `/^di/`, which matches the bare token `di`. `phonotacticCost('di')` returned −3.00, so standalone `دي` lost to the preposition reading. In the corpus `دي` is `dia` 278 times and `di` zero times. A prefix now requires a root (`text.length > 2`), for both `di-` and the general prefix set. This single fix removed the 4,251-deletion term and the knock-on word shifts around it.
+
+**The schwa rule.** The corpus writes a reduced `/a/` where the engine emitted full `/e/`: `مريک` is `mereka`, `لومڤور` is `lumpur`. Charging an `e` between two consonants before a final syllable recovers these. Tuning on samples:
+
+| `epentheticE` | train WER (sample) | validation WER (sample) |
+| --- | ---: | ---: |
+| 0 | 42.291% | 40.383% |
+| 0.10 | 42.166% | 40.321% |
+| **0.25** | **41.554%** | **39.752%** |
+| 0.40 | 41.554% | 39.762% |
+| 0.60 | 41.710% | 39.948% |
+
+Restricting the rule to non-initial syllables was neutral; a three-consonant minimum was identical to the unrestricted form.
+
+**A methodology note for future cycles.** Two screens in this round were silently no-ops because the patch anchor text did not match the file (the suffix bonus is `-= 0.1`, not `-= 0.5`). A variant that scores *exactly* the baseline at every parameter value is a patching failure, not a neutral result. Every patch now asserts its anchor is present.
+
+| Engine | Split | Sentences | Reference words | Total edits | WER | Exact sentences |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| **Refined rule-based-10** | train | 15,881 | 306,693 | 127,466 | **41.5614%** | 699 |
+| **Refined rule-based-10** | validation | 1,989 | 38,153 | 15,485 | **40.5866%** | 109 |
+| **Refined rule-based-10** | test (comparative) | 1,972 | 38,326 | 15,876 | **41.4236%** | 81 |
+
+Rule-based-10 lowers full validation WER by **0.7836 points** and comparative test WER by **0.6444 points** over rule-based-9. Test was not used for any selection.
+
 The aggregate metrics contain no corpus sentences. Detailed JSON metrics and error reports remain in Git-ignored `artifacts/`; downloaded Parquet files remain in Git-ignored `corpus/`.

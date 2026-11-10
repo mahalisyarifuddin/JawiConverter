@@ -162,6 +162,11 @@ assert.strictEqual(engine.jawiToLatin('برکناءن'), 'berkenaan');
 assert.strictEqual(engine.jawiToLatin('کراجاٴن'), 'kerajaan');
 /* Word-final ي after a consonant can spell /ia/ (berusia). */
 assert.strictEqual(engine.jawiToLatin('بروسيا'), 'berusia');
+/* Bare di/ke are words, not prefix-bearing forms. */
+assert.strictEqual(engine.jawiToLatin('دي'), 'dia');
+/* A schwa between consonants before a final syllable reads as reduced /a/. */
+assert.strictEqual(engine.jawiToLatin('مريک'), 'merika');
+assert.strictEqual(engine.jawiToLatin('لومڤور'), 'lumpur');
 assert(engine.phonotacticCost('plajar') > engine.phonotacticCost('pelajar'));
 assert(engine.phonotacticCost('tersbut') > engine.phonotacticCost('tersebut'));
 assert.strictEqual(engine.jawiToLatin('غاءيره'), engine.jawiToLatin('غاٴيره'));

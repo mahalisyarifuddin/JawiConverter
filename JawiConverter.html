@@ -1829,7 +1829,7 @@ const TUNE = {
   finalA:-0.1, finalI:1.4, finalU:1.4, finalE:0.25, finalO:2,
   wawO:0.3125, wawW:0.5, initialO:0.2, yaE:0.75, yaY:0.625,
   pairAya:-0.25, pairAwa:0, forwardWeight:0.5, forwardBonus:1.875,
-  invalidCluster:3, iaCost:0, aaCost:0.25, noFinalVowel:0.625, medialER:0.1, complexOnset:0.5, complexCoda:0.5, initialE:0.25, prefixBonus:1, diPrefixBonus:3, beam:1000, shortlist:80
+  invalidCluster:3, iaCost:0, aaCost:0.25, noFinalVowel:0.625, medialER:0.1, epentheticE:0.25, complexOnset:0.5, complexCoda:0.5, initialE:0.25, prefixBonus:1, diPrefixBonus:3, beam:1000, shortlist:80
 };
 const LATIN_VOWELS = 'aeiou';
 function latinConsonantAtEnd(value) { return /[bcdfghjklmnpqrstvwxyz]$/i.test(value); }
@@ -1924,14 +1924,18 @@ function phonotacticCost(text) {
     if (coda.length > 2 || (coda.length === 2 && !codas.has(syl.coda))) cost += TUNE.invalidCluster;
   }
   if (/([aeiou])\1/.test(text) && !/aa/.test(text)) cost += 0.5;
-  if (/^(?:me(?:ng|ny|m|n)|pe(?:ng|ny|m|n)|ber|ter|per|ke|se)/.test(text)) cost -= TUNE.prefixBonus;
+  if (/^(?:me(?:ng|ny|m|n)|pe(?:ng|ny|m|n)|ber|ter|per|ke|se)/.test(text) && text.length > 2) cost -= TUNE.prefixBonus;
   /* A passive di- root never starts with the velar or palatal nasal: the
    * remainder must be the root, so di- + ngV/nyV is read as /d/ + vowel + nasal
    * (Pedoman: دڠن is dengan, not *dingan). */
-  if (/^di/.test(text) && !/^di(?:ng|ny)/.test(text)) cost -= TUNE.diPrefixBonus;
+  /* A prefix needs a root: bare di/ke is a word, not an affixed form. */
+  if (/^di/.test(text) && !/^di(?:ng|ny)/.test(text) && text.length > 2) cost -= TUNE.diPrefixBonus;
   /* Rumi /e/ in a medial open syllable has no Jawi letter; before r it is by far
    * the most frequent such context (ke-r-ana, me-r-eka, be-r-apa). */
   if (/.[bcdfghjklmnpqrstvwxyz]er[aeiou]/.test(text)) cost -= TUNE.medialER;
+  /* A schwa between two consonants before a final syllable is often the
+   * corpus's reduced /a/ (mereka, kerana), so charge the e reading. */
+  if (/[bcdfghjklmnpqrstvwxyz]e[bcdfghjklmnpqrstvwxyz][aeiou]$/.test(text)) cost += TUNE.epentheticE;
   if (/(?:nya|lah|kah|pun|kan|an|i)$/.test(text)) cost -= 0.1;
   return cost;
 }
@@ -2054,7 +2058,7 @@ function jawiToLatin(text) {
     .replace(/([({\[])\s+/g, '$1').replace(/\s+([)}\]])/g, '$1');
 }
 
-const RULE_VERSION = '2026-11-09-rule-based-9';
+const RULE_VERSION = '2026-11-09-rule-based-10';
 if (typeof module !== 'undefined' && module.exports) module.exports = {
   RULE_VERSION, appendSuffix, latinToJawi, jawiToLatin, wordToJawi, baseWordToJawi:wordToJawi,
   syllabify, jawiToRumi, heurJawiToRumi, inverseCandidates, phonotacticCost, editDistance,
