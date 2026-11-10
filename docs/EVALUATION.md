@@ -563,6 +563,35 @@ Vocabulary saved at equal accuracy:
 
 Two caveats on the ranking. It is by raw frequency, not by error-reduction, so a frequent token that contributes one edit outranks a rarer one that contributes several; ranking by `frequency x edits-avoided` would move the knee left. And 155 tokens in the mismatch set never appear in validation at all, so their position in the training-derived order is untested.
 
+### Ranking by edits avoided (hypothesis confirmed)
+
+Frequency ranking is the obvious choice and the wrong one. An entry earns its slot only where the rule decode is wrong, and frequent tokens are frequently *correct*: `يڠ` appears 6,735 times in train but the rules already handle it in all but 110 cases, while `ايت` appears 2,602 times and is wrong in 1,359 of them.
+
+Ranking the 15,954 mismatched tokens by the number of train occurrences where the rule is actually wrong:
+
+| Top 100 entries by | Avoidable train errors covered |
+| --- | ---: |
+| raw frequency | 13,260 |
+| edits avoided | **19,447** (+47%) |
+
+The full increment-5 sweep (3,192 points, real engine, validation-gated) confirms it at every size:
+
+| Dictionary words | By frequency | By edits avoided | Gain |
+| ---: | ---: | ---: | ---: |
+| 25 | 35.11% | 33.60% | +1.50 pp |
+| 50 | 34.05% | 31.36% | +2.69 pp |
+| 100 | 32.28% | 28.16% | +4.12 pp |
+| 250 | 27.84% | 23.04% | **+4.80 pp** |
+| 500 | 23.83% | 19.59% | +4.24 pp |
+| 1,000 | 18.44% | 15.84% | +2.60 pp |
+| 2,000 | 13.42% | 12.48% | +0.94 pp |
+| 3,000 | 11.26% | 11.03% | +0.23 pp |
+| 5,000 | 9.44% | 9.52% | −0.08 pp |
+
+**Utopia point moves from 1,005 words / 18.37% to 300 words / 22.10%** — a 3.3x smaller dictionary for the same compromise distance. Note the two curves cross at about 5,000 words: beyond that the value ranking is marginally *worse*, because the ties among zero-value-remainder tokens are then broken by frequency, and a few high-frequency low-value tokens get deferred. That crossing is a tie-breaking artefact, not a reason to prefer frequency.
+
+The practical reading: **if the dictionary is small, order matters enormously and value ranking is worth 4.8 points; if it is going to be large anyway, ordering barely matters.** Also worth noting that the value ranking's *endpoint* is identical (7.9653%, 700 exact) — it only reorders, so there is no accuracy cost to adopting it.
+
 ### Utopia point (exact increment-5 sweep, log-scaled size axis)
 
 The earlier utopia analysis used a sweep that coarsened to 250–500 word steps above 2,000 words, which is not "increment 5" and moves the answer. It was redone at **+5 words for all 3,192 points** across the full 15,954-entry mismatch vocabulary, measured by the real engine at every point.
