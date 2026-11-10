@@ -778,4 +778,38 @@ Correcting the pairing was worth **6.8 validation points** on its own — more t
 
 Four test expectations were corrected rather than preserved, each on corpus evidence: `دسيني`, `دباوه`, `ماءين٢` (space, not hyphen), and `مريک`.
 
+## Sixteenth-cycle: extending the affix split to ke-
+
+The `di-` split generalised, but `ke-` needed a stricter criterion. Applying the same bare-root list to `ke` **regressed** both splits (40.807% -> 40.984%), because roots like `luar` and `bilik` make `ke` + root look splittable while the corpus writes `keluar` and `kebilik` as single words.
+
+The discriminator is per-root corpus behaviour, not root identity. For each candidate root, count how often the corpus writes "ke R" against "keR":
+
+| Root | Split | Fused | Rate |
+| --- | ---: | ---: | ---: |
+| dalam | 68 | 0 | 100% |
+| atas | 96 | 0 | 100% |
+| hospital | 107 | 0 | 100% |
+| sekolah | 43 | 0 | 100% |
+| luar | 0 | many | 0% |
+| bilik | 0 | many | 0% |
+
+Restricting `ke`-splitting to the **93 roots the corpus splits at least 80% of the time** (minimum 3 occurrences) turns the regression into a gain:
+
+| | train | validation |
+| --- | ---: | ---: |
+| di- only | 40.807% | 39.121% |
+| **di- and ke- (evidence-gated)** | **40.620%** | **38.956%** |
+
+`keluar` and `kebilik` stay fused; `ke dalam`, `ke atas`, `ke sekolah` split.
+
+**Final shipped numbers (rules + 500 entries, full splits):**
+
+| Split | v2 | **v3** | Exact sentences |
+| --- | ---: | ---: | ---: |
+| train | 20.23% | **20.10%** | 2,054 |
+| validation | 19.79% | **19.70%** | 273 |
+| test (comparative) | 20.95% | **20.78%** | 229 |
+
+The two prefixes need different evidence because they are different constructions: `di` + location is a prepositional phrase, while `ke` + root competes with genuine `ke-` derivations (`ketua`, `kerana`, `keluar`). One list cannot serve both.
+
 The aggregate metrics contain no corpus sentences. Detailed JSON metrics and error reports remain in Git-ignored `artifacts/`; downloaded Parquet files remain in Git-ignored `corpus/`.
