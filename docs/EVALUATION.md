@@ -503,6 +503,66 @@ The curve has **no plateau**. Every decade of dictionary growth still pays, and 
 
 **Full vocabulary: train 21,271 entries → validation 7.9653%, test 8.1224%** (comparative; test was not used for selection). Exact validation sentences rise from 109 to 700 of 1,989.
 
+### Restricting the vocabulary to tokens the rules get wrong
+
+An entry is only worth its slot if the rule decoder would otherwise be wrong. Classifying each token on the **train** split as "rule decode correct in every aligned occurrence" or not:
+
+| Class | Tokens | Occurrences |
+| --- | ---: | ---: |
+| Rule decode wrong at least once | 15,954 | 120,109 |
+| Rule decode always correct | 5,317 | 21,273 |
+
+So **25% of the vocabulary never needed an entry**; dropping those and re-sweeping the rest in frequency order gives the same endpoint with a smaller dictionary, and is lower at every intermediate size because two to three skipped tokens now share each step.
+
+| Dictionary words | Validation WER | Exact sentences |
+| ---: | ---: | ---: |
+| 0 | 40.57% | 109 |
+| 5 | 39.39% | 114 |
+| 10 | 37.67% | 121 |
+| 15 | 36.76% | 124 |
+| 20 | 36.47% | 124 |
+| 25 | 35.11% | 125 |
+| 30 | 34.77% | 126 |
+| 40 | 34.52% | 127 |
+| 50 | 34.05% | 129 |
+| 60 | 33.71% | 129 |
+| 70 | 32.84% | 131 |
+| 80 | 32.72% | 132 |
+| 100 | 32.28% | 132 |
+| 125 | 31.58% | 133 |
+| 150 | 30.65% | 134 |
+| 175 | 30.00% | 136 |
+| 200 | 29.43% | 138 |
+| 250 | 27.84% | 149 |
+| 300 | 27.05% | 152 |
+| 400 | 25.44% | 159 |
+| 500 | 23.83% | 174 |
+| 750 | 20.96% | 203 |
+| 1,000 | 18.44% | 237 |
+| 1,500 | 15.41% | 293 |
+| 2,000 | 13.42% | 350 |
+| 3,000 | 11.26% | 455 |
+| 5,000 | 9.44% | 571 |
+| 7,500 | 8.60% | 633 |
+| 10,000 | 8.28% | 664 |
+| 12,500 | 8.16% | 678 |
+| 15,954 | 7.97% | 700 |
+
+**Knee: 125 words, 31.58%** (max deviation below the chord on a log vocabulary axis). Same full-vocabulary endpoint, 7.9653%, with 15,954 entries instead of 21,271.
+
+Vocabulary saved at equal accuracy:
+
+| Target WER | Mismatch-only | All tokens | Saving |
+| ---: | ---: | ---: | ---: |
+| 32.84% | 80 | 80 | 0% |
+| 30.00% | 175 | 200 | 12% |
+| 23.83% | 500 | 500 | 0% |
+| 13.42% | 2,000 | 2,000 | 0% |
+
+**The honest shape of the curve.** Per-doubling return is *not* monotonically decreasing: it is noisy between 1 and 500 words (0.37 to 6.08 pp per doubling) and actually peaks in the mid-range, around 750 → 1,500 words, before collapsing after 5,000. That means the knee is a genuine choice about small-dictionary budgets, not a point where information runs out. If the goal is lowest WER at any size, the full 15,954 entries at 7.97% is the answer, and every cheaper point on this frontier is a deliberate compromise.
+
+Two caveats on the ranking. It is by raw frequency, not by error-reduction, so a frequent token that contributes one edit outranks a rarer one that contributes several; ranking by `frequency x edits-avoided` would move the knee left. And 155 tokens in the mismatch set never appear in validation at all, so their position in the training-derived order is untested.
+
 ### The earlier sampled curve (validation sample, n=498 sentences, increment 5)
 
 | Dictionary words | Validation WER | Exact sentences |
