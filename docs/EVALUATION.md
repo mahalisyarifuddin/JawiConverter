@@ -592,6 +592,36 @@ The full increment-5 sweep (3,192 points, real engine, validation-gated) confirm
 
 The practical reading: **if the dictionary is small, order matters enormously and value ranking is worth 4.8 points; if it is going to be large anyway, ordering barely matters.** Also worth noting that the value ranking's *endpoint* is identical (7.9653%, 700 exact) — it only reorders, so there is no accuracy cost to adopting it.
 
+### Utopia point, recomputed on the corrected v4 system
+
+The previous utopia figure (1,005 words / 18.37%) was computed against the **v1 system**, before the word-level pairing correction. Both axes have since moved: the rule-only baseline fell from 40.57% to 39.50%, and the full-vocabulary floor fell from 7.97% to **12.66%**, because the correction removed errors the dictionary could no longer buy back.
+
+Re-run on v4 with a fresh value ranking (10,606 mismatched keys) and increment-5 steps (2,123 points, real engine at every point):
+
+| Dictionary words | Validation WER | Exact sentences |
+| ---: | ---: | ---: |
+| 0 | 39.50% | 117 |
+| 100 | 28.06% | 182 |
+| 250 | 23.14% | 229 |
+| **305 (utopia)** | **22.06%** | — |
+| 500 (shipped) | 19.67% | 273 |
+| 1,000 | 16.39% | 343 |
+| 3,000 | 13.39% | 459 |
+| 10,606 (all) | 12.66% | 511 |
+
+**Utopia: 305 words at 22.06% validation WER** (equal weights, log-scaled size axis). Weight sensitivity:
+
+| Vocabulary weight | Choice | Validation WER |
+| ---: | ---: | ---: |
+| 0.3 | 1,145 words | 15.73% |
+| 0.4 | 710 words | 17.82% |
+| **0.5** | **305 words** | **22.06%** |
+| 0.6 | 20 words | 32.66% |
+
+**Why the answer barely moved while everything under it did.** The utopia sits near the top of the curve, where the first few hundred entries absorb the highest-value tokens. Correcting the pairing improved the *whole* curve, so both the ideal corner and the knee rose together and the compromise point stayed close. The tail is where the change is visible: in v1 the last 5,000 entries still bought 0.70 points, whereas in v4 the curve is flat beyond 5,000 (12.85% to 12.66% over the final 5,606). The dictionary is now genuinely spent at around 5,000 entries, because the remaining error is no longer token identity.
+
+The shipped 500 entry point sits comfortably below the knee at 19.67%, which the recomputed frontier confirms is a reasonable place to be: 500 words buys 2.4 points beyond the utopia for 195 extra entries.
+
 ### Utopia point (exact increment-5 sweep, log-scaled size axis)
 
 The earlier utopia analysis used a sweep that coarsened to 250–500 word steps above 2,000 words, which is not "increment 5" and moves the answer. It was redone at **+5 words for all 3,192 points** across the full 15,954-entry mismatch vocabulary, measured by the real engine at every point.
