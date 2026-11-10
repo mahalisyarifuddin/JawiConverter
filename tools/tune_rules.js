@@ -21,9 +21,9 @@ Options:
   --write                 Write only after validation improves and all regressions pass
   --report FILE           JSON report (default: artifacts/tuning-report.json)
 
-TRAIN and VALIDATION may be corpus files or directories. The tuner never accepts
-or opens a test split. It performs local coordinate descent, not a proof of a
-global optimum. Use --train-limit 0 --validation-limit 0 for final full-split runs.`);
+TRAIN and VALIDATION may be corpus files or directories. The tuner has no test
+option; callers must supply the correct splits. It performs local coordinate
+descent, not a proof of a global optimum. Use --train-limit 0 --validation-limit 0 for final full-split runs.`);
 }
 
 function parse(argv) {

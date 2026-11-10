@@ -1995,16 +1995,9 @@ function forwardForInverse(text) {
   if (INVERSE_FORWARD_MEMO.size < 100000) INVERSE_FORWARD_MEMO.set(text, result);
   return result;
 }
-/* Curated readings for the most frequent Jawi tokens. Entries are learned
- * from the train split only; see docs/EVALUATION.md for the Pareto sweep that
- * chooses how many to keep. Empty by default: the converter stays rule-based. */
-/* The 385 highest-value readings: the frontier vertex closest to the origin
- * (smallest vocabulary, lowest error) when both axes are zero-max normalised
- * and the size axis is logarithmic. Ranked on the train split by the number of
- * occurrences the rules decode wrongly, not by raw frequency; only tokens the
- * rules get wrong are included. See docs/EVALUATION.md. */
-/* Corpus-learned bidirectional lexicon (train split only; Pedoman & regression forms protected).
- * The first LJ_REV_COUNT entries are directly reversible into the lowercase Rumi->Jawi table. */
+/* Corpus-learned bidirectional lexicon (train split only; Pedoman and
+ * regression forms protected). The first LJ_REV_COUNT entries are used to
+ * build the lowercase Rumi-to-Jawi lookup; additional mappings follow below. */
 const DICTIONARY_ENTRIES = {
   "1960-هن":"1960-an", "1970-هن":"1970-an", "1مليسيا":"1malaysia", "40-هن":"40-an", "41ترماسوق":"41termasuk", "70-هن":"70-an",
   "80-هن":"80-an", "NSTP/ميديا":"nstp/media", "ءڠ":"aang", "أبراج-الجنادريه":"berjaya-alejenaderih", "أر.إيس":"ray.saya", "أردوغان":"erdogan",
@@ -4996,7 +4989,7 @@ if (typeof window !== 'undefined') window.JawiConverter = { RULE_VERSION, append
 					'Pilih arah penukaran: Rumi → Jawi atau Jawi → Rumi (atau tekan butang Tukar).',
 					'Taip atau tampal teks di panel Sumber — penukaran berlaku langsung (atau matikan dan tekan Tukar).',
 					'Salin hasil dari panel Terjemahan, atau muat naik fail .txt.',
-					'Enjin ini hanya menggunakan peraturan konteks, suku kata, imbuhan dan carian keadaan terhingga; tiada kamus kata atau pengecualian disimpan.',
+					'Enjin ini menggabungkan peraturan konteks, suku kata, imbuhan dan carian keadaan terhingga dengan kamus korpus dwihala yang boleh dimatikan.',
 					'Huruf khas: taip é untuk memaksa taling dan ě atau ê untuk memaksa pepet/schwa (contoh: sétém → سيتيم, sětěm/sêtêm → ستم). E tanpa tanda mengikut aturan mesin. Huruf tambahan: ݢ ga, ڠ nga, ڽ nya, ڤ pa, چ ca, ۏ va. Jawi yang menghapus vokal tidak selalu mempunyai satu jawapan Rumi yang pasti.'
 				],
 				shortcutList: [
@@ -5055,7 +5048,7 @@ if (typeof window !== 'undefined') window.JawiConverter = { RULE_VERSION, append
 					'Choose a direction: Rumi → Jawi or Jawi → Rumi (or press the Swap button).',
 					'Type or paste text in the Source panel — conversion is live (or turn it off and press Convert).',
 					'Copy the result from the Translation panel, or upload a .txt file.',
-					'The engine uses contextual rules, syllabification, affix handling, and a finite-state search; it stores no word list or exception dictionary.',
+					'The engine combines contextual rules, syllabification, affix handling, and a finite-state search with a toggleable bidirectional corpus dictionary.',
 					'Special letters: type é to force taling and ě or ê to force pepet/schwa (sétém → سيتيم, sětěm/sêtêm → ستم). Plain e follows the engine rules. Extra letters: ݢ ga, ڠ nga, ڽ nya, ڤ pa, چ ca, ۏ va. Jawi with omitted vowels does not always have one certain Rumi answer.'
 				],
 				shortcutList: [

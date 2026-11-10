@@ -1,5 +1,7 @@
 # Utusan evaluation protocol
 
+> **Current build:** The measurements below are historical, through v18. The shipped engine is `2026-11-10-rule-based-19-hybrid`, with a bidirectional dictionary enabled by default. No v19 WER is reported here. Historical descriptions of shipped behavior and local artifacts refer to their respective cycles, not the current checkout. Ignored `artifacts/` files are not included in the repository.
+
 ## Dataset and separation
 
 Target: `mahalisyarifuddin/utusan-jawi-sentences`.
@@ -23,9 +25,9 @@ The required separation is:
 
 ## Corpus availability and protocol when it is absent
 
-The corpus is external, Git-ignored, and downloaded from the dataset host. When that host is unreachable (for example in a restricted sandbox), **do not** substitute ad-hoc or invented data and do not report any WER figure for the Utusan splits. In that situation the verified-in-repo `tools/prpm_cache.json` word pairs on `main` may be used only as a development benchmark with the status "unverified against the official splits".
+The corpus is external, Git-ignored, and downloaded from the dataset host. When that host is unreachable (for example in a restricted sandbox), **do not** substitute ad-hoc or invented data and do not report any WER figure for the Utusan splits. No substitute benchmark is bundled in this checkout.
 
-`tools/tune_rules.js` intentionally has no test-path option. Its JSON report records `testSplitUsed: false` and `globalOptimalityClaimed: false`.
+`tools/tune_rules.js` has no test-path option, but it cannot verify the provenance of an explicitly supplied file without split labels. Supply only the intended train and validation data; `testSplitUsed: false` records the intended protocol, not proof of provenance. The report also records `globalOptimalityClaimed: false`.
 
 ## Metric
 
@@ -995,4 +997,4 @@ The shipped choice is **zero-max with a log size axis**: each axis is divided by
 
 The validation figure reproduces the sweep exactly from the shipped engine, and the point beats the previous choice on WER *and* on exact sentences while adding only 80 entries — a strictly better position on both objectives, which is why the scaling change was worth making rather than merely cosmetic.
 
-`RULE_VERSION` is now `2026-11-10-rule-based-18-dict385`. The 305-entry (v17) and 500-entry (v16) builds remain in `artifacts/` for the shallower and deeper points on the same curve.
+At that cycle, `RULE_VERSION` was `2026-11-10-rule-based-18-dict385`. The referenced v17 and v16 artifacts were local, Git-ignored outputs and are not included in this checkout.

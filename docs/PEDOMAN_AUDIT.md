@@ -1,13 +1,13 @@
-# Pedoman audit: dictionary-free engine
+# Pedoman audit
 
 ## Scope
 
-`tests/pedoman_cases.json` retains the 236 legacy examples from *Pedoman Umum Ejaan Jawi Bahasa Melayu*. The redesigned engine does not use the former pronunciation inventories, Arabic-root tables, solid-compound mappings, acronym list, reverse dictionary, or PRPM exception batch.
+`tests/pedoman_cases.json` retains the 236 legacy examples from *Pedoman Umum Ejaan Jawi Bahasa Melayu*. The current hybrid engine includes a toggleable corpus-derived dictionary; the audit checks the default configuration. It is not a dictionary-free accuracy claim.
 
 The fixture now distinguishes:
 
-- **178 deterministic examples**: the expected form must match exactly.
-- **58 underdetermined examples**: conversion must complete safely without leaking ASCII Rumi or invisible controls, but an exact match is not asserted.
+- **179 deterministic examples**: the expected form must match exactly.
+- **57 underdetermined examples**: conversion must complete safely without leaking ASCII Rumi or invisible controls, but an exact match is not asserted.
 
 Every underdetermined entry has `deterministic: false` and a `reason`. These entries remain as an ambiguity audit; they are not claimed to be correct and are not silently deleted. The 48 examples displayed in the HTML are all deterministic and all pass.
 
@@ -20,7 +20,7 @@ A rule-based converter cannot recover information that is absent from its input 
 3. **Historical morphology.** Some established solid compounds and suffixed-looking roots require a boundary that is not visible in modern Rumi. A suffix-shaped ending is not sufficient proof of a suffix.
 4. **Acronyms.** Capital letters alone do not specify whether an acronym is read as a word or spelled out, nor whether English or Malay letter names apply.
 
-Using a hidden whole-word map for these cases would violate the dictionary-free requirement. Treating every legacy expected form as a deterministic regression would encourage precisely that violation. The audit instead makes the information boundary explicit.
+A lexical mapping may resolve some cases, but cannot establish the intended reading in every context. The audit keeps these information boundaries explicit instead of asserting a unique answer for every legacy example.
 
 For clients that already possess an Arabic base spelling, the public `appendSuffix(baseLatin, baseJawi, suffix)` function applies productive suffix and clitic rules without storing the base. This supports forms such as `فردو` supplied as `فرض` plus `kan` → `فرضوکن`.
 

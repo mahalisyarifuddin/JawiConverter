@@ -31,9 +31,10 @@ assert(!/(?:dictionary-assisted|dibantu kamus|Membina kamus|Building the PRPM)/i
 let deterministic = 0;
 let underdetermined = 0;
 for (const testCase of cases) {
-  const got = canonical(engine.latinToJawi(testCase.rumi));
-  assert(!FORMAT_CONTROLS.test(got), `Control character leaked from ${testCase.rumi}`);
+  const output = engine.latinToJawi(testCase.rumi);
+  assert(!FORMAT_CONTROLS.test(output), `Control character leaked from ${testCase.rumi}`);
   FORMAT_CONTROLS.lastIndex = 0;
+  const got = canonical(output);
   if (testCase.deterministic === false) {
     underdetermined++;
     assert(!/[A-Za-z]/.test(got), `Unconverted Rumi leaked from ${testCase.rumi}: ${got}`);
@@ -179,6 +180,19 @@ assert(engine.jawiToLatin('غاءيره').length > 0);
 for (const candidate of engine.inverseCandidates('ممباچ')) {
   assert.strictEqual(candidate.at, 'ممباچ'.length, 'Incomplete inverse candidate was returned');
 }
+
+// The default hybrid dictionary can be disabled independently of the rule cache.
+assert.strictEqual(engine.JawiDictionary.enabled, true);
+assert.strictEqual(engine.latinToJawi('akademi'), 'اکادمي');
+assert.strictEqual(engine.jawiToLatin('اکادمي'), 'akademi');
+engine.JawiDictionary.enabled = false;
+try {
+  assert.strictEqual(engine.latinToJawi('akademi'), 'اکدمي');
+  assert.strictEqual(engine.jawiToLatin('اکادمي'), 'akadmi');
+} finally {
+  engine.JawiDictionary.enabled = true;
+}
+assert.strictEqual(engine.jawiToLatin('اکادمي'), 'akademi');
 
 // Node consumes a disposable, byte-identical copy of the inline engine.
 const temporary = copyEngineToTemp();

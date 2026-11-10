@@ -25,9 +25,6 @@ function engineRange(html) {
   if (begin < 0 || scriptOpen < 0 || scriptClose < 0 || end < 0) {
     throw new Error(`Could not find the inline converter engine in ${APP_PATH}.`);
   }
-  if (html.slice(scriptOpen + '<script>'.length, bodyStart) !== '') {
-    throw new Error('Unexpected inline engine script layout.');
-  }
   return { begin, bodyStart, scriptClose, end: end + END.length };
 }
 
