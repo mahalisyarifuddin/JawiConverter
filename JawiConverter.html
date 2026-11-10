@@ -1960,10 +1960,7 @@ const JawiDictionary = {
 function decodeJawiWord(input) {
   const word = normalizeJawiInput(input);
   if (!word) return '';
-  if (JawiDictionary.override) {
-    const hit = JawiDictionary.override[word];
-    if (hit !== undefined) return hit;
-  }
+
   const candidates = inverseCandidates(word).map(candidate => ({
     ...candidate, baseCost:candidate.cost + phonotacticCost(candidate.text)
   })).sort((a,b) => a.baseCost - b.baseCost).slice(0, TUNE.shortlist);
@@ -2000,13 +1997,21 @@ function decodeJawiWord(input) {
 const INVERSE_MEMO = new Map();
 let INVERSE_MEMO_SIGNATURE = '';
 function jawiToRumi(input) {
-  /* Dictionary entries are part of the decode result, so they belong in the
-   * memo signature; without this a changed dictionary is silently ignored. */
-  const signature = JSON.stringify(TUNE) + '\u0000' + (JawiDictionary.override ? JSON.stringify(JawiDictionary.override).length + ':' + Object.keys(JawiDictionary.override).length : '0');
+  /* The memo holds rule decodes only; dictionary readings are applied on top,
+   * so the signature depends on TUNE alone. */
+  const signature = JSON.stringify(TUNE);
   if (signature !== INVERSE_MEMO_SIGNATURE) {
     INVERSE_MEMO.clear(); INVERSE_MEMO_SIGNATURE = signature;
   }
   const word = normalizeJawiInput(input);
+  /* Curated readings sit in front of the rule decoder but behind the memo, so
+   * changing the dictionary never invalidates cached rule results. */
+  if (JawiDictionary.override) {
+    const hit = JawiDictionary.override[word];
+    if (hit !== undefined) return hit;
+  } else if (JawiDictionary.entries[word] !== undefined) {
+    return JawiDictionary.entries[word];
+  }
   if (INVERSE_MEMO.has(word)) return INVERSE_MEMO.get(word);
   const result = decodeJawiWord(word);
   if (INVERSE_MEMO.size >= 50000) INVERSE_MEMO.clear();

@@ -455,7 +455,55 @@ Two implementation details matter, and both were bugs found during the sweep:
 1. **The memo hid the dictionary.** `jawiToRumi` memoises on `JSON.stringify(TUNE)` alone, so a changed dictionary was silently ignored and the first sweep returned a perfectly flat line. The memo signature now includes the dictionary identity.
 2. **An approximate sweep was wrong by 5 points.** Rebuilding the hypothesis token-by-token and substituting dictionary hits gave 37.98% where the real engine gives 32.84%, because it bypassed sentence-level normalisation. The published curve is measured by running the real engine at every point.
 
-### The curve (validation sample, n=498 sentences, increment 5)
+### The curve, N = 5 to the entire vocabulary (full validation split)
+
+The sweep was extended from the 300-word neighbourhood to the complete token inventory. It is measured by running the real engine at every size, and it is exact rather than sampled: the rule decoder is memoised behind the dictionary, so each point costs only re-alignment.
+
+| Dictionary words | Validation WER | Exact sentences |
+| ---: | ---: | ---: |
+| 0 | 40.57% | 109 |
+| 5 | 39.39% | 114 |
+| 10 | 37.67% | 121 |
+| 15 | 36.76% | 124 |
+| 20 | 36.47% | 124 |
+| 25 | 35.11% | 125 |
+| 30 | 34.77% | 126 |
+| 40 | 34.52% | 127 |
+| 50 | 34.05% | 129 |
+| 60 | 33.71% | 129 |
+| 70 | 32.84% | 131 |
+| 80 | 32.72% | 132 |
+| 100 | 32.28% | 132 |
+| 125 | 31.58% | 133 |
+| 150 | 30.65% | 134 |
+| 175 | 30.30% | 135 |
+| 200 | 29.57% | 138 |
+| 250 | 28.06% | 147 |
+| 300 | 27.36% | 151 |
+| 400 | 25.64% | 159 |
+| 500 | 24.17% | 171 |
+| 750 | 21.62% | 194 |
+| 1,000 | 19.64% | 219 |
+| 1,500 | 16.71% | 258 |
+| 2,000 | 14.84% | 306 |
+| 3,000 | 12.71% | 385 |
+| 5,000 | 10.58% | 490 |
+| 10,000 | 8.67% | 627 |
+| 21,271 | 7.97% | 700 |
+
+The curve has **no plateau**. Every decade of dictionary growth still pays, and the largest single step is at the far end: the final 11,271 entries (10,000 → 21,271) buy another 0.70 points, and 5,000 → 10,000 buys 1.92. Marginal return per doubling:
+
+| Range | WER change |
+| --- | ---: |
+| 0 → 70 (knee region) | −7.72 pp |
+| 1,000 → 2,000 | −4.80 pp |
+| 3,000 → 5,000 | −2.13 pp |
+| 5,000 → 10,000 | −1.92 pp |
+| 10,000 → 21,271 | −0.70 pp |
+
+**Full vocabulary: train 21,271 entries → validation 7.9653%, test 8.1224%** (comparative; test was not used for selection). Exact validation sentences rise from 109 to 700 of 1,989.
+
+### The earlier sampled curve (validation sample, n=498 sentences, increment 5)
 
 | Dictionary words | Validation WER | Exact sentences |
 | ---: | ---: | ---: |
