@@ -563,7 +563,45 @@ Vocabulary saved at equal accuracy:
 
 Two caveats on the ranking. It is by raw frequency, not by error-reduction, so a frequent token that contributes one edit outranks a rarer one that contributes several; ranking by `frequency x edits-avoided` would move the knee left. And 155 tokens in the mismatch set never appear in validation at all, so their position in the training-derived order is untested.
 
-### Utopia point
+### Utopia point (exact increment-5 sweep, log-scaled size axis)
+
+The earlier utopia analysis used a sweep that coarsened to 250–500 word steps above 2,000 words, which is not "increment 5" and moves the answer. It was redone at **+5 words for all 3,192 points** across the full 15,954-entry mismatch vocabulary, measured by the real engine at every point.
+
+| Dictionary words | Validation WER | Exact sentences |
+| ---: | ---: | ---: |
+| 0 | 40.57% | 109 |
+| 25 | 35.11% | 125 |
+| 100 | 32.28% | 132 |
+| 250 | 27.84% | 149 |
+| 500 | 23.83% | 174 |
+| 1,005 | 18.37% | 237 |
+| 2,000 | 13.42% | 350 |
+| 3,000 | 11.26% | 455 |
+| 5,000 | 9.44% | 571 |
+| 10,000 | 8.28% | 664 |
+| 15,954 | 7.97% | 700 |
+
+**Utopia point (equal weights, log-scaled size axis): 1,005 words → 18.371% validation WER.** It is a genuine minimum of the normalised distance, and neighbouring points are within 0.01% of it rather than snapping to an artefact.
+
+Weight sensitivity on this exact curve:
+
+| Vocabulary weight | Choice | Validation WER |
+| ---: | ---: | ---: |
+| 0.3 | 3,000 words | 11.26% |
+| 0.4 | 1,935 words | 13.57% |
+| **0.5** | **1,005 words** | **18.37%** |
+| 0.6 | 25 words | 35.11% |
+| 0.7 | 0 words | 40.57% |
+
+Three failed attempts preceded the correct measurement, and they are worth recording because each produced a plausible-looking curve:
+
+1. **Per-token reconstruction** (sum of `jawiToRumi` per token) gave 48.95% at N=0 against a true 40.57%. `jawiToLatin` splits hyphenated tokens and resolves the `٢` repeat marker at sentence level, so the sum of parts is not the whole.
+2. **Index substitution on the baseline hypothesis** matched at N=0 but drifted at every checkpoint (23.83% true vs 24.76% measured at N=500). A normalized Jawi token is not always one output word, and a dictionary hit can also change how a multi-token entry is segmented.
+3. Both were abandoned in favour of running the engine at each point, which is exact but costs 10 minutes.
+
+Every published number in this document for the dictionary frontier now comes from engine-at-every-point measurement.
+
+### Earlier utopia analysis (superseded: sparse sweep above 2,000 words)
 
 The Pareto knee depends on a chord, which is arbitrary. The utopia point is the frontier vertex closest to the ideal (smallest vocabulary, lowest WER), with both objectives normalised to their range on the frontier and equal weights:
 
