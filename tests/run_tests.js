@@ -185,6 +185,32 @@ for (const candidate of engine.inverseCandidates('ممباچ')) {
 assert.strictEqual(engine.JawiDictionary.enabled, true);
 assert.strictEqual(engine.latinToJawi('akademi'), 'اکادمي');
 assert.strictEqual(engine.jawiToLatin('اکادمي'), 'akademi');
+
+// Morphological/contextual Stage B+C invariants (v21)
+assert.strictEqual(engine.latinToJawi('ke-10'), 'ک-10');
+assert.strictEqual(engine.latinToJawi('di mana-mana'), 'دمان-مان');
+assert.strictEqual(engine.jawiToLatin('1مليسيا'), '1malaysia');
+assert.strictEqual(engine.jawiToLatin('41ترماسوق'), '41 termasuk');
+assert.strictEqual(engine.latinToJawi('Kg.'), 'Kg.');
+assert.strictEqual(engine.latinToJawi('Abdul Rahman'), 'عبدالرحمن');
+assert.strictEqual(engine.jawiToLatin('عبدالرحمن'), 'abdul rahman');
+assert.strictEqual(engine.jawiToLatin('ساءين س مارا'), 'sains mara');
+engine.JawiDictionary.enabled = false;
+try {
+  assert.strictEqual(engine.latinToJawi('ke-10'), 'ک-10');
+  assert.strictEqual(engine.latinToJawi('di mana-mana'), 'دمان-مان');
+  assert.strictEqual(engine.latinToJawi('memastikan'), 'ممستيکن');
+  assert.strictEqual(engine.latinToJawi('mengambil'), 'مڠمبيل');
+  assert.strictEqual(engine.latinToJawi('m\u011bngambil'), 'مڠامبيل');
+  assert.strictEqual(engine.jawiToLatin('41ترماسوق'), '41 termasuk');
+  assert.strictEqual(engine.jawiToLatin('ترسبوت'), 'tersebut');
+  assert.strictEqual(engine.jawiToLatin('منتري'), 'menteri');
+  assert.strictEqual(engine.jawiToLatin('ممبري'), 'memberi');
+  assert.strictEqual(engine.jawiToLatin('هنتر'), 'hantar');
+  assert.strictEqual(engine.jawiToLatin('مجليس'), 'majlis');
+} finally {
+  engine.JawiDictionary.enabled = true;
+}
 engine.JawiDictionary.enabled = false;
 try {
   assert.strictEqual(engine.latinToJawi('akademi'), 'اکدمي');
