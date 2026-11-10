@@ -3,7 +3,7 @@
 # JawiConverter
 *Rumi ↔ Jawi, lebih sederhana.*
 
-JawiConverter is a single-file, browser-based Malay Rumi (Latin) ↔ Jawi converter. The redesigned engine is **purely algorithmic and rule-based**: it contains no word inventory, reverse lookup table, or exception-to-the-rule dictionary.
+JawiConverter is a single-file, browser-based Malay Rumi (Latin) ↔ Jawi converter. Conversion is driven by a **rule-based engine** — morphology, phonotactics, and a weighted inverse decoder — with no per-word patches to the rules. Jawi → Rumi additionally ships a small **305-entry dictionary** (the measured Utopia point of the frontier, see below), enabled by default and toggleable from the interface; it covers only tokens the rules decode wrongly and is ranked on the training split by occurrences fixed, not by frequency. Rumi → Jawi uses no dictionary at all.
 
 ## Quick start
 
@@ -92,7 +92,8 @@ node tests/evaluate_corpus.js \
 | v2: corrected word pairing + 500 entries | 20.23% | 19.79% | 20.95% |
 | v3: ke- splitting + 500 entries | 20.10% | 19.70% | 20.78% |
 | v4: expanded di- roots (269) + 500 entries | 20.07% | 19.67% | 20.77% |
-| **v16: reachable ٢ dictionary keys** | **19.95%** | **19.52%** | 20.68% |
+| v16: reachable ٢ dictionary keys (500 entries) | 19.95% | 19.52% | 20.68% |
+| **v17: shipped dictionary cut to the 305-word Utopia point** | **22.51%** | **22.06%** | 23.03% |
 
 The current rule-based-11 result is **15,862 edits / 38,326 reference words = 41.3870% test WER**, with 81 exact test sentences. Relative to rule-based-2, this is a **12.4094-point** test reduction; relative to the punctuation-corrected baseline, it is **16.7093 points**. On the full validation split WER falls to **40.5656%**, a further **0.0210 points** over rule-based-10.
 
@@ -103,7 +104,7 @@ Rule-based-11 lowers the cost of an inserted `i`, the last unsaturated coordinat
 
 The full-train tuner then accepted `yaE=0.5`, slightly preferring `e` over `i` for `ي`. All selection used the complete train split and every accepted change was re-checked on the complete validation split; test was used only for the final comparative benchmark.
 
-Several measured hypotheses were rejected rather than fitted: honouring the many omitted final vowels (`ايت → itu`, `کڤد → kepada`), a consonant-class final-vowel cost, geminate `C-e-C` readings, a closed-syllable `/u/` preference, and Jawi-side reformulations of the schwa context. Each either regressed both splits or was neutral, which is itself evidence that those classes are genuinely underdetermined from the orthography alone. No dictionaries, exception lists, or per-word patches are used.
+Several measured hypotheses were rejected rather than fitted: honouring the many omitted final vowels (`ايت → itu`, `کڤد → kepada`), a consonant-class final-vowel cost, geminate `C-e-C` readings, a closed-syllable `/u/` preference, and Jawi-side reformulations of the schwa context. Each either regressed both splits or was neutral, which is itself evidence that those classes are genuinely underdetermined from the orthography alone. That paragraph describes the rule-based-11 era, when no dictionary shipped. The rules still contain no per-word patches; the separate, toggleable Jawi → Rumi dictionary described above is the only lexical component, and it is compiled from measured error counts rather than written by hand.
 
 Rule-based-2 was frozen before its first test evaluation. Later versions are train/validation refinements, so their test numbers are **comparative benchmarks, not pristine-holdout claims**. These are verified local improvements, not a claim of a global minimum. See [docs/EVALUATION.md](docs/EVALUATION.md) for counts and the reproducibility protocol.
 

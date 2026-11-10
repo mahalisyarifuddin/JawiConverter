@@ -620,7 +620,7 @@ Re-run on v4 with a fresh value ranking (10,606 mismatched keys) and increment-5
 
 **Why the answer barely moved while everything under it did.** The utopia sits near the top of the curve, where the first few hundred entries absorb the highest-value tokens. Correcting the pairing improved the *whole* curve, so both the ideal corner and the knee rose together and the compromise point stayed close. The tail is where the change is visible: in v1 the last 5,000 entries still bought 0.70 points, whereas in v4 the curve is flat beyond 5,000 (12.85% to 12.66% over the final 5,606). The dictionary is now genuinely spent at around 5,000 entries, because the remaining error is no longer token identity.
 
-The shipped 500 entry point sits comfortably below the knee at 19.67%, which the recomputed frontier confirms is a reasonable place to be: 500 words buys 2.4 points beyond the utopia for 195 extra entries.
+The 500 entry point sits below the knee at 19.67%: 500 words buys 2.4 points beyond the utopia for 195 extra entries. The engine has since shipped the utopia itself (see the nineteenth cycle), and 500 words remains available as the deeper option.
 
 ### Utopia point (exact increment-5 sweep, log-scaled size axis)
 
@@ -942,3 +942,21 @@ The utopia point is stable because it depends on the *shape* of the early curve,
 ### What this says about the remaining headroom
 
 Two consecutive cycles have now failed to move the constants, and the only gain available was a correctness bug rather than an optimisation. The rules are done; the frontier is flat past 5,000 entries; the residual is spelling. Further work on this engine should be directed at lexical coverage and at the metric's treatment of proper nouns, not at more rule shape.
+
+## Nineteenth-cycle: shipping the Utopia point
+
+The Utopia point is not a curiosity — it is the recommended operating point of the frontier, and the engine had been shipping 500 words instead. This cycle makes the shipped dictionary match the measured answer: **305 entries**, the vertex closest to the ideal corner with both axes normalised and equal weights.
+
+The change is a vocabulary cut, not a re-derivation. The ranking is unchanged (train split, wrong-decoding occurrences, mismatched tokens only); the first 305 of that ranking are embedded instead of the first 500. Of the 305, 47 carry multi-word readings and 7 carry the `٢` repeat mark.
+
+`RULE_VERSION` becomes `2026-11-10-rule-based-17-dict305`, and the in-app label and tooltip now name the point rather than a round number.
+
+| Split | v16 (500 words) | **v17 (305 words, Utopia point)** | Exact sentences |
+| --- | ---: | ---: | ---: |
+| train | 19.95% | **22.51%** | 1,795 |
+| validation | 19.52% | **22.06%** | 241 |
+| test (comparative) | 20.68% | **23.03%** | 199 |
+
+The validation figure reproduces the independent sweep exactly (22.0586%, 241 exact sentences), which is the check that matters: the shipped engine is at the point the frontier analysis chose, measured by running the engine rather than by indexing the sweep.
+
+**This is deliberately a worse WER for a much smaller dictionary.** 195 fewer entries cost 2.53 validation points — about 0.013 points per entry — because the entries beyond the Utopia are, by construction, the ones where added vocabulary buys least. That is the trade the Utopia point selects: it is the best error achievable per unit of dictionary, not the best error achievable at all. The 500-entry point remains available in `artifacts/dictionary-500-v16.json` for anyone who wants the deeper end of the curve, and the full frontier is in `artifacts/pareto-v16.json`.
