@@ -702,4 +702,34 @@ The 70 entries are in `artifacts/dictionary-70.json`, with the full curve in `ar
 
 A caution on reading these numbers: 40 of the top 70 entries have confidence ≥95%, but the ranking is by frequency, not by confidence, so a few entries encode a heavily contested token. Dictionary quality would improve if entries were ranked by `frequency × error-reduction` rather than raw frequency, which is the natural next refinement.
 
+## Fourteenth-cycle: shipping a 500-word dictionary
+
+The app now ships 500 dictionary entries and a **Kamus / Dictionary** checkbox in the source panel, enabled by default. It applies to Jawi → Rumi only; unchecking it restores pure rule-based conversion.
+
+**The ranking is by edits avoided, not frequency** (see the previous cycle): each entry is a Jawi lookup key whose rule decode is wrong, ordered by how many train occurrences it gets wrong.
+
+Two corrections were needed to turn the analysis ranking into a shippable one, and both were bugs the sweep could not see:
+
+1. **Keys, not whitespace tokens.** The earlier ranking counted whitespace-separated tokens, but the engine's tokeniser splits on punctuation, so entries like `اين.` and `کاتاڽ.` could never match. 27 of the first 500 entries were dead. Re-ranking over true lookup keys (punctuation stripped, punctuation-only keys dropped) fixed this and also cleaned dangling punctuation out of the readings.
+2. **Latin-source keys.** 21 entries were Latin acronyms (`ADUN`, `DBPK`, `UiTM`) that the Jawi → Rumi path can never receive. Dropping them freed those slots for real Jawi keys and improved validation by 0.14 points.
+
+**Shipped configuration (full splits, no sampling):**
+
+| Split | WER | Exact sentences | Total edits |
+| --- | ---: | ---: | ---: |
+| train | 27.6195% | 1,176 | 84,707 |
+| validation | **26.5877%** | 167 | 10,144 |
+| test (comparative) | 27.4983% | 127 | 10,539 |
+
+Against rule-only rule-based-11 (train 41.54%, validation 40.57%), the shipped dictionary is a **14-point validation reduction** on top of the rules. Note this is slightly above the 23.83% the analysis sweep predicted at 500 entries: that figure came from the key-space ranking before the Latin-key and punctuation corrections, and the gap is the price of shipping keys the engine actually sees.
+
+Two test expectations changed, both because the corpus disagrees with the old expectation:
+
+| Jawi | Old | New | Evidence (train) |
+| --- | --- | --- | --- |
+| `دسيني` | `disini` | `sini` | 41 vs 6 |
+| `مريک` | `merika` | `mereka` | 484 occurrences |
+
+No dictionary entry overrides a Pedoman-deterministic expectation: all 179 deterministic forms and 57 underdetermined forms still pass.
+
 The aggregate metrics contain no corpus sentences. Detailed JSON metrics and error reports remain in Git-ignored `artifacts/`; downloaded Parquet files remain in Git-ignored `corpus/`.

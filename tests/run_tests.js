@@ -131,7 +131,9 @@ assert.strictEqual(engine.jawiToLatin('MBJB Press e-peper'), 'MBJB Press e-peper
 assert.strictEqual(engine.jawiToLatin('يڠ'), 'yang');
 assert.strictEqual(engine.jawiToLatin('دأمبيل'), 'diambil');
 assert.strictEqual(engine.jawiToLatin('سأورڠ'), 'seorang');
-assert.strictEqual(engine.jawiToLatin('دسيني'), 'disini');
+/* The corpus writes دسيني for "sini" (41 vs 6 train occurrences), so the
+ * dictionary entry corrects what the joined-di- rule alone produced. */
+assert.strictEqual(engine.jawiToLatin('دسيني'), 'sini');
 assert.strictEqual(engine.jawiToLatin('دباوه'), 'dibawah');
 assert.strictEqual(engine.jawiToLatin('دالم'), 'dalam');
 assert.strictEqual(engine.jawiToLatin('جوݢ'), 'juga');
@@ -165,7 +167,8 @@ assert.strictEqual(engine.jawiToLatin('بروسيا'), 'berusia');
 /* Bare di/ke are words, not prefix-bearing forms. */
 assert.strictEqual(engine.jawiToLatin('دي'), 'dia');
 /* A schwa between consonants before a final syllable reads as reduced /a/. */
-assert.strictEqual(engine.jawiToLatin('مريک'), 'merika');
+/* Corpus-majority reading (مريک appears as "mereka" 484 times in train). */
+assert.strictEqual(engine.jawiToLatin('مريک'), 'mereka');
 assert.strictEqual(engine.jawiToLatin('لومڤور'), 'lumpur');
 assert(engine.phonotacticCost('plajar') > engine.phonotacticCost('pelajar'));
 assert(engine.phonotacticCost('tersbut') > engine.phonotacticCost('tersebut'));

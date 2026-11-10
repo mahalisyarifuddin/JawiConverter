@@ -1221,7 +1221,8 @@
 					<button class="btn" id="pasteBtn" type="button">Tampal</button>
 					<button class="btn" id="uploadBtn" type="button">Muat naik .txt</button>
 					<input type="file" id="fileInput" accept=".txt,text/plain" class="hidden">
-					<label class="check" style="margin-left:auto"><input type="checkbox" id="chkLive" checked> <span id="liveLabel">Langsung</span></label>
+					<label class="check" style="margin-left:auto"><input type="checkbox" id="chkDict" checked title="Guna kamus 500 kata untuk Jawi → Rumi"> <span id="dictLabel">Kamus</span></label>
+					<label class="check"><input type="checkbox" id="chkLive" checked> <span id="liveLabel">Langsung</span></label>
 				</div>
 				<div class="stats-bar">
 					<span id="sourceCharCount">Aksara: 0</span>
@@ -1951,11 +1952,143 @@ function forwardForInverse(text) {
 /* Curated readings for the most frequent Jawi tokens. Entries are learned
  * from the train split only; see docs/EVALUATION.md for the Pareto sweep that
  * chooses how many to keep. Empty by default: the converter stays rule-based. */
+/* The 500 highest-value readings, ranked on the train split by the number of
+ * occurrences the rules decode wrongly (not by raw frequency). See
+ * docs/EVALUATION.md; entries are only for tokens the rules get wrong. */
+const DICTIONARY_ENTRIES = {
+  "\u0625\u0633\u0644\u0627\u0645":"islam", "\u0627\u0627\u0644\u0644\u0647":"allah", "\u0627\u062c\u0627\u0632\u0647":"ijazah", "\u0627\u062d\u0645\u062f":"ahmad",
+  "\u0627\u062d\u0648\u0627\u0644":"ehwal", "\u0627\u062f":"ada", "\u0627\u0631\u0647\u0646":"arahan", "\u0627\u0631\u0648\u0627\u062d":"arwah",
+  "\u0627\u0633\u0645\u0627\u0639\u064a\u0644":"ismail", "\u0627\u0633\u06a9\u0646\u062f\u0631":"iskandar", "\u0627\u0644\u062d\u0645\u062f\u0627\u0644\u0644\u0647":"alhamdulillah", "\u0627\u0644\u062f\u064a\u0646":"al-din",
+  "\u0627\u0644\u0633\u0646":"alasan", "\u0627\u0644\u0642\u0631\u0621\u0627\u0646":"al-quran", "\u0627\u0644\u0644\u0647":"allah", "\u0627\u0644\u0647\u062c\u0631\u0629":"al-hijrah",
+  "\u0627\u0645\u0627\u0646":"aman", "\u0627\u0645\u0633":"emas", "\u0627\u0645\u064a\u0631\u064a\u06a9\u0627":"amerika", "\u0627\u0645\u064a\u0646":"amin",
+  "\u0627\u0645\u06a4\u062a":"empat", "\u0627\u0646\u062a\u0627\u0631\u0627":"antara", "\u0627\u0646\u062a\u0627\u0631\u0627\u0628\u06a0\u0633\u0627":"antarabangsa", "\u0627\u0646\u0633\u0627\u0646":"insan",
+  "\u0627\u0646\u0642":"anak", "\u0627\u0648\u062c\u0631\u06bd":"jarinya", "\u0627\u0648\u0631\u06a0":"orang", "\u0627\u0648\u0644":"awal",
+  "\u0627\u0648\u0644\u064a\u0647":"oleh", "\u0627\u0648\u0646\u062a\u0648\u0642":"untuk", "\u0627\u0648\u0646\u064a\u06a9":"unik", "\u0627\u0648\u0646\u064a\u06cf\u0631\u0633\u064a\u062a\u064a":"universiti",
+  "\u0627\u0648\u06a0":"ong", "\u0627\u0648\u06a4":"ops", "\u0627\u064a":"ia", "\u0627\u064a\u0628\u0648":"ibu",
+  "\u0627\u064a\u0628\u0648\u06bd":"ibunya", "\u0627\u064a\u062a":"itu", "\u0627\u064a\u0633\u062a\u0631\u064a":"isteri", "\u0627\u064a\u0633\u062a\u0631\u064a\u06bd":"isterinya",
+  "\u0627\u064a\u0633\u062a\u064a\u0645\u064a\u0648\u0627":"istimewa", "\u0627\u064a\u0633\u0648\u0642":"esok", "\u0627\u064a\u0644\u064a\u0645\u0646":"laman", "\u0627\u064a\u0644\u064a\u06a9\u062a\u0631\u064a\u06a9":"elektrik",
+  "\u0627\u064a\u0645":"ayam", "\u0627\u064a\u0645\u0648\u0633\u064a":"emosi", "\u0627\u064a\u0645\u064a\u062c":"imej", "\u0627\u064a\u0645\u064a\u0762\u0631\u064a\u0633\u064a\u0646":"imigresen",
+  "\u0627\u064a\u0646":"ini", "\u0627\u064a\u0646\u062f\u0648\u0633\u062a\u0631\u064a":"industri", "\u0627\u064a\u0646\u062f\u0648\u0646\u064a\u0633\u064a\u0627":"indonesia", "\u0627\u064a\u0646\u0633\u062a\u064a\u062a\u0648\u062a":"institut",
+  "\u0627\u064a\u0646\u0648\u06cf\u0627\u0633\u064a":"inovasi", "\u0627\u064a\u0647":"ayah", "\u0627\u064a\u0647\u06bd":"ayahnya", "\u0627\u064a\u06a9\u0633\u06a9\u0648":"xiqi",
+  "\u0627\u0674\u064a\u0631":"air", "\u0627\u06a0\u064a\u0646":"angin", "\u0627\u06a0\u0762\u0646":"enggan", "\u0627\u06a0\u0762\u0648\u062a\u0627":"anggota",
+  "\u0627\u06a4\u0627\u0628\u064a\u0644\u0627":"apabila", "\u0627\u06a4\u0662":"apa-apa", "\u0627\u06a9\u062a\u0627":"akta", "\u0627\u0762\u0627\u0645":"agama",
+  "\u0628\u0627\u0648\u0627":"bawa", "\u0628\u0627\u0674\u064a\u0642":"baik", "\u0628\u0627\u0762\u0627\u064a\u0645\u0627\u0646":"bagaimana", "\u0628\u0627\u0762\u0627\u064a\u0645\u0627\u0646\u0627\u06a4\u0648\u0646":"bagaimanapun",
+  "\u0628\u0627\u0762\u064a":"bagi", "\u0628\u0631\u0627\u0648\u0628\u0647":"berubah", "\u0628\u0631\u0627\u06a0\u06a9\u062a":"berangkat", "\u0628\u0631\u0628\u0648\u0627\u062a":"berbuat",
+  "\u0628\u0631\u0628\u064a\u0630\u0627":"berbeza", "\u0628\u0631\u062a\u0645\u0628\u0648\u06a0":"bertembung", "\u0628\u0631\u062a\u0645\u0648":"bertemu", "\u0628\u0631\u062a\u064a\u062a\u0647":"bertitah",
+  "\u0628\u0631\u062c\u0627\u064a":"berjaya", "\u0628\u0631\u062d\u062f":"berhad", "\u0628\u0631\u062f\u06a9\u062a\u0646":"berdekatan", "\u0628\u0631\u0633\u0627\u0645":"bersama",
+  "\u0628\u0631\u0633\u0627\u0645-\u0633\u0627\u0645":"bersama-sama", "\u0628\u0631\u0633\u062a\u0648\u062c\u0648":"bersetuju", "\u0628\u0631\u0633\u064a\u0647":"bersih", "\u0628\u0631\u0644\u0627\u06a9\u0648":"berlaku",
+  "\u0628\u0631\u0646\u064a\u0644\u0627\u064a":"bernilai", "\u0628\u0631\u0647\u0646\u062a\u064a":"berhenti", "\u0628\u0631\u06a4\u0646\u062f\u0627\u06a4\u062a\u0646":"berpendapatan", "\u0628\u0631\u06a9\u0627\u062a":"berkata",
+  "\u0628\u0631\u06a9\u0646\u0627\u0674\u0646":"berkenaan", "\u0628\u0631\u06a9\u0647\u0648\u064a\u0646":"berkahwin", "\u0628\u0633\u0631":"besar", "\u0628\u0644\u064a\u0627\u0648":"beliau",
+  "\u0628\u0646\u062a\u0648\u0627\u0646":"bantuan", "\u0628\u0646\u062a\u0648\u0642":"bentuk", "\u0628\u0647\u0627\u0631\u0648":"bahru", "\u0628\u0648\u062a\u0648\u0644":"botol",
+  "\u0628\u0648\u0644\u0646":"bulan", "\u0628\u0648\u0645\u0628\u0627":"bomba", "\u0628\u064a\u0627\u0633\u0627":"biasa", "\u0628\u064a\u0644\u064a\u0648\u0646":"bilion",
+  "\u0628\u06a9\u0631":"beeker", "\u0628\u0762\u064a\u0646\u062f\u0627":"baginda", "\u062a\u0627\u062f\u064a":"tadi", "\u062a\u0627\u0647\u0648\u0646":"tahun",
+  "\u062a\u0627\u064a\u0644\u0646\u062f":"thailand", "\u062a\u0631\u0627\u0641\u064a\u06a9":"trafik", "\u062a\u0631\u0628\u0627\u0628\u064a\u062a":"terbabit", "\u062a\u0631\u0628\u06a0":"terbang",
+  "\u062a\u0631\u062a\u0646\u062a\u0648":"tertentu", "\u062a\u0631\u062f\u0647\u0648\u0644\u0648":"terdahulu", "\u062a\u0631\u0633\u0628\u0648\u062a":"tersebut", "\u062a\u0631\u0645\u0627\u0633\u0648\u0642\u0644\u0647":"termasuklah",
+  "\u062a\u0631\u064a\u0644\u0631":"treler", "\u062a\u0631\u06a0\u0762\u0627\u0646\u0648":"terengganu", "\u062a\u0631\u06a9\u0646\u0627":"terkena", "\u062a\u0644\u0647":"telah",
+  "\u062a\u0645\u0628\u0647\u06bd":"tumbuhnya", "\u062a\u0645\u062a":"tamat", "\u062a\u0645\u06a4\u062a\u0646":"tempatan", "\u062a\u0645\u06a4\u064a\u0644":"tampil",
+  "\u062a\u064a\u0628\u0627\u0662":"tiba-tiba", "\u062a\u064a\u062f\u0642":"tidak", "\u062a\u064a\u0644\u064a\u06cf\u064a\u0634\u0646":"televisyen", "\u062a\u064a\u06a0\u0762\u064a":"tinggi",
+  "\u062a\u064a\u0762":"tiga", "\u062a\u06a0\u0647":"tengah", "\u062c\u0627\u062f\u064a":"jadi", "\u062c\u0627\u0644\u0646":"jalan",
+  "\u062c\u0627\u0648\u064a":"javi", "\u062c\u0627\u064a":"jae", "\u062c\u062f\u0648\u0627\u0644":"jadual", "\u062c\u0644\u0633\u06bd":"jelasnya",
+  "\u062c\u0645\u0639\u0629":"jumaat", "\u062c\u0646\u062a\u0648\u06a0":"jantung", "\u062c\u0648\u062a\u0627":"juta", "\u062c\u0648\u0633\u062a\u0631\u0648":"justru",
+  "\u062c\u0648\u0646":"jon", "\u062c\u0648\u0647\u0631":"johor", "\u062c\u0648\u0647\u0646":"john", "\u062c\u0648\u0762":"juga",
+  "\u062c\u064a\u0648\u0627":"jiwa", "\u062d\u0627\u062c":"haji", "\u062d\u0627\u0635\u064a\u0644":"hasil", "\u062d\u0627\u0636\u064a\u0631":"hadir",
+  "\u062d\u0633\u0646":"hasan", "\u062d\u0633\u064a\u0646":"hiasan", "\u062e\u0635\u0648\u0635":"khusus", "\u062e\u0637":"kita",
+  "\u062f\u0627\u062a\u0648\u0642":"datuk", "\u062f\u0627\u062a\u064a\u0646":"datin", "\u062f\u0627\u062a\u06a0":"datang", "\u062f\u0627\u062f\u0647":"dadah",
+  "\u062f\u0627\u0644\u0645":"dalam", "\u062f\u0627\u0646":"dan", "\u062f\u0627\u064a":"dia", "\u062f\u0627\u0674\u064a\u0631\u0647":"daerah",
+  "\u062f\u0628\u0646\u0631\u06a9\u0646":"dibenarkan", "\u062f\u062a\u062a\u06a4\u06a9\u0646":"ditetapkan", "\u062f\u062a\u06a0\u06a9\u06a4":"ditangkap", "\u062f\u062c\u0627\u0644\u0646\u06a9\u0646":"dijalankan",
+  "\u062f\u062d\u06a9\u0648\u0645":"dihukum", "\u062f\u0631\u0627\u0645\u0627":"drama", "\u062f\u0631\u062c\u0647":"darjah", "\u062f\u0631\u064a":"dari",
+  "\u062f\u0631\u06a4\u062f":"daripada", "\u062f\u0633\u0642\u0633\u064a\u06a9\u0646":"disaksikan", "\u062f\u0633\u0644\u0648\u0631\u0648\u0647":"seluruh", "\u062f\u0633\u0645\u0628\u0648\u062a":"disambut",
+  "\u062f\u0633\u064a\u0646\u064a":"sini", "\u062f\u0639\u0645\u0648\u0645\u06a9\u0646":"diumumkan", "\u062f\u0641\u0647\u0645\u06a9\u0646":"difahamkan", "\u062f\u0644\u0627\u06a9\u0648\u06a9\u0646":"dilakukan",
+  "\u062f\u0645\u06a9\u064a\u0646":"demikian", "\u062f\u0646\u064a\u0627":"dunia", "\u062f\u0647\u0648\u0644\u0648":"dahulu", "\u062f\u0648\u0627":"dua",
+  "\u062f\u064a\u0631\u064a":"diri", "\u062f\u064a\u0633\u0627":"desa", "\u062f\u06a0\u0646":"dengan", "\u062f\u06a4\u0631\u0627\u0648\u0644\u064a\u0647":"diperoleh",
+  "\u062f\u06a4\u0631\u06a9\u0646\u0644\u06a9\u0646":"diperkenalkan", "\u062f\u06a4\u0646":"depan", "\u062f\u06a9\u0645\u0648\u06a9\u0627\u06a9\u0646":"dikemukakan", "\u062f\u06a9\u0646\u0644":"dikenal",
+  "\u0630\u0648\u0627\u0644\u06a9\u0641\u0644\u064a":"zulkifli", "\u0631\u0627\u062c\u0662":"raja-raja", "\u0631\u0627\u062f\u064a\u0648":"radio", "\u0631\u0627\u0645\u0627\u064a":"ramai",
+  "\u0631\u0627\u064a":"raya", "\u0631\u0627\u06a9\u0646\u0662":"rakan-rakan", "\u0631\u0628\u0627\u0646\u064a":"ribuan", "\u0631\u0632\u0627\u0642":"ryuzaki",
+  "\u0631\u0639\u064a\u0629":"rakyat", "\u0631\u0639\u064a\u062a":"rakyat", "\u0631\u0645\u0636\u0627\u0646":"ramadan", "\u0631\u0645\u06a4\u0633\u0646":"rampasan",
+  "\u0631\u0646\u062f\u0647":"rendah", "\u0631\u0648\u0633\u0642":"rosak", "\u0631\u0648\u0645\u0647":"rumah", "\u0631\u0648\u06a9\u0648\u0642":"rokok",
+  "\u0632\u0648\u0646":"zon", "\u0633":"s", "\u0633\u0623\u0648\u0631\u06a0":"seorang", "\u0633\u0623\u064a\u06a9\u0648\u0631":"seekor",
+  "\u0633\u0627\u0633\u0631\u0646":"sasaran", "\u0633\u0627\u0639\u062a":"saat", "\u0633\u0627\u0645":"sama", "\u0633\u0627\u0648\u064a\u062a":"sawit",
+  "\u0633\u0627\u064a":"saya", "\u0633\u0627\u0674\u064a\u0646":"sains", "\u0633\u0628\u0627\u06bd\u0642":"sebanyak", "\u0633\u0628\u0627\u0762\u0627\u064a":"sebagai",
+  "\u0633\u0628\u062a\u0648":"sabtu", "\u0633\u0628\u062d\u0627\u0646\u0647":"subhanahu", "\u0633\u0628\u0644\u0648\u0645":"sebelum", "\u0633\u0628\u0646\u0631\u06bd":"sebenarnya",
+  "\u0633\u0628\u0648\u0627\u0647":"sebuah", "\u0633\u062a\u0627\u062a\u0648\u0633":"status", "\u0633\u062a\u0645\u06a4\u062a":"setempat", "\u0633\u062a\u064a\u0627\u06a4":"setiap",
+  "\u0633\u062a\u064a\u0633\u064a\u0646":"stesen", "\u0633\u0631\u0627\u0648\u0642":"sarawak", "\u0633\u0631\u0645\u0628\u0646":"seremban", "\u0633\u0631\u064a":"seri",
+  "\u0633\u0633\u0648\u0627\u064a":"sesuai", "\u0633\u0642\u062f\u0631":"sekadar", "\u0633\u0644\u0627\u062a\u0646":"selatan", "\u0633\u0644\u0627\u0674\u064a\u0646":"selain",
+  "\u0633\u0644\u0627\u06a0\u0648\u0631":"selangor", "\u0633\u0644\u064a\u0633\u0627":"selesa", "\u0633\u0644\u064a\u0645\u0627\u0646":"solomon", "\u0633\u0644\u06a4\u0633":"selepas",
+  "\u0633\u0645\u0627\u062a-\u0645\u0627\u062a":"semata-mata", "\u0633\u0645\u0627\u0644\u0645":"semalam", "\u0633\u0645\u0648\u0627":"semua", "\u0633\u0645\u0648\u0644\u0627":"semula",
+  "\u0633\u0645\u064a\u0645\u06a0\u06bd":"sememangnya", "\u0633\u0645\u06a4\u0647":"sampah", "\u0633\u0646\u062f\u064a\u0631\u064a":"sendiri", "\u0633\u0647\u0627\u062c":"sahaja",
+  "\u0633\u0648\u0627\u0633\u062a\u0627":"swasta", "\u0633\u0648\u0633\u064a\u0627\u0644":"sosial", "\u0633\u0648\u0633\u06a4\u064a\u06a9":"suspek", "\u0633\u0648\u06a4\u0631\u064a\u0646\u062a\u064a\u0646\u062f\u0646":"superintenden",
+  "\u0633\u064a\u0627\u0633\u062a\u0646":"siasatan", "\u0633\u064a\u0646":"can", "\u0633\u064a\u0646\u064a":"sini", "\u0633\u064a\u06a9\u0634\u0646":"seksyen",
+  "\u0633\u06a9\u0627\u0631\u06a0":"sekarang", "\u0633\u06a9\u0627\u0644\u064a":"sekali", "\u0633\u06a9\u0644\u0648\u0627\u0631\u0762":"sekeluarga", "\u0633\u06a9\u0648\u0644\u0647":"sekolah",
+  "\u0633\u06a9\u064a\u062a\u0631":"sekitar", "\u0633\u06a9\u064a\u0645":"skim", "\u0634\u0627\u0647":"shah", "\u0634\u0631\u0637":"syarat",
+  "\u0634\u0631\u064a\u06a9\u062a":"syarikat", "\u0634\u06a9\u0648\u0631":"syukur", "\u0635\u0628\u0631\u064a":"sabri", "\u0635\u0648\u0641\u064a":"sofa",
+  "\u0639\u0628\u062f\u0627\u0644\u0644\u0647":"abdullah", "\u0639\u062b\u0645\u0627\u0646":"usman", "\u0639\u0632\u0645\u064a":"azam", "\u0639\u0632\u064a\u0632":"aziz",
+  "\u0639\u0645\u0644":"amal", "\u0639\u0645\u0644\u0646":"amalan", "\u0639\u0648\u0627\u0645":"awam", "\u0639\u064a\u0646":"n",
+  "\u0641\u0647\u0645":"faham", "\u0641\u06a9\u062a\u0648\u0631":"faktor", "\u0642\u062f\u062d":"kedah", "\u0642\u0631\u0628\u0627\u0646":"korban",
+  "\u0642\u0648\u0627\u062a":"kuat", "\u0644\u0627\u0644\u0648":"lalu", "\u0644\u0627\u0645\u0627":"lama", "\u0644\u0627\u0674\u064a\u0646":"lain",
+  "\u0644\u0627\u06a9\u0648\u0646\u0646":"lakonan", "\u0644\u0627\u0762\u064a":"lagi", "\u0644\u0628\u064a\u0647":"lebih", "\u0644\u0644\u0627\u06a9\u064a":"lelaki",
+  "\u0644\u0645\u0628\u0648":"lembu", "\u0644\u0645\u06a4\u0648\u0631":"lumpur", "\u0644\u0646\u062c\u0648\u062a":"lanjut", "\u0644\u064a":"lee",
+  "\u0644\u064a\u0633\u064a\u0646":"lesen", "\u0644\u06a4\u0633":"lepas", "\u0645\u0627\u062a":"mata", "\u0645\u0627\u062c\u064a\u0633\u062a\u0631\u064a\u062a":"majistret",
+  "\u0645\u0627\u0633":"masa", "\u0645\u0627\u0633\u064a\u06a0\u0662":"masing-masing", "\u0645\u0627\u0644\u0645":"malam", "\u0645\u0627\u0644\u0647":"malah",
+  "\u0645\u0627\u0646\u0662":"mana-mana", "\u0645\u0627\u0674\u0646\u0633\u064a":"manusia", "\u0645\u062d\u0645\u062f":"muhammad", "\u0645\u0631\u064a\u06a9":"mereka",
+  "\u0645\u0631\u06a0\u06a9\u0648\u0645\u064a":"merangkumi", "\u0645\u0633\u062c\u062f":"masjid", "\u0645\u0634\u0627\u0631\u06a9\u062a":"masyarakat", "\u0645\u0635\u0637\u0641\u0649":"mustafa",
+  "\u0645\u0639":"meiaiui", "\u0645\u0639\u0627\u0641":"maaf", "\u0645\u0639\u0644\u0648\u0645":"maklum", "\u0645\u0641\u062a\u064a":"mufti",
+  "\u0645\u0644\u0627\u064a\u0648":"melayu", "\u0645\u0644\u0627\u06a4\u0648\u0631\u06a9\u0646":"melaporkan", "\u0645\u0644\u0628\u064a\u0647\u064a":"melebihi", "\u0645\u0644\u064a\u0633\u064a\u0627":"malaysia",
+  "\u0645\u0644\u06a4\u0633\u06a9\u0646":"melepaskan", "\u0645\u0645\u0627\u06a9\u0627\u064a":"memakai", "\u0645\u0645\u0628\u0631\u064a\u062a\u0627\u0647\u0648":"memberitahu", "\u0645\u0645\u0646\u062f\u0648":"memandu",
+  "\u0645\u0645\u0648\u0647\u0648\u0646":"memohon", "\u0645\u0645\u06a4\u0631\u0627\u0648\u0646\u062a\u0648\u0642\u06a9\u0646":"memperuntukkan", "\u0645\u0646\u0627\u06a0\u0646\u064a":"menangani", "\u0645\u0646\u062a\u0631\u064a":"menteri",
+  "\u0645\u0646\u062a\u06a4\u06a9\u0646":"menetapkan", "\u0645\u0646\u062f\u0627\u06a4\u062a\u064a":"mendapati", "\u0645\u0646\u0631\u064a\u0645\u0627":"menerima", "\u0645\u0646\u0641\u0639\u0629":"manfaat",
+  "\u0645\u0646\u0644\u064a\u062a\u064a":"meneliti", "\u0645\u0646\u0648\u0631\u0648\u062a\u06bd":"menurutnya", "\u0645\u0646\u0648\u0644\u0642":"menolak", "\u0645\u0647\u06a9\u0648\u062a\u0627":"mahkota",
+  "\u0645\u0648\u0627\u06a9\u064a\u0644\u064a":"mewakili", "\u0645\u0648\u062a":"maut", "\u0645\u0648\u062f\u0627":"muda", "\u0645\u0648\u062f\u0647":"mudah",
+  "\u0645\u0648\u0632\u064a\u06a9":"muzik", "\u0645\u0648\u0633\u0649":"musa", "\u0645\u0648\u0644\u062a\u064a\u0645\u064a\u062f\u064a\u0627":"multimedia", "\u0645\u064a":"me",
+  "\u0645\u064a\u062a\u0631":"meter", "\u0645\u064a\u0631\u0647":"merah", "\u0645\u064a\u0633\u06a9\u064a\u0646":"miskin", "\u0645\u064a\u06a0\u0762\u0648":"minggu",
+  "\u0645\u06a0\u062a\u0627\u0647\u0648\u0674\u064a":"mengetahui", "\u0645\u06a0\u0633\u0627":"mangsa", "\u0645\u06a0\u0633\u0646":"mengesan", "\u0645\u06a0\u0646\u062c\u0648\u0631\u06a9\u0646":"menganjurkan",
+  "\u0645\u06a0\u0646\u0644\u064a":"mengenali", "\u0645\u06a0\u064a\u0644\u0642":"mengelak", "\u0645\u06bd\u062f\u0631\u064a":"menyedari", "\u0645\u06bd\u0644\u0627\u0645\u062a\u06a9\u0646":"menyelamatkan",
+  "\u0645\u06bd\u0644\u0633\u0627\u064a\u06a9\u0646":"menyelesaikan", "\u0645\u06bd\u0645\u0628\u0648\u062a":"menyambut", "\u0646\u0627\u0645\u0648\u0646":"namun", "\u0646\u0635\u064a\u0628":"nasib",
+  "\u0646\u0641\u0633":"nafas", "\u0646\u0645\u06a4\u0642":"nampak", "\u0646\u0646\u062a\u064a":"nanti", "\u0646\u0648\u0631\u062f\u064a\u0646":"nordin",
+  "\u0646\u0762\u0627\u0631\u0627":"negara", "\u0646\u0762\u0631\u064a":"negeri", "\u0647\u0627\u062a\u064a":"hati", "\u0647\u0627\u0631\u064a":"hari",
+  "\u0647\u0631\u064a\u0645\u0627\u0648":"harimau", "\u0647\u0631\u0762":"harga", "\u0647\u0648\u0646\u062f\u0627":"honda", "\u0647\u064a\u062f\u0648\u06a4":"hidup",
+  "\u0648\u0627\u062c\u0628":"wajib", "\u0648\u0627\u0646\u064a\u062a\u0627":"wanita", "\u0648\u062a\u0639\u0627\u0644\u0649":"tuil", "\u0648\u062c\u0648\u062f":"wujud",
+  "\u064a\u062a\u064a\u0645":"yatim", "\u064a\u062d\u064a":"oh", "\u064a\u0639\u0642\u0648\u0628":"yaakob", "\u064a\u06a0":"yang",
+  "\u0686\u0645\u0631\u0644\u06a0":"cemerlang", "\u0686\u0648\u0646\u062a\u0648\u0647":"contoh", "\u0686\u064a":"chi", "\u0686\u064a\u0646\u0627":"china",
+  "\u0686\u064a\u06a9":"cek", "\u06a4\u0627\u0633\u0648\u0642\u0646":"pasukan", "\u06a4\u0627\u064a\u0627":"paya", "\u06a4\u0627\u06a9\u0627\u064a\u0646":"pakaian",
+  "\u06a4\u0627\u0762\u064a":"pagi", "\u06a4\u062a\u06a0":"petang", "\u06a4\u062f":"pada", "\u06a4\u0631\u0627\u062a\u0648\u0633":"peratus",
+  "\u06a4\u0631\u0627\u0633\u0645\u064a\u0646":"perasmian", "\u06a4\u0631\u0627\u0646\u0646":"peranan", "\u06a4\u0631\u0627\u0646\u0686\u06a0\u0646":"perancangan", "\u06a4\u0631\u0627\u0648\u0628\u062a\u0646":"perubatan",
+  "\u06a4\u0631\u0627\u0648\u0646\u062a\u0648\u0642\u0646":"peruntukan", "\u06a4\u0631\u0628\u0644\u0646\u062c\u0627\u0674\u0646":"perbelanjaan", "\u06a4\u0631\u062a\u0627\u0645":"pertama", "\u06a4\u0631\u062a\u064a":"parti",
+  "\u06a4\u0631\u062c\u0627\u0644\u0646\u0646":"perjalanan", "\u06a4\u0631\u0633\u06a9\u0648\u0644\u0647\u0646":"persekolahan", "\u06a4\u0631\u0644\u064a\u0633":"perlis", "\u06a4\u0631\u0646\u064a\u0627\u0762\u0627\u0674\u0646":"perniagaan",
+  "\u06a4\u0631\u0648\u062f\u0648\u0627":"perodua", "\u06a4\u0631\u0648\u0633\u064a\u062f\u0648\u0631":"prosedur", "\u06a4\u0631\u0648\u0641\u064a\u0633\u064a\u0648\u0646\u0644":"profesional", "\u06a4\u0631\u0648\u0645\u0647\u0646":"perumahan",
+  "\u06a4\u0631\u0648\u0762\u0631\u0645":"program", "\u06a4\u0631\u06a9\u0645\u0628\u06a0\u0646":"perkembangan", "\u06a4\u0631\u06a9\u0647\u0648\u064a\u0646\u0646":"perkahwinan", "\u06a4\u0633\u062a\u064a":"pasti",
+  "\u06a4\u0644\u0627\u062c\u0631":"pelajar", "\u06a4\u0644\u0627\u062c\u0631\u0646":"pelajaran", "\u06a4\u0644\u0633\u062a\u064a\u06a9":"plastik", "\u06a4\u0644\u0646\u0686\u0631\u0646":"pelancaran",
+  "\u06a4\u0645\u0628\u0644\u0627\u062c\u0631\u0646":"pembelajaran", "\u06a4\u0645\u0646\u062a\u0627\u0648\u0627\u0646":"pemantauan", "\u06a4\u0645\u064a\u0646\u062a":"peminat", "\u06a4\u0646\u062a\u0627\u064a":"pantai",
+  "\u06a4\u0646\u062a\u062f\u0628\u064a\u0631\u0646":"pentadbiran", "\u06a4\u0646\u062a\u064a\u06a0":"penting", "\u06a4\u0646\u062f\u062f\u0647\u0646":"pendedahan", "\u06a4\u0646\u062f\u0639\u0648\u0627\u0674\u0646":"pendakwaan",
+  "\u06a4\u0646\u062f\u0641\u062a\u0631\u0646":"pendaftaran", "\u06a4\u0646\u062f\u0648\u062f\u0648\u0642":"penduduk", "\u06a4\u0646\u062f\u064a\u062f\u064a\u0642\u0646":"pendidikan", "\u06a4\u0646\u062f\u06a9\u062a\u0646":"pendekatan",
+  "\u06a4\u0646\u0631\u0628\u06a0\u0646":"penerbangan", "\u06a4\u0646\u0634\u0631\u062d":"pensyarah", "\u06a4\u0646\u0686\u0627\u06a4\u0627\u064a\u0646":"pencapaian", "\u06a4\u0646\u0686\u0645\u0631\u0646":"pencemaran",
+  "\u06a4\u0647\u06a0":"pahang", "\u06a4\u0648\u0633":"pos", "\u06a4\u0648\u0633\u062a":"pusat", "\u06a4\u0648\u0644\u0627":"pula",
+  "\u06a4\u0648\u0644\u064a\u0633":"polis", "\u06a4\u0648\u06a9\u0648\u0644":"pukul", "\u06a4\u064a\u0631\u0627\u0642":"perak", "\u06a4\u064a\u0631\u0642":"perak",
+  "\u06a4\u064a\u0647\u0642":"pihak", "\u06a4\u06a0\u062a\u0627\u0647\u0648\u0627\u0646":"pengetahuan", "\u06a4\u06a0\u0644\u064a\u0628\u062a\u0646":"penglibatan", "\u06a4\u06a0\u0646\u062c\u0648\u0631":"penganjur",
+  "\u06a4\u06a0\u0646\u062c\u0648\u0631\u0646":"penganjuran", "\u06a4\u06a0\u0646\u0644\u0646":"pengenalan", "\u06a4\u06a0\u0647\u0631\u0762\u0627\u0674\u0646":"penghargaan", "\u06a4\u06a0\u0648\u0631\u0628\u0627\u0646\u0646":"pengorbanan",
+  "\u06a4\u06a0\u0648\u0631\u0648\u0633\u0646":"pengurusan", "\u06a4\u06a0\u0762\u0648\u0646\u0627":"pengguna", "\u06a4\u06a9\u0631\u062c\u0627\u0674\u0646":"pekerjaan", "\u06a4\u06bd\u0631\u062a\u0627\u0674\u0646":"penyertaan",
+  "\u06a4\u06bd\u0644\u064a\u062f\u064a\u0642\u0646":"penyelidikan", "\u06a9":"ke", "\u06a9\u0627\u062a\u0627\u06bd":"katanya", "\u06a9\u0627\u062f\u06a0\u0662":"kadang-kadang",
+  "\u06a9\u0627\u0644\u064a":"kali", "\u06a9\u0627\u0645\u064a":"kami", "\u06a9\u0627\u0645\u06a4\u0648\u06a0":"kampung", "\u06a9\u0627\u064a\u0648":"kayu",
+  "\u06a9\u0627\u064a\u0648\u0647\u0646":"kayuhan", "\u06a9\u0628\u0627\u06bd\u0642\u0646":"kebanyakan", "\u06a9\u0628\u0631\u0633\u064a\u0647\u0646":"kebersihan", "\u06a9\u062a\u064a\u06a9":"ketika",
+  "\u06a9\u062a\u064a\u0762-\u062a\u064a\u0762":"ketiga-tiga", "\u06a9\u062c\u0627\u062f\u064a\u0646":"kejadian", "\u06a9\u062c\u0648\u0647\u0646\u0646":"kejohanan", "\u06a9\u062f\u0627\u064a":"kedai",
+  "\u06a9\u062f\u0648\u0627":"kedua", "\u06a9\u0631\u0627\u062c\u0627\u0674\u0646":"kerajaan", "\u06a9\u0631\u0627\u0646":"kerana", "\u06a9\u0631\u0628\u0627\u0648":"kerbau",
+  "\u06a9\u0631\u064a\u0627\u062a\u064a\u0641":"kreatif", "\u06a9\u0631\u064a\u062a\u0627":"kereta", "\u06a9\u0633\u0627\u0644\u0647\u0646":"kesalahan", "\u06a9\u0633\u062a\u0645":"kastam",
+  "\u06a9\u0633\u0645\u0648\u0627":"kesemua", "\u06a9\u0635\u064a\u062d\u062a\u0646":"kesihatan", "\u06a9\u0644\u0627\u064a\u0642\u0646":"kelayakan", "\u06a9\u0644\u0645\u0627\u0631\u064a\u0646":"kelmarin",
+  "\u06a9\u0644\u0648\u0627\u0631\u0762":"keluarga", "\u06a9\u0644\u0648\u0627\u0631\u0762\u0627\u06bd":"keluarganya", "\u06a9\u0644\u0648\u06a9\u0627\u0633\u064a":"lokasi", "\u06a9\u0644\u064a\u0645":"kelima",
+  "\u06a9\u0644\u06a0":"klang", "\u06a9\u0645\u062f\u064a\u0646":"kemudian", "\u06a9\u0645\u0648\u062f\u0647\u0646":"kemudahan", "\u06a9\u0645\u0648\u062f\u064a\u0646":"kemudian",
+  "\u06a9\u0645\u0648\u062f\u064a\u0646\u06bd":"kemudiannya", "\u06a9\u0647\u064a\u0644\u06a0\u0646":"kehilangan", "\u06a9\u0648\u062a\u0642":"kotak", "\u06a9\u0648\u0631\u06a4\u0648\u0631\u062a":"korporat",
+  "\u06a9\u0648\u0631\u06a4\u0648\u0631\u064a\u0634\u0646":"corporation", "\u06a9\u0648\u0645\u0648\u0646\u064a\u06a9\u0627\u0633\u064a":"komunikasi", "\u06a9\u0648\u0646\u062a\u0631\u0648\u06cf\u0631\u0633\u064a":"kontroversi", "\u06a9\u0648\u0646\u0633\u0631\u062a":"konsert",
+  "\u06a9\u0648\u0646\u0648\u0646\u06bd":"kononnya", "\u06a9\u0648\u06a4\u0631\u0627\u0633\u064a":"koperasi", "\u06a9\u064a\u062a":"kita", "\u06a9\u064a\u0631\u0627\u0662":"kira-kira",
+  "\u06a9\u064a\u0633":"kes", "\u06a9\u064a\u0646\u064a":"kini", "\u06a9\u0686\u062f\u0631\u0627\u0674\u0646":"kecederaan", "\u06a9\u0686\u0645\u0633\u0646":"kecemasan",
+  "\u06a9\u0686\u064a\u0644":"kecil", "\u06a9\u06a4\u062f":"kepada", "\u06bd\u0627\u0648\u0627":"nyawa", "\u0762\u0631\u0627\u062f\u0648\u0627\u0646":"graduan",
+  "\u0762\u0631\u0627\u064a":"gerai", "\u0762\u0631\u0642\u0646":"gerakan", "\u0762\u0644\u0648\u0628\u0644":"global", "\u0762\u0648\u0631\u0648":"guru"
+};
 const JawiDictionary = {
-  /* token -> reading; empty means pure rule-based conversion. */
-  entries: Object.create(null),
+  /* token -> reading; consulted before the rule decoder. */
+  entries: DICTIONARY_ENTRIES,
   /* Optional analysis hook: when set, overrides entries entirely. */
-  override: null
+  override: null,
+  /* When false, only the rule decoder runs. */
+  enabled: true
 };
 function decodeJawiWord(input) {
   const word = normalizeJawiInput(input);
@@ -2009,7 +2142,7 @@ function jawiToRumi(input) {
   if (JawiDictionary.override) {
     const hit = JawiDictionary.override[word];
     if (hit !== undefined) return hit;
-  } else if (JawiDictionary.entries[word] !== undefined) {
+  } else if (JawiDictionary.enabled && JawiDictionary.entries[word] !== undefined) {
     return JawiDictionary.entries[word];
   }
   if (INVERSE_MEMO.has(word)) return INVERSE_MEMO.get(word);
@@ -2078,7 +2211,7 @@ function jawiToLatin(text) {
     .replace(/([({\[])\s+/g, '$1').replace(/\s+([)}\]])/g, '$1');
 }
 
-const RULE_VERSION = '2026-11-09-rule-based-11';
+const RULE_VERSION = '2026-11-10-rule-based-11-dict500';
 if (typeof module !== 'undefined' && module.exports) module.exports = {
   RULE_VERSION, appendSuffix, latinToJawi, jawiToLatin, wordToJawi, baseWordToJawi:wordToJawi,
   syllabify, jawiToRumi, heurJawiToRumi, inverseCandidates, phonotacticCost, editDistance,
@@ -2114,6 +2247,8 @@ if (typeof window !== 'undefined') window.JawiConverter = { RULE_VERSION, append
 				pasteBtn: 'Tampal',
 				uploadBtn: 'Muat naik .txt',
 				copyBtn: 'Salin semua',
+				dictLabel: 'Kamus',
+				dictTitle: 'Guna kamus 500 kata untuk Jawi → Rumi',
 				liveLabel: 'Langsung',
 				autoScrollLabel: 'Auto-scroll',
 				examplesLabel: 'Contoh:',
@@ -2171,6 +2306,8 @@ if (typeof window !== 'undefined') window.JawiConverter = { RULE_VERSION, append
 				pasteBtn: 'Paste',
 				uploadBtn: 'Upload .txt',
 				copyBtn: 'Copy all',
+				dictLabel: 'Dictionary',
+				dictTitle: 'Use the 500-word dictionary for Jawi → Rumi',
 				liveLabel: 'Live',
 				autoScrollLabel: 'Auto-scroll',
 				examplesLabel: 'Examples:',
@@ -2256,6 +2393,17 @@ if (typeof window !== 'undefined') window.JawiConverter = { RULE_VERSION, append
 					if (el) el.addEventListener(ev, fn);
 				};
 				bind('convertBtn', 'click', () => this.update());
+
+				// Dictionary toggle: on by default, Jawi → Rumi only.
+				const chkDict = $('chkDict');
+				const jcDict = window.JawiConverter;
+				if (chkDict && jcDict && jcDict.JawiDictionary) {
+					jcDict.JawiDictionary.enabled = chkDict.checked;
+					chkDict.addEventListener('change', () => {
+						jcDict.JawiDictionary.enabled = chkDict.checked;
+						this.update();
+					});
+				}
 				bind('clearBtn', 'click', () => {
 					const ia = $('inputArea');
 					if (ia) ia.value = '';
@@ -2488,7 +2636,7 @@ if (typeof window !== 'undefined') window.JawiConverter = { RULE_VERSION, append
 				// id-keyed strings — defensive
 				['title', 'subtitle', 'dirLabel', 'dirLJ', 'dirJL', 'swapBtnText', 'inputPanelTitle',
 				 'outputPanelTitle', 'convertBtn', 'clearBtn', 'pasteBtn', 'uploadBtn', 'copyBtn',
-				 'liveLabel', 'autoScrollLabel', 'examplesLabel', 'helpLabel', 'kbdShortcuts',
+				 'liveLabel', 'dictLabel', 'autoScrollLabel', 'examplesLabel', 'helpLabel', 'kbdShortcuts',
 				 'testsLabel', 'runTestsBtn', 'colRumi', 'colExpect', 'colGot', 'colStatus', 'colSyl',
 				 'settingsDoneBtn'].forEach(id => {
 					const node = document.getElementById(id);
