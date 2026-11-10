@@ -103,7 +103,7 @@ function loadCorpus(filePath) {
     text = fs.readFileSync(resolved, 'utf8').replace(/^\uFEFF/, '');
   }
   let rows;
-  if (extension === '.json' ) {
+  if (extension === '.json') {
     const parsed = JSON.parse(text);
     rows = Array.isArray(parsed) ? parsed : parsed.data;
   } else if (extension === '.csv') rows = parseCsv(text);
@@ -147,7 +147,7 @@ function evaluateRows(engine, rows, options = {}) {
     totals.referenceWords += words(reference).length;
     for (const key of ['substitutions', 'deletions', 'insertions', 'edits']) totals[key] += counts[key];
     if (reference === hypothesis) totals.exactSentences++;
-    else if (options.collectErrors && errors.length < (options.errorLimit || 100)) {
+    else if (options.collectErrors && errors.length < (options.errorLimit ?? 100)) {
       errors.push({ index: offset + index, reference, hypothesis, ...counts });
     }
   });

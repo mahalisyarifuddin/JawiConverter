@@ -33,4 +33,7 @@ assert.strictEqual(result.wer, 1 / 3);
 assert.strictEqual(result.substitutions, 1);
 assert.strictEqual(result.referenceWords, 3);
 assert.strictEqual(result.sentences, 1);
+const noErrors = evaluateRows({ jawiToLatin: () => 'wrong' },
+  [{ text: 'ignored', latin_text: 'right' }], { collectErrors: true, errorLimit: 0 });
+assert.deepStrictEqual(noErrors.errors, []);
 console.log('Corpus loading, normalization, alignment, and WER self-tests passed');

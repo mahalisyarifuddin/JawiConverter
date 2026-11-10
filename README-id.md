@@ -1,118 +1,52 @@
 [English](README.md) | **Bahasa Indonesia**
 
 # JawiConverter
-*Rumi ↔ Jawi, lebih sederhana.*
 
-JawiConverter adalah alat satu file untuk mengonversi teks Melayu antara Rumi (Latin) dan Jawi. Konversi dijalankan oleh **mesin berbasis aturan** — morfologi, fonotaktik, dan penyahkod songsang berbobot — tanpa tampalan per kata pada aturannya. Jawi → Rumi juga menyertakan **kamus 385 entri** yang kecil (titik frontier paling dekat dengan asalan, lihat di bawah), diaktifkan secara lalai dan boleh dimatikan dari antara muka; ia hanya meliputi token yang disalahtafsirkan oleh aturan dan disusun mengikut bilangan kejadian yang diperbaiki pada set latihan, bukan mengikut kekerapan. Rumi → Jawi tidak menggunakan kamus sama sekali.
+Konverter Rumi (Latin) ↔ Jawi Melayu berbasis browser dalam satu file. Aplikasi menggabungkan aturan ejaan dan decoder balik berbobot dengan kamus berbasis korpus untuk kedua arah. Kamus aktif secara default dan dapat dimatikan di antarmuka.
 
 ## Mulai cepat
 
-1. Unduh `JawiConverter.html`.
-2. Buka di browser modern. Tidak perlu instalasi, server, jaringan, atau skrip eksternal.
-3. Pilih **Rumi → Jawi** atau **Jawi → Rumi**.
-4. Ketik, tempel, atau unggah file `.txt`. Salin hasil atau gunakan **Tukar** untuk mengganti arah.
+1. Unduh `JawiConverter.html` dan buka di browser modern. Tidak perlu instalasi, server, jaringan, atau skrip eksternal.
+2. Pilih **Rumi → Jawi** atau **Jawi → Rumi**.
+3. Ketik, tempel, atau unggah file `.txt`. Salin hasil atau gunakan **Tukar** untuk mengganti arah.
+4. Hapus centang **Kamus** untuk memakai jalur konversi berbasis aturan tanpa kamus korpus.
 
 Antarmuka mendukung Bahasa Melayu dan Inggris, konversi langsung, tema terang/gelap, serta tata letak desktop dan seluler.
 
 ## Cara kerja
 
-- **Rumi → Jawi** menggunakan segmentasi suku kata dengan onset maksimal, digraf konsonan Melayu, aturan alif dan vokal kontekstual, imbuhan dan klitika produktif, reduplikasi, akronim, serta kaf/qaf akhir.
-- **Jawi → Rumi** menggunakan pencarian keadaan hingga yang deterministik untuk memulihkan vokal yang dihilangkan. Biaya fonotaktik dan konsistensi konversi maju menilai hanya kandidat lengkap, tanpa leksikon.
-- Ketik **é** untuk memaksa taling dan **ě** atau **ê** untuk pepet. Tandai kedua vokal bila keduanya perlu ditentukan: `sétém → سيتيم`; `sětěm/sêtêm → ستم`.
+- **Rumi → Jawi** menggunakan pemenggalan suku kata, aturan ejaan kontekstual, imbuhan, dan reduplikasi. Jika aktif, kamus juga menyediakan ejaan yang dipelajari untuk token yang memenuhi syarat; penanda pelafalan dan bentuk regresi yang dilindungi tetap diutamakan.
+- **Jawi → Rumi** menggunakan pencarian keadaan hingga untuk memulihkan vokal yang dihilangkan dan menilai kandidat lengkap berdasarkan biaya fonotaktik dan konsistensi konversi maju. Jika aktif, bacaan kamus dan beberapa pemetaan konteks yang dipelajari melengkapi decoder aturan.
+- Ketik **é** untuk memaksa taling dan **ě** atau **ê** untuk pepet. Tandai kedua vokal jika perlu: `sétém → سيتيم`; `sětěm/sêtêm → ستم`.
 - Input Jawi dinormalisasi ke NFC. Hamzah tinggi `ٴ`, kaf Arab `ك`, gaf bertitik `ڬ`, dan peh lama `پ` diterima sebagai alias input.
 
-Rumi tanpa tanda dan Jawi yang menghilangkan vokal memang dapat ambigu. Huruf sumber Arab seperti `ع`, `ء`, `ى`, dan `ة`, sebagian homograf pepet/taling, batas gabungan kata historis, dan pelafalan akronim tidak selalu dapat dipulihkan dari bentuk luarnya. Mesin memakai aturan umum, bukan menyembunyikan jawaban kata dalam tabel. Lihat [audit Pedoman](docs/PEDOMAN_AUDIT.md).
+Rumi tanpa tanda dan Jawi yang menghilangkan vokal memang ambigu. Aturan maupun kamus tidak menjamin ejaan atau pelafalan yang dimaksud; periksa hasil yang penting. Lihat [desain mesin](docs/RULE_ENGINE.md) dan [audit Pedoman](docs/PEDOMAN_AUDIT.md).
 
-## Pengujian
+## Pengujian dan pengembangan
 
 ```sh
 node tests/run_tests.js
 ```
 
-Pengujian luring hanya memakai modul bawaan Node.js dan mencakup:
+Pengujian luring menggunakan modul bawaan Node.js dan memeriksa 179 bentuk Pedoman deterministik, penanganan aman 57 contoh yang belum dapat ditentukan, aturan konversi dan alias, API browser dan Node, seluruh 48 pengujian pada HTML, evaluasi korpus, dan perilaku tuner.
 
-- 178 bentuk Pedoman deterministik serta penanganan aman atas 58 contoh audit yang secara eksplisit ditandai belum dapat ditentukan;
-- akhiran produktif, qaf akhir sebelum akhiran, batas imbuhan, penanda, reduplikasi, dan alias Unicode;
-- kandidat decoder balik yang lengkap serta kompatibilitas API browser/Node;
-- seluruh 48 pengujian yang ditampilkan HTML;
-- perhitungan WER, pembacaan korpus, dan isolasi split test pada tuner.
+`JawiConverter.html` adalah satu-satunya sumber mesin produksi. `tools/app_engine.js` mengekstrak skrip inline bertanda ke direktori sementara untuk alat Node; tidak ada file JavaScript mesin duplikat.
 
-`JawiConverter.html` adalah satu-satunya sumber mesin produksi. `tools/app_engine.js` mengekstrak skrip inline ke direktori sementara untuk pengujian Node; tidak ada file JavaScript mesin duplikat.
+## Evaluasi korpus
 
-## WER kalimat Utusan
-
-Alat evaluasi menggunakan [`mahalisyarifuddin/utusan-jawi-sentences`](https://huggingface.co/datasets/mahalisyarifuddin/utusan-jawi-sentences) dengan kolom selaras `text` (Jawi) dan `latin_text` (Rumi). Teks korpus **tidak disertakan**. Patuhi kartu dataset dan hak cipta/ketentuan Utusan; jangan memasukkan korpus unduhan atau laporan kesalahan kalimat ke Git.
-
-Evaluasi file Parquet test resmi (memerlukan Python dan `pyarrow`):
+Alat evaluasi menggunakan [dataset kalimat Jawi Utusan](https://huggingface.co/datasets/mahalisyarifuddin/utusan-jawi-sentences) eksternal, dengan kolom selaras `text` (Jawi) dan `latin_text` (Rumi). Teks korpus **tidak disertakan**. Patuhi kartu dataset dan hak cipta/ketentuan Utusan; jangan memasukkan korpus unduhan atau laporan kesalahan kalimat ke Git.
 
 ```sh
+# Input Parquet memerlukan Python dan pyarrow; JSONL, JSON, dan CSV juga didukung.
 python3 -m pip install --user pyarrow
-node tests/evaluate_corpus.js \
-  --corpus /path/to/utusan/test.parquet \
-  --direction jl \
-  --output artifacts/test-metrics.json
+node tests/evaluate_corpus.js --corpus /path/to/utusan/test.parquet \
+  --direction jl --output artifacts/test-metrics.json
 ```
 
-Tuning hanya pada train, penerimaan berdasarkan validation, lalu evaluasi test:
+Untuk tuning, berikan data train dan validation secara terpisah; tuner memilih berdasarkan train dan menerima perubahan berdasarkan validation. Jalankan test hanya setelah konfigurasi dibekukan. Secara default alat mengevaluasi dengan kamus bawaan aktif. Lihat [protokol evaluasi dan hasil historis](docs/EVALUATION.md) untuk perintah, keterbatasan, dan riwayat tolok ukur. Skor v18 yang tercatat **tidak** menggambarkan hybrid v19 saat ini; tidak ada klaim WER untuk versi saat ini di sini.
 
-```sh
-node tools/tune_rules.js \
-  --train /path/to/utusan/train.parquet \
-  --validation /path/to/utusan/validation.parquet \
-  --direction jl --passes 3 \
-  --train-limit 0 --validation-limit 0 \
-  --write
+## Privasi dan kontribusi
 
-node tests/evaluate_corpus.js \
-  --corpus /path/to/utusan/test.parquet \
-  --direction jl \
-  --output artifacts/test-after-tuning.json
-```
+Konversi berlangsung lokal di browser; teks tidak diunggah. Evaluasi membaca korpus yang diberikan pengembang. `artifacts/`, `corpus/`, dan file Parquet diabaikan Git.
 
-Nilai `0` berarti seluruh split. Batas yang lebih kecil berguna selama pengembangan. JSONL, JSON, dan CSV juga didukung. Tuner tidak memiliki opsi split test dan hanya menulis parameter jika validation membaik dan seluruh regresi luring lulus.
-
-**Hasil Jawi → Rumi terukur** pada seluruh split resmi:
-
-| Mesin | WER train | WER validation | WER test |
-| --- | ---: | ---: | ---: |
-| Pra-tuning, koreksi tanda baca | — | 57,15% | 58,10% |
-| `2026-11-09-rule-based-2` hasil tuning | 53,35% | 52,62% | 53,80% |
-| `2026-11-09-rule-based-3` hasil penyempurnaan | 48,90% | 48,08% | 49,14% |
-| `2026-11-09-rule-based-4` hasil tuning seluruh train | 46,63% | 45,89% | 46,99% |
-| `2026-11-09-rule-based-5` hasil penyempurnaan | 44,51% | 43,66% | 44,43% |
-| `2026-11-09-rule-based-6` hasil penyempurnaan | 44,22% | 43,46% | 44,04% |
-| `2026-11-09-rule-based-7` hasil penyempurnaan | 43,74% | 42,94% | 43,56% |
-| `2026-11-09-rule-based-8` hasil penyempurnaan | 43,29% | 42,31% | 43,11% |
-| `2026-11-09-rule-based-9` hasil penyempurnaan | 42,34% | 41,37% | 42,07% |
-| `2026-11-09-rule-based-10` hasil penyempurnaan | 41,56% | 40,59% | 41,42% |
-| **`2026-11-09-rule-based-11` hasil penyempurnaan** | **41,54%** | **40,57%** | **41,39%** |
-| + kamus 70 kata (titik lutut Pareto) | 33,69% | 32,84% | — |
-| + kamus penuh 21.271 kata | 7,97%* | **7,97%** | 8,12% |
-| Dihantar: kamus 500 kata (pasangan v1) | 27,62% | 26,59% | 27,50% |
-| v2: pasangan kata dibetulkan + 500 entri | 20,23% | 19,79% | 20,95% |
-| v3: pemisahan ke- + 500 entri | 20,10% | 19,70% | 20,78% |
-| v4: akar di- diperluas (269) + 500 entri | 20,07% | 19,67% | 20,77% |
-| v16: kunci kamus ٢ boleh dicapai (500 entri) | 19,95% | 19,52% | 20,68% |
-| v17: kamus dikurangkan kepada titik Utopia 305 kata (min-max) | 22,51% | 22,06% | 23,03% |
-| **v18: 385 kata, paling dekat dengan asalan (zero-max, paksi log)** | **21,20%** | **20,78%** | 21,85% |
-
-Hasil rule-based-11 saat ini adalah **15.862 edit / 38.326 kata referensi = 41,3870% WER test**, dengan 81 kalimat test yang cocok persis. Dibanding rule-based-2, WER test turun **12,4094 poin persentase**; dibanding baseline dengan koreksi tanda baca, penurunannya **16,7093 poin**. Pada seluruh split validation, WER turun menjadi **40,5656%**, yaitu **0,0210 poin** lebih baik daripada rule-based-10.
-
-Rule-based-11 menurunkan biaya penyisipan `i`, koordinat terakhir yang belum jenuh: `dari` terbaca `diri` dan `seperti` terbaca `separti` setiap kali penyisipan `i` bersaing dengan `a`. Rule-based-10 memperbaiki bug penilaian imbuhan dan menambah aturan sywa. Bonus awalan `di` diberikan juga kepada token `di` itu sendiri, sehingga `دي` berdiri sendiri dibaca sebagai kata depan, bukan kata ganti `dia` (278 kemunculan korpus berbanding nol) dan setiap kata di sekitarnya bergeser satu posisi, menghasilkan 4.251 penghapusan palsu; kini awalan memerlukan akar. Sywa di antara dua konsonan sebelum suku kata akhir dikenai biaya, memulihkan `/a/` tereduksi korpus pada `mereka`, `kerana`, dan `lumpur`. Rule-based-9 menambahkan dua pembacaan rangkaian vokal yang sebelumnya tidak dapat dihasilkan. Rangkaian `اء` sebelum konsonan menulis `/aa/` panjang (`kerajaan`, `berkenaan`), tetapi alif hanya dibaca satu `a` dan hamzah dibuang sehingga vokal kedua hilang; hamzah tinggi `ٴ` yang dipakai korpus sebagai pembawa tersebut dinormalkan menjadi `ء`. `ي` di akhir kata sesudah konsonan juga dapat menulis `/ia/` (`berusia`), memperluas pembacaan `ia` rule-based-8 di luar kasus sebelum konsonan. Rule-based-8 menutup celah pembangkitan kandidat dan memperlebar pencarian. `ي` di tengah kata sebelum konsonan hanya dapat dibaca `i`, `e`, atau `y`, sehingga kata ber-`/ia/` (`kejadian`, `ujian`, `perisian` — 5.806 kata referensi) tidak pernah dapat dihasilkan; pembacaan `ia` kini dibangkitkan tanpa biaya. Berkas pencarian juga diperlebar dari 250 menjadi 1.000 kandidat dan daftar pendek yang dinilai dari 40 menjadi 80, karena berkas lama memangkas pembacaan yang benar seperti `ditempatkan` sebelum dinilai. Rule-based-7 menambahkan **aturan bukti vokal akhir**: selepas huruf konsonan `ن ه ف س ر ل ڠ م` rujukan hampir selalu berakhir tanpa vokal (ن 92,5%, ه 97,1%, س 82,1%, م 75,1% daripada kasus sejajar), tidak seperti `د`/`ک` yang mengutamakan `a` dan `ي` yang mengutamakan `i`. Nilai `yaE=0,75`, `finalE=0,25`, dan `forwardWeight=0,5` juga disetel semula pada seluruh split train. Rule-based-6 menambahkan satu aturan umum lagi, dipilih pada split train lengkap dan diterima pada split validation lengkap: **pepet medial sebelum r** (ke-r-ana, me-r-eka, be-r-apa) tidak memiliki huruf vokal Jawi, dan sebelum r konteks itu paling dominan (2.941 kasus train, dibanding sekitar seribu yang tersebar pada konsonan lain). Rule-based-5 menambahkan dua aturan ejaan umum, keduanya diturunkan dari keteraturan terukur pada split train, bukan dari daftar kata:
-
-- **`di` + sengau.** Tidak ada akar pasif Melayu yang dimulai dengan `ng`/`ny`, sehingga prioritas `di` rangkai kini mengecualikan `د` + `nga`/`nya`. Aturan ini memperbaiki kelas besar, misalnya `دڠن → dengan` (sebelumnya `dingan`, 1.993 kemunculan di train) dan `دڠر → dengar`.
-- **Vokal awal tidak tertulis.** Jawi menulis `/a/` dengan alif tetapi membiarkan pepet tidak tertulis. Bila dua huruf pertama adalah konsonan dan kata memiliki tiga suku kata atau lebih, vokal awal sisipan adalah pepet pada 38.537 kasus train dibanding 3.365 untuk `/a/`. Aturan ini memulihkan `نݢري → negeri`, `نݢارا → negara`, `ڤلاجر → pelajar`. Kata dua suku kata memang campuran dan dibiarkan netral.
-
-Tuner seluruh train kemudian menerima `yaE=0,5`, yaitu sedikit mengutamakan `e` daripada `i` untuk `ي`. Seluruh pemilihan memakai split train lengkap dan setiap perubahan yang diterima diperiksa ulang pada split validation lengkap; test hanya dipakai untuk tolok ukur perbandingan terakhir.
-
-Beberapa hipotesis terukur ditolak, bukan dipaksakan: pemulihan vokal akhir yang banyak dihilangkan (`ايت → itu`, `کڤد → kepada`), biaya vokal akhir berdasarkan kelas konsonan, pembacaan geminat `C-e-C`, kecenderungan `/u/` pada suku kata tertutup, dan perumusan ulang konteks pepet dari sisi Jawi. Semuanya memperburuk kedua split atau netral; hal ini sendiri menunjukkan kelas tersebut memang ambigu secara ejaan. Tidak ada kamus, daftar pengecualian, atau tambalan per kata.
-
-Rule-based-2 dibekukan sebelum evaluasi test pertamanya. Versi berikutnya adalah penyempurnaan train/validation, sehingga angka testnya merupakan **tolok ukur perbandingan, bukan klaim holdout yang masih murni**. Hasil ini adalah perbaikan lokal terverifikasi, bukan klaim minimum global. Baca [docs/EVALUATION.md](docs/EVALUATION.md) untuk jumlah dan protokol reproduksi.
-
-## Privasi
-
-Konversi berlangsung lokal di browser dan teks tidak diunggah. Evaluasi hanya membaca korpus yang secara eksplisit diberikan pengembang. `artifacts/`, `corpus/`, dan file Parquet diabaikan Git.
-
-## Lisensi dan kontribusi
-
-Proyek ini berlisensi [MIT](LICENSE). Issue, koreksi, dan pull request dipersilakan. Untuk perubahan aturan, sertakan kasus regresi deterministik atau jelaskan mengapa input ambigu, lalu jalankan pengujian luring dan WER train/validation. Jangan menambahkan kamus pengecualian.
+Proyek ini berlisensi [MIT](LICENSE). Issue, koreksi, dan pull request dipersilakan. Untuk perubahan konversi, sertakan pengujian regresi dan, jika relevan, evaluasi train/validation; dokumentasikan kasus ambigu tanpa mengklaim jawaban tunggal.
