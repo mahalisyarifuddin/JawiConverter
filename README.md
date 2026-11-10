@@ -1,89 +1,118 @@
-**English** | [Bahasa Indonesia](README-id.md)
+[**Bahasa Indonesia**](README-id.md) | **English**
 
 # JawiConverter
-*Rumi ↔ Jawi, simplified.*
+*Rumi ↔ Jawi, lebih sederhana.*
 
-## Introduction
-JawiConverter is a single-file, browser-based tool for converting Malay text between Rumi (Latin) and Jawi. It follows the **Pedoman Umum Ejaan Jawi Bahasa Melayu** and combines syllable-based spelling rules with a word exception dictionary.
+JawiConverter is a single-file, browser-based Malay Rumi (Latin) ↔ Jawi converter. Conversion is driven by a **rule-based engine** — morphology, phonotactics, and a weighted inverse decoder — with no per-word patches to the rules. Jawi → Rumi additionally ships a small **385-entry dictionary** (the measured point of the frontier closest to the origin, see below), enabled by default and toggleable from the interface; it covers only tokens the rules decode wrongly and is ranked on the training split by occurrences fixed, not by frequency. Rumi → Jawi uses no dictionary at all.
 
-The interface is available in **English** and **Bahasa Melayu**. The converter runs locally in your browser; `JawiConverter.html` has no runtime JavaScript or network dependencies and can be used offline.
+## Quick start
 
-## How It Works
-- **Rumi → Jawi**: Applies letter, syllable, vowel, and final-consonant rules, then uses verified whole-word spellings where the rules are ambiguous.
-- **Jawi → Rumi**: Checks exact reverse spellings, then unambiguous forms from the built-in base-word set, and finally uses a character-level fallback. Since short vowels are often unwritten in Jawi, some words remain ambiguous without context.
-- Pasted Jawi is normalized before lookup: the high hamza **ٴ** (U+0674) that some Jawi sources type in place of the hamzah is folded onto the standard hamzah **ء** (U+0621), so both spellings convert the same way.
-- The app preserves ordinary spacing and common punctuation, and supports hyphenated forms and reduplication entries.
-- Type **é** to force a taling vowel and **ě** (or **ê**, as Indonesian dictionaries write the schwa) to force a pepet; unaccented **e** is handled by the engine’s pepet/taling rules (setem → سيتيم, sětem/êtem → ستيم).
-- Markers set pronunciation only: a marked word still matches the same dictionary entries, PEDOMAN classes, and affix boundaries as its unmarked spelling.
+1. Download `JawiConverter.html`.
+2. Open it in a modern browser. No installation, server, network request, or external script is required.
+3. Choose **Rumi → Jawi** or **Jawi → Rumi**.
+4. Type, paste, or upload a `.txt` file. Copy the result or use **Swap** to change direction.
 
-## Quick Start
-1. Download `JawiConverter.html` from the repository.
-2. Open it in a modern browser (Chrome, Edge, Firefox, or Safari). No installation is required.
-3. Select **Rumi → Jawi** or **Jawi → Rumi**.
-4. Type or paste text into the source panel. Conversion runs live; you can also upload a `.txt` file.
-5. Copy the result, or use **Swap** to reverse the direction and move the result into the source panel.
+The interface supports Bahasa Melayu and English, live conversion, light/dark themes, and desktop/mobile layouts.
 
-## Key Features
-- **Two-way conversion**: Rumi ↔ Jawi transliteration.
-- **Single HTML file**: The converter engine is embedded in `JawiConverter.html`; it works offline without loading external scripts.
-- **Rule-based transliteration**: Syllabification, vowel handling, consonant digraphs, morphology, and final kaf/qaf rules.
-- **Verified exceptions**: 800 PRPM-verified entries, rebuilt only after the rule-only Pedoman suite passes, in 16 increments of 50.
-- **Live conversion** with examples, copy/paste, `.txt` upload, and direction swapping.
-- **English and Bahasa Melayu interface**, with auto, light, and dark theme options.
-- **Responsive layout** for desktop and mobile screens.
+## How conversion works
 
-## Accuracy Evaluation
-Run the tests and the PRPM-cache benchmark with:
+- **Rumi → Jawi** uses maximal-onset syllabification, Malay consonant digraphs, contextual alif and vowel rules, productive affixes and clitics, reduplication, initialisms, and final kaf/qaf handling.
+- **Jawi → Rumi** uses a deterministic finite-state search to restore omitted vowels. Phonotactic costs and forward-conversion consistency rank only complete candidates. It does not consult a lexicon.
+- Type **é** to force taling and **ě** or **ê** to force pepet. Mark both vowels when both need specifying: `sétém → سيتيم`; `sětěm/sêtêm → ستم`.
+- Jawi input is normalized to NFC. High hamza `ٴ`, Arabic kaf `ك`, dotted gaf `ڬ`, and legacy peh `پ` are accepted as input aliases.
+
+Unmarked Rumi and defective Jawi are inherently ambiguous. Arabic source letters such as `ع`, `ء`, `ى`, and `ة`, some pepet/taling homographs, historical compound boundaries, and acronym pronunciation cannot always be recovered from the surface string alone. The converter uses general rules rather than hiding whole-word answers in a table. See [the Pedoman audit](docs/PEDOMAN_AUDIT.md).
+
+## Tests
 
 ```sh
 node tests/run_tests.js
 ```
 
-The current word-level snapshot contains **4,067 non-null PRPM forms**. Tests first remove every EXC entry and run 223 rule-only cases covering Pedoman sections 3–19. The optimizer runs only after those pass, and protects all 236 Pedoman cases while evaluating each +50 PRPM batch:
+The offline suite uses only Node.js built-ins and checks:
 
-| EXC entries | Average accuracy |
-| ---: | ---: |
-| 0 | 84.63% |
-| 50 | 86.01% |
-| 100 | 87.34% |
-| 150 | 88.66% |
-| 200 | 89.89% |
-| 250 | 91.15% |
-| 300 | 92.38% |
-| 350 | 93.59% |
-| 400 | 94.55% |
-| 450 | 95.24% |
-| 500 | 95.88% |
-| 550 | 96.51% |
-| 600 | 97.11% |
-| 650 | 97.74% |
-| 700 | 98.34% |
-| 750 | 98.97% |
-| **800** | **99.55%** |
+- 178 deterministic Pedoman forms and safe handling of 58 explicitly labeled underdetermined audit examples;
+- productive suffixes, final qaf before suffixes, affix boundaries, markers, reduplication, and Unicode aliases;
+- complete inverse-decoder states and browser/Node API compatibility;
+- all 48 tests displayed in the standalone HTML;
+- WER arithmetic, corpus parsing, and tuner test-split isolation.
 
-At 800 entries, the individual scores are **99.46%** Rumi → Jawi and **99.63%** Jawi → Rumi. This is the first 50-entry boundary to reach the 99% average target. The optimizer greedily maximizes combined exact-match gains, uses PRPM frequency to break ties, and rejects candidates that conflict with a protected Pedoman form. Since entries are selected from this same PRPM snapshot, this is an in-corpus benchmark, not a held-out accuracy guarantee. Unicode is normalized to NFC and invisible formatting controls are ignored; spellings are otherwise compared exactly.
+`JawiConverter.html` remains the sole production engine source. `tools/app_engine.js` extracts its marked inline script into a disposable temporary directory for Node tests; no duplicate engine JavaScript is shipped.
 
-“Rule-only” means the PRPM EXC batch is disabled, not dictionary-free conversion: pronunciation/root metadata, fixed PEDOMAN lexical classes, and the existing reverse lookup table remain. Tests cover the operational numbered subrules, but representative examples are not proof of correctness for every possible word or context. See [the PEDOMAN audit](docs/PEDOMAN_AUDIT.md) for scope and limitations.
+## Utusan sentence WER
 
-The optimizer rechecks **all protected outputs after every batch**, including derivatives affected by root exceptions, and refuses to write a failing result. After writing, it runs the full test suite and restores the prior engine if validation fails.
+The evaluation tooling targets [`mahalisyarifuddin/utusan-jawi-sentences`](https://huggingface.co/datasets/mahalisyarifuddin/utusan-jawi-sentences), whose aligned fields are `text` (Jawi) and `latin_text` (Rumi). Corpus text is **not included** in this repository. Respect the dataset card and Utusan copyright/terms; do not commit downloaded corpora or sentence-error reports.
 
-`JawiConverter.html` is the sole engine source. Node tools and tests use `tools/app_engine.js` to extract its marked inline engine into a disposable operating-system temporary directory, load it, and remove the copy. No duplicate engine JavaScript is shipped.
-
-To rebuild EXC from zero in increments of 50, first run a dry evaluation, then apply the optimized entries directly to the app:
+Evaluate the official test Parquet file (Parquet support requires Python and `pyarrow`):
 
 ```sh
-node tools/optimize_exceptions.js          # dry run; prints each 50-entry step
-node tools/optimize_exceptions.js --write  # rewrites the inline batch in JawiConverter.html
+python3 -m pip install --user pyarrow
+node tests/evaluate_corpus.js \
+  --corpus /path/to/utusan/test.parquet \
+  --direction jl \
+  --output artifacts/test-metrics.json
 ```
 
-## Privacy & Data
-All conversion happens in your browser. Text is not uploaded or sent to a server. The PRPM word forms in `tools/prpm_cache.json` are used for development and evaluation; the app itself does not fetch PRPM or any other service.
+Tune only on train, accept a pass only when validation improves, and evaluate test afterward:
 
-## License
-This project is licensed under the [MIT License](LICENSE).
+```sh
+node tools/tune_rules.js \
+  --train /path/to/utusan/train.parquet \
+  --validation /path/to/utusan/validation.parquet \
+  --direction jl --passes 3 \
+  --train-limit 0 --validation-limit 0 \
+  --write
 
-## Contributions
-Issues, corrections, and pull requests are welcome. For spelling-rule changes, please include a regression case and run the PRPM evaluation so the effect on both directions is clear.
+node tests/evaluate_corpus.js \
+  --corpus /path/to/utusan/test.parquet \
+  --direction jl \
+  --output artifacts/test-after-tuning.json
+```
 
-## Feedback
-Please use the repository's Issues section for questions, corrections, and suggestions.
+`--train-limit 0 --validation-limit 0` means both full splits. Lower limits are useful for development. JSONL, JSON, and CSV inputs are also supported. The tuner has no test-split option and writes parameters only after validation improves and all offline regressions pass.
+
+**Measured Jawi → Rumi results** on the complete official splits:
+
+| Engine | Train WER | Validation WER | Test WER |
+| --- | ---: | ---: | ---: |
+| Pre-tuning, punctuation-corrected | — | 57.15% | 58.10% |
+| Tuned `2026-11-09-rule-based-2` | 53.35% | 52.62% | 53.80% |
+| Refined `2026-11-09-rule-based-3` | 48.90% | 48.08% | 49.14% |
+| Full-train tuned `2026-11-09-rule-based-4` | 46.63% | 45.89% | 46.99% |
+| Refined `2026-11-09-rule-based-5` | 44.51% | 43.66% | 44.43% |
+| Refined `2026-11-09-rule-based-6` | 44.22% | 43.46% | 44.04% |
+| Refined `2026-11-09-rule-based-7` | 43.74% | 42.94% | 43.56% |
+| Refined `2026-11-09-rule-based-8` | 43.29% | 42.31% | 43.11% |
+| Refined `2026-11-09-rule-based-9` | 42.34% | 41.37% | 42.07% |
+| Refined `2026-11-09-rule-based-10` | 41.56% | 40.59% | 41.42% |
+| **Refined `2026-11-09-rule-based-11`** | **41.54%** | **40.57%** | **41.39%** |
+| + 70-word dictionary (Pareto knee) | 33.69% | 32.84% | — |
+| + full 21,271-word dictionary | 7.97%* | **7.97%** | 8.12% |
+| Shipped: 500-word dictionary (v1 pairing) | 27.62% | 26.59% | 27.50% |
+| v2: corrected word pairing + 500 entries | 20.23% | 19.79% | 20.95% |
+| v3: ke- splitting + 500 entries | 20.10% | 19.70% | 20.78% |
+| v4: expanded di- roots (269) + 500 entries | 20.07% | 19.67% | 20.77% |
+| v16: reachable ٢ dictionary keys (500 entries) | 19.95% | 19.52% | 20.68% |
+| v17: shipped dictionary cut to the 305-word Utopia point (min-max) | 22.51% | 22.06% | 23.03% |
+| **v18: 385 words, closest to the origin (zero-max, log size)** | **21.20%** | **20.78%** | 21.85% |
+
+The current rule-based-11 result is **15,862 edits / 38,326 reference words = 41.3870% test WER**, with 81 exact test sentences. Relative to rule-based-2, this is a **12.4094-point** test reduction; relative to the punctuation-corrected baseline, it is **16.7093 points**. On the full validation split WER falls to **40.5656%**, a further **0.0210 points** over rule-based-10.
+
+Rule-based-11 lowers the cost of an inserted `i`, the last unsaturated coordinate: `dari` was read `diri` and `seperti` `separti` wherever an `i`-insertion competed with an `a`. Rule-based-10 fixes an affix-scoring bug and adds a schwa rule. The `di` prefix bonus was awarded to the bare token `di` itself, so standalone `دي` decoded as the preposition rather than the pronoun `dia` (278 corpus occurrences versus none) and every surrounding word shifted by one, producing 4,251 spurious deletions; a prefix now requires a root. A schwa between two consonants before a final syllable is charged, recovering the corpus's reduced `/a/` in `mereka`, `kerana` and `lumpur`. Rule-based-9 adds two vowel-sequence readings the candidate generator could not express. The sequence `اء` before a consonant spells the long `/aa/` (`kerajaan`, `berkenaan`), but the alif read a single `a` and the hamzah was dropped, losing the second vowel; the high hamza `ٴ` the corpus uses as that carrier is normalised to `ء`. Word-final `ي` after a consonant can also spell `/ia/` (`berusia`), extending rule-based-8's `ia` reading beyond the before-consonant case. Rule-based-8 closes a candidate-generation gap and widens the search. Mid-word `ي` before a consonant could only be read `i`, `e` or `y`, so words with `/ia/` (`kejadian`, `ujian`, `perisian` — 5,806 reference words) could never be produced at all; the `ia` reading is now generated at zero cost. The beam was also widened from 250 to 1,000 candidates and the scored shortlist from 40 to 80, because the old beam pruned correct readings such as `ditempatkan` before they were scored. Rule-based-7 added a **final-vowel evidence rule**: after the consonant letters `ن ه ف س ر ل ڠ م` the reference almost always ends without a vowel (ن 92.5%, ه 97.1%, س 82.1%, م 75.1% of aligned cases), unlike `د`/`ک` which prefer `a` and `ي` which prefers `i`. It also retunes `yaE=0.75`, `finalE=0.25` and `forwardWeight=0.5` on the full train split. Rule-based-6 added one further general rule, selected on the complete train split and accepted on the complete validation split: a **medial schwa before r** (ke-r-ana, me-r-eka, be-r-apa) has no Jawi vowel letter, and before r it is by far the most frequent such context (2,941 train cases, versus roughly a thousand spread across every other consonant). Rule-based-5 added two general orthographic rules, both derived from measured train-split regularities rather than word lists:
+
+- **`di` + nasal.** No Malay passive root begins with `ng`/`ny`, so the joined-`di` priority now excludes `د` + `nga`/`nya`. This alone fixed a large class, for example `دڠن → dengan` (previously `dingan`, 1,993 train occurrences) and `دڠر → dengar`.
+- **Unwritten initial vowel.** Jawi writes `/a/` with alif but leaves schwa unwritten. When the first two letters are consonants and the word has three or more syllables, an inserted initial vowel is schwa in 38,537 train cases versus 3,365 for `/a/`. This restores `نݢري → negeri`, `نݢارا → negara`, `ڤلاجر → pelajar`. Two-syllable words are genuinely mixed and are left neutral.
+
+The full-train tuner then accepted `yaE=0.5`, slightly preferring `e` over `i` for `ي`. All selection used the complete train split and every accepted change was re-checked on the complete validation split; test was used only for the final comparative benchmark.
+
+Several measured hypotheses were rejected rather than fitted: honouring the many omitted final vowels (`ايت → itu`, `کڤد → kepada`), a consonant-class final-vowel cost, geminate `C-e-C` readings, a closed-syllable `/u/` preference, and Jawi-side reformulations of the schwa context. Each either regressed both splits or was neutral, which is itself evidence that those classes are genuinely underdetermined from the orthography alone. That paragraph describes the rule-based-11 era, when no dictionary shipped. The rules still contain no per-word patches; the separate, toggleable Jawi → Rumi dictionary described above is the only lexical component, and it is compiled from measured error counts rather than written by hand.
+
+Rule-based-2 was frozen before its first test evaluation. Later versions are train/validation refinements, so their test numbers are **comparative benchmarks, not pristine-holdout claims**. These are verified local improvements, not a claim of a global minimum. See [docs/EVALUATION.md](docs/EVALUATION.md) for counts and the reproducibility protocol.
+
+## Privacy
+
+All conversion happens locally in the browser. Input text is not uploaded. Evaluation reads only the corpus path explicitly supplied by the developer. `artifacts/`, `corpus/`, and Parquet files are Git-ignored.
+
+## License and contributions
+
+The project is licensed under the [MIT License](LICENSE). Issues, corrections, and pull requests are welcome. For rule changes, include a deterministic regression case or document why the input is underdetermined, then run the offline suite and train/validation WER evaluation. Do not add exception dictionaries.

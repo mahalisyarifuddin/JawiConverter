@@ -147,7 +147,9 @@
   {
     "rumi": "renda",
     "pedoman": "ريندا",
-    "rule": "8.9"
+    "rule": "8.9",
+    "deterministic": false,
+    "reason": "Unmarked Rumi does not uniquely encode the required pronunciation or loan-spelling class."
   },
   {
     "rumi": "belah",
@@ -193,7 +195,9 @@
     "rumi": "aib",
     "pedoman": "عاءيب",
     "phase": "exceptions",
-    "rule": "3.9"
+    "rule": "3.9",
+    "deterministic": false,
+    "reason": "Arabic source-script information is absent from unmarked Rumi."
   },
   {
     "rumi": "boikot",
@@ -273,7 +277,9 @@
   {
     "rule": "5.1",
     "rumi": "kailan",
-    "pedoman": "کايلن"
+    "pedoman": "کايلن",
+    "deterministic": false,
+    "reason": "The Rumi string does not uniquely identify the historical affix or compound boundary."
   },
   {
     "rule": "5.2",
@@ -338,12 +344,16 @@
   {
     "rule": "9.3",
     "rumi": "fanatik",
-    "pedoman": "فاناتيک"
+    "pedoman": "فاناتيک",
+    "deterministic": false,
+    "reason": "Unmarked Rumi does not uniquely encode the required pronunciation or loan-spelling class."
   },
   {
     "rule": "12.2",
     "rumi": "klinik",
-    "pedoman": "کلينيک"
+    "pedoman": "کلينيک",
+    "deterministic": false,
+    "reason": "Unmarked Rumi does not uniquely encode the required pronunciation or loan-spelling class."
   },
   {
     "rule": "12.2",
@@ -353,12 +363,16 @@
   {
     "rule": "12.3",
     "rumi": "agenda",
-    "pedoman": "اݢيندا"
+    "pedoman": "اݢيندا",
+    "deterministic": false,
+    "reason": "Unmarked Rumi does not uniquely encode the required pronunciation or loan-spelling class."
   },
   {
     "rule": "12.4",
     "rumi": "politik",
-    "pedoman": "ڤوليتيک"
+    "pedoman": "ڤوليتيک",
+    "deterministic": false,
+    "reason": "Unmarked Rumi does not uniquely encode the required pronunciation or loan-spelling class."
   },
   {
     "rule": "13.3",
@@ -453,7 +467,9 @@
   {
     "rule": "18.1",
     "rumi": "kereta api",
-    "pedoman": "کريتا اڤي"
+    "pedoman": "کريتا اڤي",
+    "deterministic": false,
+    "reason": "Unmarked Rumi does not uniquely encode the required pronunciation or loan-spelling class."
   },
   {
     "rule": "19.3",
@@ -464,7 +480,9 @@
     "rule": "3.12",
     "phase": "exceptions",
     "rumi": "setiausaha",
-    "pedoman": "ستياءوسها"
+    "pedoman": "ستياءوسها",
+    "deterministic": false,
+    "reason": "The Rumi string does not uniquely identify the historical affix or compound boundary."
   },
   {
     "rule": "10",
@@ -475,24 +493,32 @@
     "rule": "11.1",
     "phase": "exceptions",
     "rumi": "quran",
-    "pedoman": "قرءان"
+    "pedoman": "قرءان",
+    "deterministic": false,
+    "reason": "Arabic source-script information is absent from unmarked Rumi."
   },
   {
     "rule": "11.4",
     "phase": "exceptions",
     "rumi": "fardu",
-    "pedoman": "فرض"
+    "pedoman": "فرض",
+    "deterministic": false,
+    "reason": "Arabic source-script information is absent from unmarked Rumi."
   },
   {
     "rule": "11.4",
     "phase": "exceptions",
     "rumi": "haji",
-    "pedoman": "حاج"
+    "pedoman": "حاج",
+    "deterministic": false,
+    "reason": "Arabic source-script information is absent from unmarked Rumi."
   },
   {
     "rule": "12.5",
     "rumi": "video",
-    "pedoman": "ۏيديو"
+    "pedoman": "ۏيديو",
+    "deterministic": false,
+    "reason": "Unmarked Rumi does not uniquely encode the required pronunciation or loan-spelling class."
   },
   {
     "rule": "13.2",
@@ -518,7 +544,9 @@
     "rule": "13.12",
     "rumi": "keadilan",
     "pedoman": "کعاديلن",
-    "phase": "exceptions"
+    "phase": "exceptions",
+    "deterministic": false,
+    "reason": "Arabic source-script information is absent from unmarked Rumi."
   },
   {
     "rule": "16.2",
@@ -528,12 +556,16 @@
   {
     "rule": "18.5",
     "rumi": "kerjasama",
-    "pedoman": "کرجاسام"
+    "pedoman": "کرجاسام",
+    "deterministic": false,
+    "reason": "The Rumi string does not uniquely identify the historical affix or compound boundary."
   },
   {
     "rule": "19.5",
     "rumi": "tabika",
-    "pedoman": "تابيکا"
+    "pedoman": "تابيکا",
+    "deterministic": false,
+    "reason": "Capitalization alone does not identify acronym pronunciation or source language."
   },
   {
     "rule": "3.7",
@@ -562,7 +594,9 @@
     "phase": "exceptions",
     "requires": [
       "usul"
-    ]
+    ],
+    "deterministic": false,
+    "reason": "Arabic source-script information is absent from unmarked Rumi."
   },
   {
     "rule": "3.13",
@@ -577,12 +611,16 @@
   {
     "rule": "9.3",
     "rumi": "radio",
-    "pedoman": "راديو"
+    "pedoman": "راديو",
+    "deterministic": false,
+    "reason": "Unmarked Rumi does not uniquely encode the required pronunciation or loan-spelling class."
   },
   {
     "rule": "19.4",
     "rumi": "MCA",
-    "pedoman": "عيم.سي.اي."
+    "pedoman": "عيم.سي.اي.",
+    "deterministic": false,
+    "reason": "Capitalization alone does not identify acronym pronunciation or source language."
   },
   {
     "rule": "3.13",
@@ -593,7 +631,9 @@
     "rule": "6.4",
     "phase": "exceptions",
     "rumi": "surah",
-    "pedoman": "سورة"
+    "pedoman": "سورة",
+    "deterministic": false,
+    "reason": "Arabic source-script information is absent from unmarked Rumi."
   },
   {
     "rule": "9.2",
@@ -603,7 +643,9 @@
   {
     "rule": "9.2",
     "rumi": "mamalia",
-    "pedoman": "ماماليا"
+    "pedoman": "ماماليا",
+    "deterministic": false,
+    "reason": "Unmarked Rumi does not uniquely encode the required pronunciation or loan-spelling class."
   },
   {
     "rule": "11.2",
@@ -614,7 +656,9 @@
     "rule": "11.3",
     "phase": "exceptions",
     "rumi": "arif",
-    "pedoman": "عاريف"
+    "pedoman": "عاريف",
+    "deterministic": false,
+    "reason": "Arabic source-script information is absent from unmarked Rumi."
   },
   {
     "rule": "11.5",
@@ -624,17 +668,23 @@
   {
     "rule": "11.6",
     "rumi": "musa",
-    "pedoman": "موسى"
+    "pedoman": "موسى",
+    "deterministic": false,
+    "reason": "Arabic source-script information is absent from unmarked Rumi."
   },
   {
     "rule": "11.6",
     "rumi": "fatwa",
-    "pedoman": "فتوى"
+    "pedoman": "فتوى",
+    "deterministic": false,
+    "reason": "Arabic source-script information is absent from unmarked Rumi."
   },
   {
     "rule": "11.6",
     "rumi": "pendakwaan",
-    "pedoman": "ڤندعواءن"
+    "pedoman": "ڤندعواءن",
+    "deterministic": false,
+    "reason": "Arabic source-script information is absent from unmarked Rumi."
   },
   {
     "rule": "18.2",
@@ -669,47 +719,65 @@
   {
     "rule": "18.4",
     "rumi": "dititikberatkan",
-    "pedoman": "دتيتيقبرتکن"
+    "pedoman": "دتيتيقبرتکن",
+    "deterministic": false,
+    "reason": "The Rumi string does not uniquely identify the historical affix or compound boundary."
   },
   {
     "rule": "18.5",
     "rumi": "sukarela",
-    "pedoman": "سوکارلا"
+    "pedoman": "سوکارلا",
+    "deterministic": false,
+    "reason": "The Rumi string does not uniquely identify the historical affix or compound boundary."
   },
   {
     "rule": "18.5",
     "rumi": "suruhanjaya",
-    "pedoman": "سوروهجاي"
+    "pedoman": "سوروهجاي",
+    "deterministic": false,
+    "reason": "The Rumi string does not uniquely identify the historical affix or compound boundary."
   },
   {
     "rule": "18.5",
     "rumi": "tandatangan",
-    "pedoman": "تنداتاڠن"
+    "pedoman": "تنداتاڠن",
+    "deterministic": false,
+    "reason": "The Rumi string does not uniquely identify the historical affix or compound boundary."
   },
   {
     "rule": "18.5",
     "rumi": "tanggungjawab",
-    "pedoman": "تڠݢوڠجواب"
+    "pedoman": "تڠݢوڠجواب",
+    "deterministic": false,
+    "reason": "The Rumi string does not uniquely identify the historical affix or compound boundary."
   },
   {
     "rule": "18.5",
     "rumi": "matahari",
-    "pedoman": "ماتاهاري"
+    "pedoman": "ماتاهاري",
+    "deterministic": false,
+    "reason": "The Rumi string does not uniquely identify the historical affix or compound boundary."
   },
   {
     "rule": "18.5",
     "rumi": "jawatankuasa",
-    "pedoman": "جاوتنکواس"
+    "pedoman": "جاوتنکواس",
+    "deterministic": false,
+    "reason": "The Rumi string does not uniquely identify the historical affix or compound boundary."
   },
   {
     "rule": "18.5",
     "rumi": "kakitangan",
-    "pedoman": "کاکيتاڠن"
+    "pedoman": "کاکيتاڠن",
+    "deterministic": false,
+    "reason": "The Rumi string does not uniquely identify the historical affix or compound boundary."
   },
   {
     "rule": "18.5",
     "rumi": "warganegara",
-    "pedoman": "ورݢانݢارا"
+    "pedoman": "ورݢانݢارا",
+    "deterministic": false,
+    "reason": "The Rumi string does not uniquely identify the historical affix or compound boundary."
   },
   {
     "rule": "18.5",
@@ -744,37 +812,51 @@
   {
     "rule": "19.4",
     "rumi": "PLO",
-    "pedoman": "ڤي.ايل.او."
+    "pedoman": "ڤي.ايل.او.",
+    "deterministic": false,
+    "reason": "Capitalization alone does not identify acronym pronunciation or source language."
   },
   {
     "rule": "19.5",
     "rumi": "IKIM",
-    "pedoman": "ايکيم"
+    "pedoman": "ايکيم",
+    "deterministic": false,
+    "reason": "Capitalization alone does not identify acronym pronunciation or source language."
   },
   {
     "rule": "19.5",
     "rumi": "PAS",
-    "pedoman": "ڤاس"
+    "pedoman": "ڤاس",
+    "deterministic": false,
+    "reason": "Capitalization alone does not identify acronym pronunciation or source language."
   },
   {
     "rule": "19.5",
     "rumi": "UNESCO",
-    "pedoman": "يونيسکو"
+    "pedoman": "يونيسکو",
+    "deterministic": false,
+    "reason": "Capitalization alone does not identify acronym pronunciation or source language."
   },
   {
     "rule": "19.5",
     "rumi": "UMNO",
-    "pedoman": "امنو"
+    "pedoman": "امنو",
+    "deterministic": false,
+    "reason": "Capitalization alone does not identify acronym pronunciation or source language."
   },
   {
     "rule": "19.5",
     "rumi": "SERU",
-    "pedoman": "سرو"
+    "pedoman": "سرو",
+    "deterministic": false,
+    "reason": "Capitalization alone does not identify acronym pronunciation or source language."
   },
   {
     "rule": "19.5",
     "rumi": "Petronas",
-    "pedoman": "ڤيترونس"
+    "pedoman": "ڤيترونس",
+    "deterministic": false,
+    "reason": "Capitalization alone does not identify acronym pronunciation or source language."
   },
   {
     "rule": "3.1",
@@ -809,27 +891,37 @@
   {
     "rule": "3.11",
     "rumi": "wuduk",
-    "pedoman": "وضوء"
+    "pedoman": "وضوء",
+    "deterministic": false,
+    "reason": "Arabic source-script information is absent from unmarked Rumi."
   },
   {
     "rule": "3.11",
     "rumi": "imlak",
-    "pedoman": "املاء"
+    "pedoman": "املاء",
+    "deterministic": false,
+    "reason": "Arabic source-script information is absent from unmarked Rumi."
   },
   {
     "rule": "3.11",
     "rumi": "ikhfak",
-    "pedoman": "اخفاء"
+    "pedoman": "اخفاء",
+    "deterministic": false,
+    "reason": "Arabic source-script information is absent from unmarked Rumi."
   },
   {
     "rule": "3.11",
     "rumi": "anbia",
-    "pedoman": "انبياء"
+    "pedoman": "انبياء",
+    "deterministic": false,
+    "reason": "Arabic source-script information is absent from unmarked Rumi."
   },
   {
     "rule": "3.11",
     "rumi": "makmum",
-    "pedoman": "مأموم"
+    "pedoman": "مأموم",
+    "deterministic": false,
+    "reason": "Arabic source-script information is absent from unmarked Rumi."
   },
   {
     "rule": "4.1",
@@ -889,22 +981,30 @@
   {
     "rule": "4.5",
     "rumi": "metode",
-    "pedoman": "ميتودى"
+    "pedoman": "ميتودى",
+    "deterministic": false,
+    "reason": "Unmarked Rumi does not uniquely encode the required pronunciation or loan-spelling class."
   },
   {
     "rule": "4.5",
     "rumi": "nasionalisme",
-    "pedoman": "ناسيوناليسمى"
+    "pedoman": "ناسيوناليسمى",
+    "deterministic": false,
+    "reason": "Unmarked Rumi does not uniquely encode the required pronunciation or loan-spelling class."
   },
   {
     "rule": "4.5",
     "rumi": "mekanisme",
-    "pedoman": "ميکانيسمى"
+    "pedoman": "ميکانيسمى",
+    "deterministic": false,
+    "reason": "Unmarked Rumi does not uniquely encode the required pronunciation or loan-spelling class."
   },
   {
     "rule": "4.5",
     "rumi": "lipase",
-    "pedoman": "ليڤاسى"
+    "pedoman": "ليڤاسى",
+    "deterministic": false,
+    "reason": "Unmarked Rumi does not uniquely encode the required pronunciation or loan-spelling class."
   },
   {
     "rule": "5.1",
@@ -1149,12 +1249,16 @@
   {
     "rule": "19.4",
     "rumi": "KLSE",
-    "pedoman": "کي.ايل.ايس.اي."
+    "pedoman": "کي.ايل.ايس.اي.",
+    "deterministic": false,
+    "reason": "Capitalization alone does not identify acronym pronunciation or source language."
   },
   {
     "rule": "19.4",
     "rumi": "A.D.O.",
-    "pedoman": "اي.دي.او."
+    "pedoman": "اي.دي.او.",
+    "deterministic": false,
+    "reason": "Capitalization alone does not identify acronym pronunciation or source language."
   },
   {
     "rule": "11.6",
@@ -1164,7 +1268,9 @@
   {
     "rule": "11.6",
     "rumi": "ketakwaan",
-    "pedoman": "کتقواءن"
+    "pedoman": "کتقواءن",
+    "deterministic": false,
+    "reason": "Arabic source-script information is absent from unmarked Rumi."
   },
   {
     "rule": "11.6",
@@ -1178,7 +1284,9 @@
     "phase": "exceptions",
     "requires": [
       "fardu"
-    ]
+    ],
+    "deterministic": false,
+    "reason": "Arabic source-script information is absent from unmarked Rumi."
   },
   {
     "rule": "11.4",
@@ -1187,7 +1295,9 @@
     "phase": "exceptions",
     "requires": [
       "haji"
-    ]
+    ],
+    "deterministic": false,
+    "reason": "Arabic source-script information is absent from unmarked Rumi."
   },
   {
     "rule": "11.4",
@@ -1196,7 +1306,9 @@
     "phase": "exceptions",
     "requires": [
       "haji"
-    ]
+    ],
+    "deterministic": false,
+    "reason": "Arabic source-script information is absent from unmarked Rumi."
   },
   {
     "rule": "11.4",
@@ -1205,6 +1317,8 @@
     "phase": "exceptions",
     "requires": [
       "fardu"
-    ]
+    ],
+    "deterministic": false,
+    "reason": "Arabic source-script information is absent from unmarked Rumi."
   }
 ]
