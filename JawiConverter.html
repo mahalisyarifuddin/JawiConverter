@@ -1826,10 +1826,10 @@ const CONSONANT_REVERSE = Object.freeze({
  * orthographic preferences. */
 const TUNE = {
   insertA:0, insertE:0, insertI:2.2, insertU:2.2, insertO:2.4,
-  finalA:-0.1, finalI:1.4, finalU:1.4, finalE:0, finalO:2,
-  wawO:0.3125, wawW:0.5, initialO:0.2, yaE:0.5, yaY:0.625,
-  pairAya:-0.25, pairAwa:0, forwardWeight:0.25, forwardBonus:1.875,
-  invalidCluster:3, medialER:0.1, complexOnset:0.5, complexCoda:0.5, initialE:0.25, prefixBonus:1, diPrefixBonus:3, beam:250, shortlist:40
+  finalA:-0.1, finalI:1.4, finalU:1.4, finalE:0.25, finalO:2,
+  wawO:0.3125, wawW:0.5, initialO:0.2, yaE:0.75, yaY:0.625,
+  pairAya:-0.25, pairAwa:0, forwardWeight:0.5, forwardBonus:1.875,
+  invalidCluster:3, noFinalVowel:0.625, medialER:0.1, complexOnset:0.5, complexCoda:0.5, initialE:0.25, prefixBonus:1, diPrefixBonus:3, beam:250, shortlist:40
 };
 const LATIN_VOWELS = 'aeiou';
 function latinConsonantAtEnd(value) { return /[bcdfghjklmnpqrstvwxyz]$/i.test(value); }
@@ -1951,6 +1951,10 @@ function decodeJawiWord(input) {
    * inserted one; that context keeps its own deterministic rule below. */
   const insertedInitial = /^[بتجچدذرفڤکݢسههلنمڽغ][^اآأإويى]/.test(word) &&
     !/^د[^اآأإويى]/.test(word);
+  /* A final vowel is rare after these consonant letters (ن 92.5%, ه 97.1%,
+   * س 82.1%, م 75.1% of aligned cases have none), unlike د/ک (which prefer a)
+   * and ي (which prefers i). */
+  const bareFinalConsonant = /[نهفسرلڠم]$/.test(word);
   let best = null, bestCost = Infinity;
   for (const candidate of candidates) {
     const forward = forwardForInverse(candidate.text);
@@ -1960,6 +1964,7 @@ function decodeJawiWord(input) {
     let cost = candidate.baseCost + distance * TUNE.forwardWeight - (consistent ? TUNE.forwardBonus : 0);
     if (insertedInitial && consistent && syllabify(candidate.text).length >= 3 &&
         candidate.text[1] === 'e') cost -= TUNE.initialE;
+    if (bareFinalConsonant && /[aeiou]$/.test(candidate.text)) cost += TUNE.noFinalVowel;
     if (cost < bestCost || (cost === bestCost && candidate.text.length < best.length)) {
       best = candidate.text; bestCost = cost;
     }
