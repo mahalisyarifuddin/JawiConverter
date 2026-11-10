@@ -1825,7 +1825,7 @@ const CONSONANT_REVERSE = Object.freeze({
  * rule candidates, never by a lexicon. Costs encode only phonotactic and
  * orthographic preferences. */
 const TUNE = {
-  insertA:0, insertE:0, insertI:2.2, insertU:2.2, insertO:2.4,
+  insertA:0, insertE:0, insertI:0.1, insertU:2.2, insertO:2.4,
   finalA:-0.1, finalI:1.4, finalU:1.4, finalE:0.25, finalO:2,
   wawO:0.3125, wawW:0.5, initialO:0.2, yaE:0.75, yaY:0.625,
   pairAya:-0.25, pairAwa:0, forwardWeight:0.5, forwardBonus:1.875,
@@ -2058,7 +2058,7 @@ function jawiToLatin(text) {
     .replace(/([({\[])\s+/g, '$1').replace(/\s+([)}\]])/g, '$1');
 }
 
-const RULE_VERSION = '2026-11-09-rule-based-10';
+const RULE_VERSION = '2026-11-09-rule-based-11';
 if (typeof module !== 'undefined' && module.exports) module.exports = {
   RULE_VERSION, appendSuffix, latinToJawi, jawiToLatin, wordToJawi, baseWordToJawi:wordToJawi,
   syllabify, jawiToRumi, heurJawiToRumi, inverseCandidates, phonotacticCost, editDistance,

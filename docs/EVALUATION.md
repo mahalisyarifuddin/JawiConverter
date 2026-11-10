@@ -397,4 +397,30 @@ Restricting the rule to non-initial syllables was neutral; a three-consonant min
 
 Rule-based-10 lowers full validation WER by **0.7836 points** and comparative test WER by **0.6444 points** over rule-based-9. Test was not used for any selection.
 
+## Eleventh-cycle: the cost surface, re-swept honestly
+
+Re-extracting the alignment pairs after rule-based-10 put `dari -> diri` (893), `oleh -> ulih` (887), `orang -> urang` (643), `polis -> pulis` (686) and `boleh -> bulih` (412) near the top. All of these are generated with the correct reading present, so all are rank-gap cases, and the question was which fixed cost was binding. Only one was.
+
+| Change | Effect on samples (train / validation) | Verdict |
+| --- | --- | ---: |
+| `insertI` 2.2 → 0.1 | 41.554% / 39.752% → 41.492% / 39.731% | accepted |
+| `wawO` 0 → 1 (full sweep) | flat within ±0.002 points | no effect |
+| prefix root minimum `>2` → `>3` | 41.554% → 41.637% | rejected |
+| `ي` before final `ه` forced to `e` | 41.554% → 42.104% | rejected |
+| `insertA` below 0 | sharply worse (43.9%+) | rejected |
+
+**Why `oleh` cannot be fixed.** `اوليه` generates `ulih`, `olih`, `oleh` and `uleh`. The corpus wants `oleh` (887 tokens) but also keeps `dari` as `diri` (893) with the same low `i` cost, and `اوليه`'s unconditional `e` rule costs more than it gains. The `و` sweep being *exactly* flat is diagnostic: `u`, `o` and `w` are all generated, so the reading is already free to change and changing its price does not move it.
+
+**Two silent-failure traps, both caught.** The first `medialWawO` screen used the wrong index (`i === 2`; the `و` is at index 1) and the rule never fired — a fresh instance of the failure recorded last cycle. The second used the wrong anchor text. The rule now applied into the file before use and the *generated candidate list* is asserted, not only WER: `inverseCandidates('اوليه')` must contain `oleh`.
+
+**A boundary honestly checked.** `ket` receives the `se`/`ke` prefix bonus with a one-letter root, which looked like last cycle's bug one character over. Raising the minimum to `>3` regressed both splits (41.554% → 41.637%), so the boundary is corpus-backed and was left alone.
+
+| Engine | Split | Sentences | Reference words | Total edits | WER | Exact sentences |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| **Refined rule-based-11** | train | 15,881 | 306,693 | 127,394 | **41.5380%** | 699 |
+| **Refined rule-based-11** | validation | 1,989 | 38,153 | 15,477 | **40.5656%** | 109 |
+| **Refined rule-based-11** | test (comparative) | 1,972 | 38,326 | 15,862 | **41.3870%** | 81 |
+
+Rule-based-11 lowers full validation WER by **0.0210 points** and comparative test WER by **0.0366 points** over rule-based-10. This is a small gain and marks the cost surface as saturated a second time; further progress needs the rank-gap problem, not another cost. Test was not used for any selection.
+
 The aggregate metrics contain no corpus sentences. Detailed JSON metrics and error reports remain in Git-ignored `artifacts/`; downloaded Parquet files remain in Git-ignored `corpus/`.
