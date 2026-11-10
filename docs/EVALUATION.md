@@ -355,7 +355,7 @@ The `ia` extension was kept despite a neutral sample score because it closes a g
 | Engine | Split | Sentences | Reference words | Total edits | WER | Exact sentences |
 | --- | --- | ---: | ---: | ---: | ---: | ---: |
 | **Refined rule-based-9** | train | 15,881 | 306,693 | 129,856 | **42.3407%** | 690 |
-| **Refined rule-based-9** | validation | 1,989 | 38,153 | 15,789 | **41.3702%** | 101 |
+| **Refined rule-based-9** | validation | 1,989 | 38,153 | 15,784 | **41.3702%** | 103 |
 | **Refined rule-based-9** | test (comparative) | 1,972 | 38,326 | 16,123 | **42.0680%** | 81 |
 
 Rule-based-9 lowers full validation WER by **0.9410 points** and comparative test WER by **1.0411 points** over rule-based-8. Test was not used for any selection.
