@@ -563,6 +563,36 @@ Vocabulary saved at equal accuracy:
 
 Two caveats on the ranking. It is by raw frequency, not by error-reduction, so a frequent token that contributes one edit outranks a rarer one that contributes several; ranking by `frequency x edits-avoided` would move the knee left. And 155 tokens in the mismatch set never appear in validation at all, so their position in the training-derived order is untested.
 
+### Utopia point
+
+The Pareto knee depends on a chord, which is arbitrary. The utopia point is the frontier vertex closest to the ideal (smallest vocabulary, lowest WER), with both objectives normalised to their range on the frontier and equal weights:
+
+    d(x) = sqrt( ((vocab - min)/(range))^2 + ((WER - min)/(range))^2 )
+
+The result is **not robust to how the vocabulary axis is scaled**, and that is the finding worth recording:
+
+| Vocabulary axis | Utopia choice | Validation WER |
+| --- | ---: | ---: |
+| linear | 2,250 words | 12.79% |
+| log | 1,050 words | 18.06% |
+
+A linear axis treats the jump from 100 to 1,000 words as ten times more costly than 10,000 to 10,100; a log axis treats them as equal. Both are defensible, and they disagree by a factor of two in dictionary size and 5 points of WER.
+
+Sweeping the weight given to the vocabulary objective confirms there is no stable interior optimum:
+
+| Vocab weight | Linear axis | Log axis |
+| ---: | --- | --- |
+| 0.2 | 4,500 w / 9.73% | 4,500 w / 9.73% |
+| 0.3 | 3,750 w / 10.35% | 3,000 w / 11.26% |
+| 0.4 | 3,000 w / 11.26% | 1,800 w / 14.05% |
+| 0.5 | 2,250 w / 12.79% | 1,050 w / 18.06% |
+| 0.6 | 1,950 w / 13.56% | 25 w / 35.11% |
+| 0.7 | 1,600 w / 14.88% | 0 w / 40.57% |
+
+At equal weights the recommendation is **1,050 to 2,250 words (18.06% to 12.79% validation WER)** depending on whether vocabulary growth is felt linearly or logarithmically. The log answer is the more defensible default: dictionary size is felt in orders of magnitude (a 1,000-entry dictionary is not "half as bad" as 2,000), and `docs/dictionary-utopia.png` shows why the linear axis lands so far right — the first few hundred entries collapse WER so steeply that on a linear axis they look nearly free.
+
+For reference, the chord knee sits at 125 words / 31.58% and the full vocabulary at 15,954 words / 7.97%. The utopia point is a compromise between those two, as intended, and it moves smoothly with the weight rather than snapping to an artefact.
+
 ### The earlier sampled curve (validation sample, n=498 sentences, increment 5)
 
 | Dictionary words | Validation WER | Exact sentences |
