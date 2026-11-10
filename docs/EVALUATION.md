@@ -446,4 +446,55 @@ Four structural hypotheses were measured this round. None was accepted, and the 
 | **Refined rule-based-11** (unchanged) | validation | **40.5656%** | 109 |
 | **Refined rule-based-11** (unchanged) | test (comparative) | **41.3870%** | 81 |
 
+## Thirteenth-cycle: dictionary Pareto frontier
+
+With a curated dictionary now permitted, the open question is how many entries earn their place. Entries were ranked by **train-split frequency** (selection), each reading taken as the train-majority for that Jawi token, and the curve was read on **validation**. Test was not consulted.
+
+Two implementation details matter, and both were bugs found during the sweep:
+
+1. **The memo hid the dictionary.** `jawiToRumi` memoises on `JSON.stringify(TUNE)` alone, so a changed dictionary was silently ignored and the first sweep returned a perfectly flat line. The memo signature now includes the dictionary identity.
+2. **An approximate sweep was wrong by 5 points.** Rebuilding the hypothesis token-by-token and substituting dictionary hits gave 37.98% where the real engine gives 32.84%, because it bypassed sentence-level normalisation. The published curve is measured by running the real engine at every point.
+
+### The curve (validation sample, n=498 sentences, increment 5)
+
+| Dictionary words | Validation WER | Exact sentences |
+| ---: | ---: | ---: |
+| 0 | 40.44% | 25 |
+| 5 | 39.26% | 28 |
+| 10 | 37.72% | 29 |
+| 15 | 36.92% | 30 |
+| 20 | 36.56% | 30 |
+| 25 | 35.19% | 30 |
+| 50 | 34.24% | 31 |
+| 75 | 32.96% | 31 |
+| 100 | 32.37% | 31 |
+| 125 | 31.63% | 32 |
+| 150 | 30.63% | 33 |
+| 175 | 30.30% | 33 |
+| 200 | 29.50% | 34 |
+| 225 | 28.86% | 35 |
+| 250 | 27.98% | 36 |
+| 275 | 27.62% | 37 |
+| 300 | 27.25% | 37 |
+
+**Knee: 70 words, 32.96% sample WER** (max deviation from the chord, 0.236 in normalised units). At the knee the dictionary buys **−7.48 points** over the rule-only 40.44%. The tail is expensive: the remaining 230 words to reach 300 buy 5.71 more points, at roughly a third of the per-word return of the first 70.
+
+Windowed marginal return, validation sample:
+
+| Window | WER change | Per 100 words |
+| --- | ---: | ---: |
+| 0 → 125 words | −8.80 pp | 35.2 |
+| 125 → 250 words | −3.65 pp | 14.6 |
+
+**Full-split confirmation at the knee (N=70, no sampling):**
+
+| Split | Rule-only WER | N=70 WER | Exact sentences |
+| --- | ---: | ---: | ---: |
+| train | 41.5380% | **33.6920%** | 699 → 878 |
+| validation | 40.5656% | **32.8441%** | 109 → 131 |
+
+The 70 entries are in `artifacts/dictionary-70.json`, with the full curve in `artifacts/pareto-curve.json` and the chart in `docs/dictionary-pareto.png`. The engine ships with `JawiDictionary.entries` empty, so conversion remains rule-based by default; loading the artifact is an explicit opt-in.
+
+A caution on reading these numbers: 40 of the top 70 entries have confidence ≥95%, but the ranking is by frequency, not by confidence, so a few entries encode a heavily contested token. Dictionary quality would improve if entries were ranked by `frequency × error-reduction` rather than raw frequency, which is the natural next refinement.
+
 The aggregate metrics contain no corpus sentences. Detailed JSON metrics and error reports remain in Git-ignored `artifacts/`; downloaded Parquet files remain in Git-ignored `corpus/`.

@@ -1948,9 +1948,22 @@ function forwardForInverse(text) {
   if (INVERSE_FORWARD_MEMO.size < 100000) INVERSE_FORWARD_MEMO.set(text, result);
   return result;
 }
+/* Curated readings for the most frequent Jawi tokens. Entries are learned
+ * from the train split only; see docs/EVALUATION.md for the Pareto sweep that
+ * chooses how many to keep. Empty by default: the converter stays rule-based. */
+const JawiDictionary = {
+  /* token -> reading; empty means pure rule-based conversion. */
+  entries: Object.create(null),
+  /* Optional analysis hook: when set, overrides entries entirely. */
+  override: null
+};
 function decodeJawiWord(input) {
   const word = normalizeJawiInput(input);
   if (!word) return '';
+  if (JawiDictionary.override) {
+    const hit = JawiDictionary.override[word];
+    if (hit !== undefined) return hit;
+  }
   const candidates = inverseCandidates(word).map(candidate => ({
     ...candidate, baseCost:candidate.cost + phonotacticCost(candidate.text)
   })).sort((a,b) => a.baseCost - b.baseCost).slice(0, TUNE.shortlist);
@@ -1987,7 +2000,9 @@ function decodeJawiWord(input) {
 const INVERSE_MEMO = new Map();
 let INVERSE_MEMO_SIGNATURE = '';
 function jawiToRumi(input) {
-  const signature = JSON.stringify(TUNE);
+  /* Dictionary entries are part of the decode result, so they belong in the
+   * memo signature; without this a changed dictionary is silently ignored. */
+  const signature = JSON.stringify(TUNE) + '\u0000' + (JawiDictionary.override ? JSON.stringify(JawiDictionary.override).length + ':' + Object.keys(JawiDictionary.override).length : '0');
   if (signature !== INVERSE_MEMO_SIGNATURE) {
     INVERSE_MEMO.clear(); INVERSE_MEMO_SIGNATURE = signature;
   }
@@ -2062,9 +2077,9 @@ const RULE_VERSION = '2026-11-09-rule-based-11';
 if (typeof module !== 'undefined' && module.exports) module.exports = {
   RULE_VERSION, appendSuffix, latinToJawi, jawiToLatin, wordToJawi, baseWordToJawi:wordToJawi,
   syllabify, jawiToRumi, heurJawiToRumi, inverseCandidates, phonotacticCost, editDistance,
-  TUNE, FORWARD_TUNE
+  TUNE, FORWARD_TUNE, JawiDictionary
 };
-if (typeof window !== 'undefined') window.JawiConverter = { RULE_VERSION, appendSuffix, latinToJawi, jawiToLatin, wordToJawi, syllabify, jawiToRumi };
+if (typeof window !== 'undefined') window.JawiConverter = { RULE_VERSION, appendSuffix, latinToJawi, jawiToLatin, wordToJawi, syllabify, jawiToRumi, JawiDictionary };
 </script>
 <!-- END INLINE JAWI CONVERTER ENGINE -->
 	<script>
