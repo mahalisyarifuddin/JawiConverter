@@ -149,6 +149,10 @@ assert.strictEqual(engine.jawiToLatin('ڤلاجر'), 'pelajar');
 assert.strictEqual(engine.jawiToLatin('کران'), 'kerana');
 assert.strictEqual(engine.jawiToLatin('براڤ'), 'berapa');
 assert(engine.phonotacticCost('kerana') < engine.phonotacticCost('karana'));
+/* A final vowel is rare after these consonant letters, so a bare final
+ * consonant is preferred (دالم dalam, سموا semua). */
+assert.strictEqual(engine.jawiToLatin('دالم'), 'dalam');
+assert.strictEqual(engine.jawiToLatin('سموا'), 'semua');
 assert(engine.phonotacticCost('plajar') > engine.phonotacticCost('pelajar'));
 assert(engine.phonotacticCost('tersbut') > engine.phonotacticCost('tersebut'));
 assert.strictEqual(engine.jawiToLatin('غاءيره'), engine.jawiToLatin('غاٴيره'));

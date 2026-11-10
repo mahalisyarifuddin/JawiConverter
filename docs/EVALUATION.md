@@ -239,4 +239,41 @@ The `itu`/`ini`/`pada` class remains: the correct form always carries a forward 
 
 Rule-based-6 lowers full validation WER by **0.1939 points** and comparative test WER by **0.3939 points** over rule-based-5. Test was not used for any selection and remains a comparative benchmark because it was inspected in the first cycle.
 
+## Sixth-cycle: final-vowel evidence and cost retuning
+
+Rule-based-7 was selected on the complete train split with the complete validation split as the acceptance gate, after the corpus was restored through the repository's Git-blob transport (the dataset host itself is blocked from this sandbox).
+
+| Measurement (train, word-aligned) | Result | Rule |
+| --- | --- | --- |
+| Reference ending after bare ن | no vowel 92.5% (27,641 cases) | prefer the bare consonant |
+| ... ه / س / م | 97.1% / 82.1% / 75.1% | same |
+| ... د / ک | prefer `a` (65.3% / 62.1%) | excluded from the rule |
+| ... ي | prefers `i` (79.5%) | excluded from the rule |
+| د + consonant contexts | joined passive 3,801 vs bare 402 | no new rule; the existing bonus is already optimal (raising it changes 1 validation edit) |
+
+| Change | Full train | Full validation | Decision |
+| --- | --- | --- | --- |
+| `yaE` 0.5 → 0.75, `finalE` 0 → 0.25, `forwardWeight` 0.25 → 0.5 | 44.2201% → 44.1484% | 43.4619% → 43.3754% | Accepted (pass 1) |
+| `noFinalVowel=0.625` | 44.1484% → 43.7398% | 43.3754% → 42.9403% | Accepted |
+| Second coordinate pass | — | worse | Rejected by validation |
+
+Rejected after measurement on 500 evenly spaced train and validation sentences:
+
+- treating a final vowel as orthographically optional and letting per-vowel costs decide: 44.00% → 45.99% (train) and 42.08% → 44.05% (validation);
+- an initial-`ي`-as-`e` preference (4,270 vs 185 aligned cases): neutral at low values, regressive above 1;
+- `ي` between consonants as a schwa carrier: neutral, then regressive;
+- prefix and `di` bonus retuning, intervocalic `w`, and initial-`او` as `/o/`: flat or worse.
+
+The `itu`/`ini`/`pada` class (about 7,400 occurrences) is now explained precisely: `wordToJawi('itu')` returns `ايتو`, so the correct reading is always one forward edit from the input while the bare form is exact. Closing that gap requires a forward-spelling decision about final `و`/`ي`, and every attempt to compensate on the inverse side regressed both splits.
+
+Residual classes such as `mereka → merika` are forward limits, not ranking bugs: `wordToJawi('mereka')` returns `مرکا`, two edits from `مريک`, so the correct candidate cannot win at any affordable cost.
+
+| Engine | Split | Sentences | Reference words | S | D | I | Total edits | WER | Exact sentences |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| **Refined rule-based-7** | train | 15,881 | 306,693 | 126,196 | 8,965 | 149 | 135,310 | **43.7398%** | 676 |
+| **Refined rule-based-7** | validation | 1,989 | 38,153 | 15,339 | 1,086 | 19 | 16,444 | **42.9403%** | 99 |
+| **Refined rule-based-7** | test (comparative) | 1,972 | 38,326 | 16,542 | 1,126 | 28 | 16,696 | **43.5631%** | 68 |
+
+Rule-based-7 lowers full validation WER by **0.5216 points** and comparative test WER by **0.4775 points** over rule-based-6, and raises exact validation sentences from 97 to 99. Test was not used for any selection.
+
 The aggregate metrics contain no corpus sentences. Detailed JSON metrics and error reports remain in Git-ignored `artifacts/`; downloaded Parquet files remain in Git-ignored `corpus/`.
